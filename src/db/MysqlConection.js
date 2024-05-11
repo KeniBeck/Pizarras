@@ -1,11 +1,11 @@
 import mysql2 from "mysql2/promise";
 
 const pool = mysql2.createPool({
-    host: "localhost",
+    host: "roundhouse.proxy.rlwy.net",
     user: "root",
     database: "pizarritas",
-    password: "****",
-    port: "3306",
+    password: "jpDRbKfglEPoWPyuzjrudgKgbMeCKRGE",
+    port: "31830",
     timezone: 'Z'
 })
 
