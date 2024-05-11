@@ -61,17 +61,17 @@ const LoginForm = () => {
 
 
     <form onSubmit={handleSubmit(enviarDatos)} className="max-w-sm mx-auto w-full ">
-      <div className="flex justify-center mb-10 text-2xl text-white ">
+      <div className="flex justify-center -mt-10 text-2xl text-white ">
         <img src="/noSencillo.png" alt="Logo" className="w-full h-[132px]" />
       </div>
       <div className="mb-6 text-white flex justify-center items-center">Bienvenido</div>
       <div className="relative z-0 w-full px-8 mb-5 group">
         <div className="relative">
-          <input {...register("user", { required: true })} className="block py-2.5 px-0 w-full text-sm  text-gray-900 bg-transparent border-0 border-b-2 border-gray-300 appearance-none dark:text-white dark:border-gray-600 dark:focus:border-red-500 focus:outline-none focus:ring-0 relative pl-12" placeholder=" Usuario" required />
+          <input {...register("user", { required: true })} className=" block py-2.5 px-0 w-full text-sm  text-white bg-transparent border-0 border-b-2 border-gray-300 appearance-none dark:text-white dark:border-gray-600 dark:focus:border-red-500 focus:outline-none focus:ring-0 relative pl-12" placeholder=" Usuario" required />
           <FaUserCircle className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 text-gray-500 " />
         </div>
         <div className="relative ">
-          <input {...register("pass", { required: true })} type="password" className="block py-2.5 px-0 w-full text-sm text-gray-900 bg-transparent border-0 border-b-2 border-gray-300 appearance-none dark:text-white dark:border-gray-600 dark:focus:border-red-500 focus:outline-none focus:ring-0 pl-12" placeholder=" Password" required />
+          <input {...register("pass", { required: true })} type="password" className="block py-2.5 px-0 w-full text-sm text-white bg-transparent border-0 border-b-2 border-gray-300 appearance-none dark:text-white dark:border-gray-600 dark:focus:border-red-500 focus:outline-none focus:ring-0 pl-12" placeholder=" Password" required />
           <PiPasswordFill className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 text-gray-500 " />
         </div>
       </div>
