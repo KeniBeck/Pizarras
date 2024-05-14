@@ -6,7 +6,7 @@ const pool = mysql2.createPool({
     database: "pizarritas",
     password: "jpDRbKfglEPoWPyuzjrudgKgbMeCKRGE",
     port: "31830",
-    timezone: 'Z'
+    timezone: "Z"
 })
 
 export default pool;

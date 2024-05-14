@@ -1,6 +1,7 @@
 import TypeDraw from "@/components/custom/typeDraw/TypeDraw";
 import RouteProtected from "@/middleware/RouteProtected";
 
+
 const Type = () => {
 
     return (
