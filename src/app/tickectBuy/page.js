@@ -18,7 +18,7 @@ const BuyTicket = () => {
     });
 
     if (date) {
-      console.log(date);
+      // console.log(date);
       setShowTicketBuy(true);
     } else {
       Swal.fire({

@@ -18,7 +18,7 @@ const TicketBuy = () => {
         fetch(`/api/topes/${ticketNumber}`)
             .then(response => response.json())
             .then(data => {
-                console.log(data);
+                //console.log(data);
                 // Update the tope permitido state
                 setTopePermitido(data.tope);
             })
@@ -34,17 +34,20 @@ const TicketBuy = () => {
     }, []);
 
 
+
+
     if (!prizes) {
         return <div className=" text-white w-full h-screen items-center bg-center bg-no-repeat bg-[rgb(38,38,38)] flex-col">
             Loading...
         </div>
     }
+    const [year, month, day] = prizes.Fecha.split('T')[0].split('-');
     return (
         <div className="max-w-sm mx-auto w-full bg-[rgb(38,38,38)]">
             <div className="text-2xl text-white flex justify-center items-center pb-4 pt-6 ">Boletos</div>
             <div className="w-full flex justify-center items-center flex-col space-y-1  relative">
                 <label className="text-white text-lg flex justify-center items-center realative pr-8 ">
-                    <BsCalendarDateFill className="inline-block h-6 w-6 mr-1 text-red-600 " /> Sorteo:{new Date(prizes.Fecha).toLocaleDateString()}</label>
+                    <BsCalendarDateFill className="inline-block h-6 w-6 mr-1 text-red-600 " /> Sorteo:{(`${month}-${day}`)}</label>
                 <label className="text-white text-lg flex justify-center items-center relative">
                     <PiNumberSquareOneFill className="text-red-600 inline-block h-6 w-6 mr-1" />Premio:{prizes.Primerpremio}
                 </label>
