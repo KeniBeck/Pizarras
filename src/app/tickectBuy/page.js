@@ -4,7 +4,7 @@ import Swal from "sweetalert2";
 import TicketBuy from "@/components/custom/tickectBuy/TickectBuy";
 import RouteProtected from "@/middleware/RouteProtected";
 
-const buyTicket = () => {
+const BuyTicket = () => {
   const [showTicketBuy, setShowTicketBuy] = useState(false);
 
   const handleDateChange = async () => {
@@ -51,4 +51,4 @@ const buyTicket = () => {
   );
 }
 
-export default buyTicket;
+export default BuyTicket;
