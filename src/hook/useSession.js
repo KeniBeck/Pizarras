@@ -11,6 +11,7 @@ const useSession = () => {
     const logout = () => {
         if (isBrowser) {
             sessionStorage.clear();
+            localStorage.clear();
         }
     };
 

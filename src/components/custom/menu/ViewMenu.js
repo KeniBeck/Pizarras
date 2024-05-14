@@ -7,6 +7,8 @@ import { RiLogoutBoxFill } from "react-icons/ri";
 import useSession from "@/hook/useSession";
 import { useRouter } from 'next/navigation'
 import AlertMenu from "../alerts/menu/AlertMenu";
+import { useState } from "react";
+
 
 
 
@@ -14,6 +16,18 @@ const ViewMenu = () => {
     const { getUserData } = useSession();
     const router = useRouter();
     let userData = getUserData();
+    const { logout } = useSession();
+    const [cerrarSession, setCerrarSession] = useState(false);
+
+    const session = () => {
+        setCerrarSession(true);
+    };
+
+    if (cerrarSession) {
+        logout();
+        window.location.href = '/';
+
+    }
 
     let accessBlocked = false;
 
@@ -22,6 +36,7 @@ const ViewMenu = () => {
         userData = JSON.parse(localStorage.getItem('userData'));
 
         const currentHour = new Date().getHours();
+        // currentHour >= 18 || currentHour < 8
         if (currentHour >= 18 || currentHour < 8) {
             accessBlocked = true;
         }
@@ -82,10 +97,13 @@ const ViewMenu = () => {
                             </button>
                         </div>
                         <div className="relative">
-                            <button className="w-full rounded-lg bg-red-700 text-white h-9 relative">
+                            <button className="w-full rounded-lg bg-red-700 text-white h-9 relative" onClick={session}>
                                 Cerrar sección
                                 <RiLogoutBoxFill className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4" />
                             </button>
+                            <div>
+                                {cerrarSession}
+                            </div>
                         </div>
 
                     </div>
