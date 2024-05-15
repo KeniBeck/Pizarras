@@ -1,5 +1,4 @@
 'use client'
-import Swal from "sweetalert2";
 import { PiNumberSquareOneFill } from "react-icons/pi";
 import { PiNumberSquareTwoFill } from "react-icons/pi";
 import { BsCalendarDateFill } from "react-icons/bs";
@@ -8,40 +7,68 @@ import { useEffect, useState } from "react";
 
 
 
-const TicketBuy = () => {
+const TicketBuy = ({ selectedDate }) => {
     const [prizes, setPrizes] = useState(null);
     const [topePermitido, setTopePermitido] = useState(0);
-    const handleTicketNumberChange = async (event) => {
-        const ticketNumber = event.target.value;
-
-        // Fetch the tope permitido for this ticket number from your API
-        fetch(`/api/topes/${ticketNumber}`)
-            .then(response => response.json())
-            .then(data => {
-                //console.log(data);
-                // Update the tope permitido state
-                setTopePermitido(data.tope);
-            })
-            .catch(error => console.error('Error:', error));
-    };
+    const [ticketNumber, setTicketNumber] = useState("");
+    const [foundTope, setFoundTope] = useState(null);
+    const date = selectedDate;
+    console.log(date)
 
     useEffect(() => {
-        fetch('/api/ticketBuy')
+        fetch(`/api/ticketBuy`, {
+            method: 'POST', // Cambia el método a PUT
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ date: date }), // Envia la fecha como cuerpo de la petición
+        })
             .then(response => response.json())
-            .then(data => setPrizes(data.result[0]))
+            .then(data => setPrizes(data[0]))
             .catch(error => console.error('Error:', error));
 
-    }, []);
+        // Fetch the tope permitido from your API
+        fetch(`/api/topes`)
+            .then(response => response.json())
+            .then(data => {
+                // Update the tope permitido state
+                setTopePermitido(data);
+            })
+            .catch(error => console.error('Error:', error));
+    }, [selectedDate])
 
 
 
 
-    if (!prizes) {
+    if (!prizes || !topePermitido) {
         return <div className=" text-white w-full h-screen items-center bg-center bg-no-repeat bg-[rgb(38,38,38)] flex-col">
             Loading...
         </div>
     }
+    //console.log(topePermitido)
     const [year, month, day] = prizes.Fecha.split('T')[0].split('-');
+    const matchingTope = topePermitido.find(tope => tope.Numero === ticketNumber);
+
+
+    const handleTicketNumberChange = (e) => {
+        let value = e.target.value;
+        setTicketNumber(value);
+        const matchingTope = topePermitido.find(tope => tope.Numero === Number(value));
+        if (matchingTope) {
+            console.log("Tope encontrado: ", matchingTope.Tope);
+            setFoundTope(matchingTope.Tope); // Guarda el tope encontrado en el estado
+        } else {
+            console.log("No se encontró un tope para este número de boleto");
+            setFoundTope(null); // Si no se encuentra un tope, establece el estado a null
+        }
+    };
+    const handleBlur = (e) => {
+        let value = e.target.value;
+        // Asegúrate de que el valor sea un número y tenga una longitud de 3 caracteres
+        value = value.padStart(3, '0');
+        setTicketNumber(value);
+    };
+
     return (
         <div className="max-w-sm mx-auto w-full bg-[rgb(38,38,38)]">
             <div className="text-2xl text-white flex justify-center items-center pb-4 pt-6 ">Boletos</div>
@@ -55,22 +82,32 @@ const TicketBuy = () => {
                     <PiNumberSquareTwoFill className="inline-block h-6 w-6 mr-1 text-red-600" /> Premio:{prizes.Segundopremio}
                 </label>
             </div>
-
-            <div className="text-xl text-red-500 text-center pt-6">
-                Tope: permitido: {topePermitido}
-            </div>
+            {foundTope ? (
+                <div className="text-xl text-red-500 text-center pt-6">
+                    Tope permitido: {foundTope}
+                </div>
+            ) : (
+                <div className="text-xl text-red-500 text-center pt-6">
+                    No se encontró un tope para este número de boleto
+                </div>
+            )}
 
             <div className="flex justify-center items-center flex-col space-y-3 pt-6">
                 <div className="flex flex-row gap-12">
                     <div className="text-white flex justify-center items-center text-lg">Boleto</div>
                     <input
-                        className="bg-neutral-300 border rounded w-[110px] outline-none h-9 pl-10"
+                        value={ticketNumber}
                         onChange={handleTicketNumberChange}
+                        onBlur={handleBlur}
+                        maxLength={3}
+                        className="bg-neutral-300 border rounded w-[110px] outline-none h-9 pl-10"
                     />
                 </div>
                 <div className="flex flex-row gap-12">
                     <div className="text-white flex justify-center items-center text-lg">Precio</div>
-                    <input className="bg-neutral-300 border rounded w-[110px] outline-none h-9 pl-10  " />
+                    <input className="bg-neutral-300 border rounded w-[110px] outline-none h-9 pl-10  "
+                        maxLength={4}
+                    />
                 </div>
                 <div className="flex flex-row gap-8">
                     <div className="text-white flex justify-center items-center text-lg">Nombre</div>

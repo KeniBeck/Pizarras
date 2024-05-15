@@ -6,6 +6,7 @@ import RouteProtected from "@/middleware/RouteProtected";
 
 const BuyTicket = () => {
   const [showTicketBuy, setShowTicketBuy] = useState(false);
+  const [selectedDate, setSelectedDate] = useState(null);
 
   const handleDateChange = async () => {
     const { value: date } = await Swal.fire({
@@ -19,6 +20,7 @@ const BuyTicket = () => {
 
     if (date) {
       // console.log(date);
+      setSelectedDate(date);
       setShowTicketBuy(true);
     } else {
       Swal.fire({
@@ -42,7 +44,7 @@ const BuyTicket = () => {
           )}
           {showTicketBuy && (
             <div className="w-full bg-[rgb(38,38,38)]">
-              <TicketBuy />
+              <TicketBuy selectedDate={selectedDate} />
             </div>
           )}
         </div>
