@@ -44,10 +44,10 @@ const LoginForm = () => {
     }
     let time = data[0].requestTime.indexOf('T') > 0 ? data[0].requestTime.split('T')[1].split('.')[0] : data[0].requestTime;
     let hour = parseInt(time.split(':')[0]);
-    //console.log(data)
+    console.log(data)
 
     //hour < 18 && hour >= 8
-    if (hour > 18) {
+    if (hour < 18 && hour >= 8) {
       // Redirige al usuario a la página del menú
       login(data[0])
       localStorage.setItem('userData', JSON.stringify(data[0]));

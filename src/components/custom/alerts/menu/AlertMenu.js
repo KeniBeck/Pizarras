@@ -9,7 +9,7 @@ const AlertMenu = () => {
                 <h3 className="text-lg font-medium">El sorteo a cerrado</h3>
             </div>
             <div className="mt-2 mb-4 text-sm">
-                El sorteo a cerrado por el dia de hoy asi que las acciones quedaran bloqueadas hasta el dia de mañana alas 8:00 am hora local.
+                El sorteo a cerrado por el dia de hoy asi que las acciones quedaran bloqueadas hasta el dia de mañana alas 00:01 hora local.
             </div>
         </div>
     );
