@@ -47,7 +47,7 @@ const LoginForm = () => {
     //console.log(data)
 
     //hour < 18 && hour >= 8
-    if (hour < 18 && hour >= 8) {
+    if (hour > 18) {
       // Redirige al usuario a la página del menú
       login(data[0])
       localStorage.setItem('userData', JSON.stringify(data[0]));

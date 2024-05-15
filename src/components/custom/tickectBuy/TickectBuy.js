@@ -3,6 +3,7 @@ import { PiNumberSquareOneFill } from "react-icons/pi";
 import { PiNumberSquareTwoFill } from "react-icons/pi";
 import { BsCalendarDateFill } from "react-icons/bs";
 import { useEffect, useState } from "react";
+import useSession from "@/hook/useSession";
 
 
 
@@ -12,8 +13,12 @@ const TicketBuy = ({ selectedDate }) => {
     const [topePermitido, setTopePermitido] = useState(0);
     const [ticketNumber, setTicketNumber] = useState("");
     const [foundTope, setFoundTope] = useState(null);
+    const { getUserData } = useSession();
+    let userData = getUserData();
     const date = selectedDate;
-    console.log(date)
+    if (typeof window !== 'undefined') {
+        userData = JSON.parse(localStorage.getItem('userData'));
+    }
 
     useEffect(() => {
         fetch(`/api/ticketBuy`, {
@@ -28,27 +33,25 @@ const TicketBuy = ({ selectedDate }) => {
             .catch(error => console.error('Error:', error));
 
         // Fetch the tope permitido from your API
-        fetch(`/api/topes`)
+        fetch(`/api/topes`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ date: date }),
+        })
             .then(response => response.json())
-            .then(data => {
-                // Update the tope permitido state
-                setTopePermitido(data);
-            })
+            .then(data => setTopePermitido(data))
             .catch(error => console.error('Error:', error));
+
     }, [selectedDate])
-
-
-
 
     if (!prizes || !topePermitido) {
         return <div className=" text-white w-full h-screen items-center bg-center bg-no-repeat bg-[rgb(38,38,38)] flex-col">
             Loading...
         </div>
     }
-    //console.log(topePermitido)
-    const [year, month, day] = prizes.Fecha.split('T')[0].split('-');
-    const matchingTope = topePermitido.find(tope => tope.Numero === ticketNumber);
-
+    const [year, month, day] = userData.requestTime.split('T')[0].split('-');
 
     const handleTicketNumberChange = (e) => {
         let value = e.target.value;

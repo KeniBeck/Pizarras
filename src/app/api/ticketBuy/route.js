@@ -8,10 +8,8 @@ export async function POST(req) {
 
 
     let sql = `SELECT * FROM sorteo WHERE Fecha = '${date}'`;   // Crea una cadena SQL para seleccionar todos los registros que coincidan con la fecha proporcionada.
-    console.log(sql)
     try {
         let [rows] = await pool.query(sql) // Ejecuta la consulta SQL utilizando la conexión a la base de datos "pool" y espera el resultado.
-        console.log(rows)// Registra en la consola los datos obtenidos de la consulta.
         return NextResponse.json(rows)  // Devuelve los datos obtenidos como respuesta en formato JSON utilizando NextResponse.
 
     } catch (error) {

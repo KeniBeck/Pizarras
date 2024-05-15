@@ -13,8 +13,9 @@ const BuyTicket = () => {
       title: "Selecione la fecha del sorteo:",
       input: "date",
       didOpen: () => {
-        const today = (new Date()).toISOString();
-        Swal.getInput().min = today.split("T")[0];
+        const today = new Date();
+        const todayUTC = new Date(Date.UTC(today.getFullYear(), today.getMonth(), today.getDate()));
+        Swal.getInput().min = todayUTC.toISOString().split("T")[0];
       }
     });
 
