@@ -1,21 +1,18 @@
-// import { NextResponse } from "next/server";
-// import pool from "@/db/MysqlConection";
+import { NextResponse } from "next/server";
+import pool from "@/db/MysqlConection";
 
-// export async function GET(req, res) {
-//     const { ticketNumber } = req.query;
+export async function GET(req) {
+    let sql = `SELECT * FROM topes WHERE Fecha_sorteo = CURDATE()`;
 
-
-//     let sql = `SELECT Tope FROM topes WHERE Numero = '${ticketNumber}'`;
-
-//     try {
-//         let [rows] = await pool.query(sql);
-//         if (rows.length > 0) {
-//             res.status(200).json({ tope: rows[0].Tope });
-//         } else {
-//             res.status(404).json({ error: 'No se encontró un tope para este número de boleto' });
-//         }
-//     } catch (error) {
-//         console.log(error);
-//         res.status(500).json({ error: 'Ocurrió un error al consultar la base de datos' });
-//     }
-// }
+    try {
+        let [rows] = await pool.query(sql);
+        if (rows.length > 0) {
+            return NextResponse.json({ tope: rows });
+        } else {
+            return NextResponse.json({ error: 'No se encontró un tope para la fecha actual' });
+        }
+    } catch (error) {
+        console.log(error);
+        return NextResponse.error({ status: 500, message: 'Ocurrió un error al consultar la base de datos' });
+    }
+}
