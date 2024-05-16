@@ -11,13 +11,15 @@ export async function POST(req, res) {
         ( Fecha, Primerpremio, Segundopremio, Boleto, Costo, comprador, Idvendedor)
         VALUES( CURRENT_TIMESTAMP(), ?, ?, ?, ?, ?, ?)
     `;
-    let sqlUpdate = `UPDATE topes SET Tope = ${topePermitido} WHERE Numero = ${ticketNumber}`;
+    let sqlUpdate = `UPDATE topes SET Tope = ${topePermitido}, Cantidad = Cantidad - 1 WHERE Numero = ${ticketNumber}`;
+    let sqlSelect = `SELECT * FROM boletos WHERE Boleto = ? ORDER BY Idsorteo DESC LIMIT 1`;
     let values = [primerPremio, segundoPremio, ticketNumber, prizebox, name, idVendedor];
 
     try {
         let result = await pool.query(sql, values);
         let resultUpdate = await pool.query(sqlUpdate);
-        return NextResponse.json(result);
+        let resultSelect = await pool.query(sqlSelect, [ticketNumber]);
+        return NextResponse.json(resultSelect[0]);
     } catch (error) {
         console.log(error);
     }
