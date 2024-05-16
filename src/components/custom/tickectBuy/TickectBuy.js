@@ -62,7 +62,10 @@ const TicketBuy = () => {
         value = value.padStart(3, '0');
         setTicketNumber(value);
     };
-    const userData = JSON.parse(localStorage.getItem('userData'));
+    let userData;
+    if (typeof window !== 'undefined') {
+        userData = JSON.parse(window.localStorage.getItem('userData'));
+    }
     const idVendedor = userData.Idvendedor;
     const idSorteo = prizes.Idsorteo
     const fecha = new Date(new Date(prizes.Fecha).getTime() + new Date().getTimezoneOffset() * 60000).toLocaleDateString();
