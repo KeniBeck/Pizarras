@@ -4,9 +4,10 @@ import Swal from 'sweetalert2';
 const generatePDF = async (data, fecha) => {
     // Crear un nuevo documento PDF
     var doc = new jsPDF();
+    console.log(data);
 
     // Agregar contenido al PDF
-    doc.text('Factura de boleto', 10, 10);
+    doc.text(`Factura de boleto N${data.Idsorteo}`, 10, 10);
     doc.text(`$ ${data.Costo}`, 10, 20);
     doc.text(`Número de boleto: ${data.Boleto}`, 10, 30);
     doc.text(`Sorteo: ${fecha}`, 10, 40);
@@ -23,21 +24,17 @@ const generatePDF = async (data, fecha) => {
     // Crear una URL para los datos
     var url = URL.createObjectURL(blob);
 
-    // Mostrar una alerta con opciones para imprimir o compartir por WhatsApp
+    // Mostrar una alerta con opción para imprimir
     const result = await Swal.fire({
-        title: '¿Qué quieres hacer?',
-        showDenyButton: true,
+        title: 'Compra exitosa',
+        icon: 'success',
         showCancelButton: true,
-        confirmButtonText: 'Imprimir',
-        denyButtonText: 'Compartir por WhatsApp',
+        confirmButtonText: 'Imprimir o Compartir',
     });
 
     if (result.isConfirmed) {
         // Si el usuario elige imprimir, abrir la URL en una nueva pestaña
         window.open(url);
-    } else if (result.isDenied) {
-        // Si el usuario elige compartir por WhatsApp, abrir WhatsApp con la URL del PDF
-        window.open(`https://api.whatsapp.com/send?text=${encodeURIComponent('Aquí está el PDF: ' + url)}`);
     }
 }
 
