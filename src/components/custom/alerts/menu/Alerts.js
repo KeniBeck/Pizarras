@@ -12,7 +12,7 @@ export const ErrorTope = () => {
     Swal.fire({
         icon: 'error',
         title: 'Oops...',
-        text: 'Este boleto a llegado a su tope permitido',
+        text: 'Error en el tope de boletos',
     });
 }
 export const loading = (pathname) => {
