@@ -3,7 +3,7 @@ import { PiNumberSquareOneFill } from "react-icons/pi";
 import { PiNumberSquareTwoFill } from "react-icons/pi";
 import { BsCalendarDateFill } from "react-icons/bs";
 import { useEffect, useState } from "react";
-import { generatePDF, shareOrPrintAlert } from "./pdf";
+import generatePDF from "./pdf";
 import { ErrorPrizes, loading, ErrorTope, ValidateBox } from "../alerts/menu/Alerts";
 import { useRouter } from "next/navigation";
 import { FaHome } from "react-icons/fa";
@@ -115,10 +115,7 @@ const TicketBuy = () => {
         await fetch("/api/sell", options)
             .then(res => res.json())
             .then(data => {
-
-                const pdfurl = generatePDF(data[0], fecha);
-                console.log(pdfurl)
-                shareOrPrintAlert(pdfurl)
+                generatePDF(data[0], fecha);
 
 
             }).finally(() => {

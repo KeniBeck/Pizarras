@@ -1,7 +1,7 @@
 import jsPDF from 'jspdf';
 import Swal from 'sweetalert2';
 
-export const generatePDF = (data, fecha) => {
+const generatePDF = async (data, fecha) => {
     // Crear un nuevo documento PDF
     var doc = new jsPDF();
 
@@ -14,38 +14,31 @@ export const generatePDF = (data, fecha) => {
     doc.text(`Venta: ${data.Fecha}`, 10, 60);
     doc.text(`los premios se pueden recoger solo presentando este boleto`, 10, 70);
 
-    // Generar el PDF como un blob
-    const pdfBlob = doc.output('blob');
-    console.log(pdfBlob)
+    // Abrir el diálogo de impresión cuando el usuario abra el PDF
+    doc.autoPrint();
 
-    // Crear una URL de objeto que represente el PDF
-    const pdfUrl = URL.createObjectURL(pdfBlob);
-    console.log(pdfUrl, 'dddddddd')
-    // Devolver la URL del PDF
-    return pdfUrl;
-}
+    // Obtener una representación de datos del documento
+    var blob = doc.output('blob');
 
-export const shareOrPrintAlert = (pdfUrl) => {
-    Swal.fire({
-        title: '¿Deseas imprimir o compartir el PDF?',
+    // Crear una URL para los datos
+    var url = URL.createObjectURL(blob);
+
+    // Mostrar una alerta con opciones para imprimir o compartir por WhatsApp
+    const result = await Swal.fire({
+        title: '¿Qué quieres hacer?',
+        showDenyButton: true,
         showCancelButton: true,
-        showConfirmButton: true,
-        confirmButtonText: 'Compartir en WhatsApp',
-        cancelButtonText: 'Imprimir',
-        preConfirm: (result) => {
-            if (result) {
-                // Genera el enlace de WhatsApp con el PDF
-                let whatsappUrl = `https://api.whatsapp.com/send?text=${encodeURIComponent('Aquí está el PDF: ' + pdfUrl)}`;
-                // Abre el enlace en una nueva pestaña
-                window.open(whatsappUrl, '_blank');
-            } else {
-                // Abre el PDF en una nueva ventana y luego imprime esa ventana
-                const printWindow = window.open(pdfUrl);
-                printWindow.onload = function () {
-                    printWindow.print();
-                }
-            }
-        }
+        confirmButtonText: 'Imprimir',
+        denyButtonText: 'Compartir por WhatsApp',
     });
+
+    if (result.isConfirmed) {
+        // Si el usuario elige imprimir, abrir la URL en una nueva pestaña
+        window.open(url);
+    } else if (result.isDenied) {
+        // Si el usuario elige compartir por WhatsApp, abrir WhatsApp con la URL del PDF
+        window.open(`https://api.whatsapp.com/send?text=${encodeURIComponent('Aquí está el PDF: ' + url)}`);
+    }
 }
 
+export default generatePDF;
