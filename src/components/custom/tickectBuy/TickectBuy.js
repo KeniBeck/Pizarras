@@ -7,6 +7,7 @@ import generatePDF from "./pdf";
 import { ErrorPrizes, loading, ErrorTope, ValidateBox } from "../alerts/menu/Alerts";
 import { useRouter } from "next/navigation";
 import { FaHome } from "react-icons/fa";
+import generatePDFSerie from "./pdfSerie";
 
 
 
@@ -25,10 +26,20 @@ const TicketBuy = () => {
     useEffect(() => {
         Promise.all([
             fetch('/api/ticketBuy')
-                .then(response => response.json())
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error(`HTTP error! status: ${response.status}`);
+                    }
+                    return response.json();
+                })
                 .then(data => setPrizes(data.result[0])),
             fetch(`/api/topes`)
-                .then(response => response.json())
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error(`HTTP error! status: ${response.status}`);
+                    }
+                    return response.json();
+                })
                 .then(data => setTopePermitido(data.tope))
         ])
             .catch(error => console.error('Error:', error));
@@ -78,7 +89,7 @@ const TicketBuy = () => {
             ErrorPrizes();
             return;
         }
-        if (foundTope == 0) {
+        if (foundTope == 0 || prizebox > foundTope) {
             ErrorTope();
             return;
         }
@@ -105,8 +116,8 @@ const TicketBuy = () => {
         await fetch("/api/sell", options)
             .then(res => res.json())
             .then(data => {
-                generatePDF(data[0], fecha);
-                window.location.reload();
+                generatePDF(data[0][0], fecha);
+
 
             }).finally(() => {
                 setIsLoading(false);
@@ -122,7 +133,7 @@ const TicketBuy = () => {
             ErrorPrizes();
             return;
         }
-        if (foundTope == 0) {
+        if (foundTope == 0 || prizebox > foundTope) {
             ErrorTope();
             return;
         }
@@ -145,14 +156,14 @@ const TicketBuy = () => {
                 ticketNumber,
                 idVendedor,
                 idSorteo,
-                topePermitido: foundTope - 10, // Resta 10 al tope para cada boleto
+                topePermitido: foundTope - prizebox,
                 fecha: prizes.Fecha,
                 primerPremio: prizes.Primerpremio,
                 segundoPremio: prizes.Segundopremio
             };
 
             const options = {
-                method: 'POST',
+                method: 'PUT',
                 header: {
                     'Content-Type': 'application/json'
                 },
@@ -161,7 +172,7 @@ const TicketBuy = () => {
             await fetch("/api/sell", options)
                 .then(res => res.json())
                 .then(data => {
-                    generatePDF(data[0], fecha);
+                    generatePDFSerie(data[0], fecha);
                 });
         }
 
@@ -249,7 +260,7 @@ const TicketBuy = () => {
                         className="w-full rounded-lg bg-red-700 text-white h-9"
                     >Normal</button>
                     <button
-                        // onClick={enviarDatosSerie}
+                        onClick={enviarDatosSerie}
                         className="w-full rounded-lg bg-red-700 text-white h-9">Serie</button>
                 </div>
 

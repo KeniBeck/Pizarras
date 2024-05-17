@@ -1,5 +1,6 @@
+'use client'
 import Swal from "sweetalert2";
-
+import generatePDF from "../../tickectBuy/pdf";
 export const ErrorPrizes = () => {
     Swal.fire({
         icon: 'error',
@@ -11,7 +12,7 @@ export const ErrorTope = () => {
     Swal.fire({
         icon: 'error',
         title: 'Oops...',
-        text: 'Este boleto a llegado a su tope permitido',
+        text: 'Error en el tope de boletos',
     });
 }
 export const loading = (pathname) => {
