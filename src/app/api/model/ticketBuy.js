@@ -7,7 +7,7 @@ export const selectLottery = async () => {
         const currentDate = new Date();
         const month = (currentDate.getMonth() + 1).toString().padStart(2, '0');
         const formattedDate = `${currentDate.getFullYear()}-${month}-${currentDate.getDate()}`;
-        let sql = `SELECT * FROM sorteo WHERE Fecha = ?`;
+        let sql = `SELECT * FROM sorteo WHERE Fecha = ? AND Tipo_sorteo ='normal'`;
         let [rows] = await pool.query(sql, [formattedDate]);
         result = rows;
 
