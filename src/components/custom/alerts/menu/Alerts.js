@@ -1,5 +1,6 @@
+'use client'
 import Swal from "sweetalert2";
-
+import generatePDF from "../../tickectBuy/pdf";
 export const ErrorPrizes = () => {
     Swal.fire({
         icon: 'error',
