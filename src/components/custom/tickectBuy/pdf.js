@@ -36,6 +36,7 @@ const generatePDF = async (data, fecha) => {
         // Si el usuario elige imprimir, abrir la URL en una nueva pestaña
         window.open(url);
     }
+
 }
 
 export default generatePDF;

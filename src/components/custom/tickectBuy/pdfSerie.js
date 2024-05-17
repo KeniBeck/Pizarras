@@ -39,10 +39,12 @@ const generatePDFSerie = async (data, fecha) => {
         // Si el usuario elige imprimir, abrir la URL en una nueva pestaña
         if (result.isConfirmed) {
             window.open(url);
+            window.location.reload();
         }
 
         // Marcar la alerta como mostrada
         alertShown = true;
+
     }
 }
 

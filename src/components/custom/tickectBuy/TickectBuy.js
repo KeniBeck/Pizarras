@@ -80,12 +80,16 @@ const TicketBuy = () => {
             ValidateBox();
             return;
         }
+        if (foundTope && prizebox > foundTope) {
+            ErrorTope();
+            return;
+        }
 
         if (prizeboxError) {
             ErrorPrizes();
             return;
         }
-        if (foundTope == 0 || prizebox > foundTope) {
+        if (foundTope == 0) {
             ErrorTope();
             return;
         }
@@ -124,12 +128,16 @@ const TicketBuy = () => {
             ValidateBox();
             return;
         }
+        if (foundTope && prizebox > foundTope) {
+            ErrorTope();
+            return;
+        }
 
         if (prizeboxError) {
             ErrorPrizes();
             return;
         }
-        if (foundTope == 0 || prizebox > foundTope) {
+        if (foundTope == 0) {
             ErrorTope();
             return;
         }
@@ -172,7 +180,7 @@ const TicketBuy = () => {
                 });
         }
 
-        window.location.reload();
+
         setIsLoading(false);
     }
 

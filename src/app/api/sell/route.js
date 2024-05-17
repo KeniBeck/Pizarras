@@ -4,7 +4,7 @@ import pool from "@/db/MysqlConection";
 export async function POST(req, res) {
     let datos = await req.json();
     const { fecha, idSorteo, idVendedor, name, primerPremio, prizebox, segundoPremio, ticketNumber, topePermitido } = datos;
-    console.log(ticketNumber, 'ddddd');
+
 
     let sql = `
         INSERT INTO boletos
