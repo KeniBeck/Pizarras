@@ -1,14 +1,17 @@
 'use client'
 import { FaUserCircle } from "react-icons/fa";
 import { PiPasswordFill } from "react-icons/pi";
-import { useForm } from "react-hook-form"
+import { set, useForm } from "react-hook-form"
 import useSession from "@/hook/useSession";
 import { useRouter } from 'next/navigation'
 import Swal from 'sweetalert2'
+import { useState } from "react";
+import { error, loading } from "../alerts/menu/Alerts";
 
 const LoginForm = () => {
   const { login } = useSession();
   const router = useRouter();
+  const [isloading, setLoading] = useState(false);
   const {
     register,
     handleSubmit,
@@ -17,6 +20,7 @@ const LoginForm = () => {
   } = useForm();
   const enviarDatos = async (dataUser) => {
 
+    setLoading(true)
     const options = {
       method: 'POST',
       header: {
@@ -27,9 +31,13 @@ const LoginForm = () => {
     await fetch("/api/login", options)
       .then(res => res.json())
       .then(data => processData(data))
+      .finally(() => {
+        setLoading(false)
+      })
 
 
   }
+
   const processData = (data) => {
     if (data.length === 0) {
       Swal.fire({
@@ -40,35 +48,40 @@ const LoginForm = () => {
         showConfirmButton: false,
         timer: 2500
       })
+      setLoading(false)
       return;
     }
     let time = data[0].requestTime.indexOf('T') > 0 ? data[0].requestTime.split('T')[1].split('.')[0] : data[0].requestTime;
     let hour = parseInt(time.split(':')[0]);
-    console.log(data)
+
 
     //hour < 18 && hour >= 8
-    if (hour < 18 && hour >= 8) {
+
+    if (hour < 18 && hour >= 0) {
       // Redirige al usuario a la página del menú
       login(data[0])
       localStorage.setItem('userData', JSON.stringify(data[0]));
       router.push('/menu')
-
     } else {
       // Muestra un mensaje de error
       error();
+
     }
 
   }
-  const error = () => {
-    Swal.fire({
-      position: 'top-center',
-      title: 'Error',
-      text: 'SORTEO CERRADO',
-      icon: 'error',
-      showConfirmButton: false,
-      timer: 2500
-    })
+  if (isloading) {
+    return (
+      <div className="flex justify-center items-center min-h-screen">
+        <div className="relative w-32 h-32">
+          <div className="absolute top-0 left-0 animate-spin rounded-full h-32 w-32 border-t-2 border-b-2 border-red-500"></div>
+          <div className="absolute top-0 left-0 flex items-center justify-center h-32 w-32">
+            <span className="text-white text-sm">Cargando...</span>
+          </div>
+        </div>
+      </div>
+    );
   }
+
 
   return (
 

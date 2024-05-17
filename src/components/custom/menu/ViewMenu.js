@@ -36,8 +36,9 @@ const ViewMenu = () => {
         userData = JSON.parse(localStorage.getItem('userData'));
 
         const currentHour = new Date().getHours();
+
         // currentHour >= 18 || currentHour < 8
-        if (currentHour >= 18 || currentHour < 88) {
+        if (currentHour >= 18 || currentHour < 0) {
             accessBlocked = true;
         }
     }
@@ -98,7 +99,7 @@ const ViewMenu = () => {
                         </div>
                         <div className="relative">
                             <button className="w-full rounded-lg bg-red-700 text-white h-9 relative" onClick={session}>
-                                Cerrar sección
+                                Cerrar sesión
                                 <RiLogoutBoxFill className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4" />
                             </button>
                             <div>
