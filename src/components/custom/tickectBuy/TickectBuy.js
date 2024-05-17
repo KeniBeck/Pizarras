@@ -9,10 +9,6 @@ import { useRouter } from "next/navigation";
 import { FaHome } from "react-icons/fa";
 import generatePDFSerie from "./pdfSerie";
 
-
-
-
-
 const TicketBuy = () => {
     const [prizes, setPrizes] = useState(null);
     const [topePermitido, setTopePermitido] = useState(0);
