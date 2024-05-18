@@ -4,14 +4,10 @@ import { PiNumberSquareTwoFill } from "react-icons/pi";
 import { BsCalendarDateFill } from "react-icons/bs";
 import { useEffect, useState } from "react";
 import generatePDF from "./pdf";
-import { ErrorPrizes, loading, ErrorTope, ValidateBox } from "../alerts/menu/Alerts";
+import { ErrorPrizes, loading, ErrorTope, ValidateBox, prizesSeries } from "../alerts/menu/Alerts";
 import { useRouter } from "next/navigation";
 import { FaHome } from "react-icons/fa";
 import generatePDFSerie from "./pdfSerie";
-
-
-
-
 
 const TicketBuy = () => {
     const [prizes, setPrizes] = useState(null);
@@ -80,20 +76,30 @@ const TicketBuy = () => {
 
 
     const enviarDatosNormal = async () => {
-        if (!prizebox || !name || !ticketNumber) {
+        if (!prizebox || !name || ticketNumber == 0) {
             ValidateBox();
+            return;
+        }
+        if (foundTope && prizebox > foundTope) {
+            ErrorTope();
+            setPrizebox("");
             return;
         }
 
         if (prizeboxError) {
             ErrorPrizes();
+            setPrizebox("");
             return;
         }
-        if (foundTope == 0 || prizebox > foundTope) {
+        if (foundTope == 0) {
             ErrorTope();
+            setTicketNumber("");
             return;
         }
         setIsLoading(true);
+        setTicketNumber("");
+        setPrizebox("");
+        setName("");
         const data = {
             prizebox,
             name,
@@ -121,37 +127,56 @@ const TicketBuy = () => {
 
             }).finally(() => {
                 setIsLoading(false);
+
             });
     }
     const enviarDatosSerie = async () => {
-        if (!prizebox || !name || !ticketNumber) {
+        if (!prizebox || !name || ticketNumber == 0) {
             ValidateBox();
+            return;
+        }
+        if (prizebox < 100) {
+            prizesSeries()
+            setPrizebox("");
+            return;
+        }
+        if (foundTope && prizebox > foundTope) {
+            ErrorTope();
             return;
         }
 
         if (prizeboxError) {
             ErrorPrizes();
+            setPrizebox("");
             return;
         }
-        if (foundTope == 0 || prizebox > foundTope) {
+        if (foundTope == 0) {
             ErrorTope();
             return;
         }
         setIsLoading(true);
+        setTicketNumber("");
+        setPrizebox("");
+        setName("");
 
         // Calcula la cantidad de boletos en la serie
-        const numTickets = prizebox / 10;
+
+        const numTickets = 10;
 
         // Genera los números de boleto en serie
         const ticketNumbers = Array.from({ length: numTickets }, (_, i) => {
-            return ((Number(ticketNumber) + 100 * i) % 1000).toString().padStart(3, '0');
+            let ticket = (Number(ticketNumber) + 100 * i);
+            if (ticket >= 1000) {
+                ticket = ticket - 1000;
+            }
+            return ticket.toString().padStart(3, '0');
         });
 
 
         // Envía cada boleto al servidor
         for (const ticketNumber of ticketNumbers) {
             const data = {
-                prizebox: 10, // Cada boleto en la serie cuesta 10
+                prizebox, // Cada boleto en la serie cuesta 10
                 name,
                 ticketNumber,
                 idVendedor,
@@ -176,9 +201,11 @@ const TicketBuy = () => {
                 });
         }
 
-        window.location.reload();
+
         setIsLoading(false);
+
     }
+
 
 
     const handlePrizeboxChange = (e) => {
@@ -219,7 +246,7 @@ const TicketBuy = () => {
                     </div>
                 ) : (
                     <div className="text-xl text-red-500 text-center pt-6">
-                        No se encontró un tope para este número de boleto
+
                     </div>
                 )}
 
@@ -232,6 +259,11 @@ const TicketBuy = () => {
                             onChange={handleTicketNumberChange}
                             onBlur={handleBlur}
                             maxLength={3}
+                            onKeyPress={(event) => {
+                                if (!/[0-9]/.test(event.key)) {
+                                    event.preventDefault();
+                                }
+                            }}
 
                         />
                     </div>
@@ -241,6 +273,11 @@ const TicketBuy = () => {
                             value={prizebox}
                             onChange={handlePrizeboxChange}
                             maxLength={4}
+                            onKeyPress={(event) => {
+                                if (!/[0-9]/.test(event.key)) {
+                                    event.preventDefault();
+                                }
+                            }}
                         />
                     </div>
                     <div className="flex flex-row gap-8">
