@@ -55,7 +55,7 @@ const LoginForm = () => {
     let hour = parseInt(time.split(':')[0]);
 
 
-    //hour < 18 && hour >= 8
+    //hour < 18 && hour >= 0
 
     if (hour < 18 && hour >= 0) {
       // Redirige al usuario a la página del menú

@@ -45,3 +45,10 @@ export const ValidateBox = () => {
         text: 'Campo vacio o incorrecto',
     });
 }
+export const prizesSeries = () => {
+    Swal.fire({
+        icon: 'error',
+        title: 'Oops...',
+        text: 'El valor debe ser mayor para poder generar la serie ',
+    });
+}
