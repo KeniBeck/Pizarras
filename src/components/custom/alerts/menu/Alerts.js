@@ -52,3 +52,21 @@ export const prizesSeries = () => {
         text: 'El valor debe ser mayor para poder generar la serie ',
     });
 }
+export const selectDate = async (dates) => {
+    const { value: selectedDate } = await Swal.fire({
+        title: 'Selecciona una fecha',
+        input: 'select',
+        inputOptions: dates.reduce((options, date) => {
+            let formattedDate = new Date(date.Fecha).toISOString().split('T')[0];
+            options[formattedDate] = formattedDate;
+            return options;
+        }, {}),
+        inputPlaceholder: 'Selecciona una fecha',
+        showCancelButton: false,
+        allowOutsideClick: false,
+    });
+
+    if (selectedDate) {
+        return dates.find(date => new Date(date.Fecha).toISOString().split('T')[0] === selectedDate);
+    }
+};

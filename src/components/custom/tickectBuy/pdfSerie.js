@@ -49,16 +49,14 @@ const generatePDFSerie = async (data, fecha) => {
         title: 'Compra exitosa',
         icon: 'success',
         showCancelButton: true,
+        allowOutsideClick: false,
         confirmButtonText: 'Imprimir o Compartir',
     });
 
     // Si el usuario elige imprimir, abrir la URL en una nueva pestaña
     if (result.isConfirmed) {
         window.open(url);
-        window.location.reload();
-    }
-    if (result.dismiss === Swal.DismissReason.cancel || result.dismiss === Swal.DismissReason.backdrop) {
-        window.location.reload();
+
     }
 }
 

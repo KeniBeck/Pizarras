@@ -41,17 +41,15 @@ const generatePDF = async (data, fecha) => {
         title: 'Compra exitosa',
         icon: 'success',
         showCancelButton: true,
+        allowOutsideClick: false,
         confirmButtonText: 'Imprimir o Compartir',
     });
 
     if (result.isConfirmed) {
         // Si el usuario elige imprimir, abrir URL en una nueva pestaña
         window.open(url);
-        window.location.reload();
     }
-    if (result.dismiss === Swal.DismissReason.cancel || result.dismiss === Swal.DismissReason.backdrop) {
-        window.location.reload();
-    }
+
 }
 
 export default generatePDF;
