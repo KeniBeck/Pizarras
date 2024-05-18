@@ -82,18 +82,24 @@ const TicketBuy = () => {
         }
         if (foundTope && prizebox > foundTope) {
             ErrorTope();
+            setPrizebox("");
             return;
         }
 
         if (prizeboxError) {
             ErrorPrizes();
+            setPrizebox("");
             return;
         }
         if (foundTope == 0) {
             ErrorTope();
+            setTicketNumber("");
             return;
         }
         setIsLoading(true);
+        setTicketNumber("");
+        setPrizebox("");
+        setName("");
         const data = {
             prizebox,
             name,
@@ -121,6 +127,7 @@ const TicketBuy = () => {
 
             }).finally(() => {
                 setIsLoading(false);
+
             });
     }
     const enviarDatosSerie = async () => {
@@ -130,6 +137,7 @@ const TicketBuy = () => {
         }
         if (prizebox < 100) {
             prizesSeries()
+            setPrizebox("");
             return;
         }
         if (foundTope && prizebox > foundTope) {
@@ -139,6 +147,7 @@ const TicketBuy = () => {
 
         if (prizeboxError) {
             ErrorPrizes();
+            setPrizebox("");
             return;
         }
         if (foundTope == 0) {
@@ -146,6 +155,9 @@ const TicketBuy = () => {
             return;
         }
         setIsLoading(true);
+        setTicketNumber("");
+        setPrizebox("");
+        setName("");
 
         // Calcula la cantidad de boletos en la serie
 
@@ -191,6 +203,7 @@ const TicketBuy = () => {
 
 
         setIsLoading(false);
+
     }
 
 

@@ -49,6 +49,9 @@ const generatePDF = async (data, fecha) => {
         window.open(url);
         window.location.reload();
     }
+    if (result.dismiss === Swal.DismissReason.cancel || result.dismiss === Swal.DismissReason.backdrop) {
+        window.location.reload();
+    }
 }
 
 export default generatePDF;
