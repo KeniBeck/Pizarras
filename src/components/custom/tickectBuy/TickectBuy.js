@@ -76,7 +76,7 @@ const TicketBuy = () => {
 
 
     const enviarDatosNormal = async () => {
-        if (!prizebox || !name || ticketNumber == 0) {
+        if (!prizebox || !name) {
             ValidateBox();
             return;
         }
