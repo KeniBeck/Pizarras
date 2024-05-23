@@ -12,7 +12,7 @@ const TypeDraw = () => {
         router.push('/menu')
     }
     const handleTicketBuySerial = () => {
-        router.push('/ticketBuySerial')
+        router.push('/ticketBuyEspecial')
     }
 
 

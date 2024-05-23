@@ -1,4 +1,4 @@
-import TicketBuySerial from "@/components/custom/ticketBuySerial/TickectBuySerial";
+import TicketBuySerial from "@/components/custom/ticketBuyEspecial/TickectBuyEspecial";
 import RouteProtected from "@/middleware/RouteProtected";
 const BuyTickectSerial = () => {
 

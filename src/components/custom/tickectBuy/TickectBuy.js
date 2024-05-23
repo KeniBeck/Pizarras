@@ -303,7 +303,9 @@ const TicketBuy = () => {
 
                 <div className="flex justify-center items-center flex-col space-y-2 pt-6 px-8">
 
-                    <button className="w-full rounded-lg bg-red-700 text-white h-9">Revisar Boletos</button>
+                    <button
+                        onClick={() => router.push('/viewTickects')}
+                        className="w-full rounded-lg bg-red-700 text-white h-9">Revisar Boletos</button>
                 </div>
             </div >
             <button
