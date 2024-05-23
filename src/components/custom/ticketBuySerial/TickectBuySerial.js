@@ -3,14 +3,14 @@ import { PiNumberSquareOneFill } from "react-icons/pi";
 import { PiNumberSquareTwoFill } from "react-icons/pi";
 import { BsCalendarDateFill } from "react-icons/bs";
 import { useEffect, useState } from "react";
-import generatePDF from "./pdf";
-import { ErrorPrizes, loading, ErrorTope, ValidateBox, prizesSeries } from "../alerts/menu/Alerts";
+import generatePDF from "../tickectBuy/pdf";
+import { ErrorPrizes, loading, ErrorTope, ValidateBox, prizesSeries, success, selectDate } from "../alerts/menu/Alerts";
 import { useRouter } from "next/navigation";
 import { FaHome } from "react-icons/fa";
-import generatePDFSerie from "./pdfSerie";
+import generatePDFSerie from "../tickectBuy/pdfSerie";
 
-const TicketBuy = () => {
-    const [prizes, setPrizes] = useState(null);
+const TicketBuySerial = ({ selectedDate }) => {
+    const [prizes, setPrizes] = useState(selectedDate);
     const [topePermitido, setTopePermitido] = useState(0);
     const [ticketNumber, setTicketNumber] = useState("");
     const [foundTope, setFoundTope] = useState(null);
@@ -18,17 +18,22 @@ const TicketBuy = () => {
     const [name, setName] = useState("");
     const [prizeboxError, setPrizeboxError] = useState(null);
     const [isLoading, setIsLoading] = useState(false);
+    const [dates, setDates] = useState([]);
     const router = useRouter();
     useEffect(() => {
         Promise.all([
-            fetch('/api/ticketBuy')
-                .then(response => {
-                    if (!response.ok) {
-                        throw new Error(`HTTP error! status: ${response.status}`);
-                    }
-                    return response.json();
-                })
-                .then(data => setPrizes(data.result[0])),
+            fetch('/api/ticketBuy', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+            })
+                .then(response => response.json())
+                .then(async data => {
+                    const selectedPrize = await selectDate(data.result);
+                    setPrizes(selectedPrize);
+                }),
+
             fetch(`/api/topes`)
                 .then(response => {
                     if (!response.ok) {
@@ -40,7 +45,6 @@ const TicketBuy = () => {
         ])
             .catch(error => console.error('Error:', error));
     }, []);
-
     if (!prizes) {
         return (<div className="flex justify-center items-center min-h-screen">
             <div className="relative w-32 h-32">
@@ -51,6 +55,7 @@ const TicketBuy = () => {
             </div>
         </div>);
     }
+
     const handleTicketNumberChange = (e) => {
         let value = e.target.value;
         setTicketNumber(value);
@@ -76,7 +81,7 @@ const TicketBuy = () => {
 
 
     const enviarDatosNormal = async () => {
-        if (!prizebox || !name) {
+        if (!prizebox || !name || ticketNumber == 0) {
             ValidateBox();
             return;
         }
@@ -315,4 +320,4 @@ const TicketBuy = () => {
         </div>
     );
 }
-export default TicketBuy;
+export default TicketBuySerial;

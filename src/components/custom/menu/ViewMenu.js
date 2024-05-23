@@ -9,9 +9,6 @@ import { useRouter } from 'next/navigation'
 import AlertMenu from "../alerts/menu/AlertMenu";
 import { useState } from "react";
 
-
-
-
 const ViewMenu = () => {
     const { getUserData } = useSession();
     const router = useRouter();
@@ -42,8 +39,6 @@ const ViewMenu = () => {
             accessBlocked = true;
         }
     }
-
-
 
     const handleTypeDraw = () => {
         if (!accessBlocked)
