@@ -1,6 +1,8 @@
 'use client'
 import useSession from "@/hook/useSession";
 import { useEffect, useState } from "react";
+import generatePDFSerie from "../tickectBuy/pdfSerie";
+import generatePDF from "../tickectBuy/pdf";
 
 const ViewTickets = () => {
     const { getUserData } = useSession();
@@ -27,19 +29,9 @@ const ViewTickets = () => {
             }
 
             const data = await response.json();
-            // Agrupar los tickets por serie
-            const groupedTickets = data.reduce((groups, ticket) => {
-                let key = ticket.tipo_sorteo === 'serie' ? 'serie' : 'normal'; // Reemplaza 'serie' con la propiedad que identifica la serie
-                if (!groups[key]) {
-                    groups[key] = [];
-                }
-                groups[key].push(ticket);
-                return groups;
-            }, {});
-
-            setTickets(groupedTickets);
+            setTickets(data);
             setTotalTickets(data.length);
-            console.log(groupedTickets);
+
         }
 
         fetchData();
@@ -55,15 +47,19 @@ const ViewTickets = () => {
     const handleSearch = (e) => {
         setSearch(e.target.value);
     };
+    const filteredTickets = tickets.filter(ticket => String(ticket.Boleto).includes(search));;
 
-    const filteredTickets = Object.entries(tickets).reduce((acc, [key, ticketsInGroup]) => {
-        acc[key] = ticketsInGroup.filter(ticket => String(ticket.Boleto).includes(search));
-        return acc;
-    }, {});
+    const handlePrint = (ticket) => {
+        let fechaSinHora = new Date(ticket.Fecha).toLocaleDateString();
+        generatePDF(ticket, fechaSinHora)
+    }
 
+    const handleDelete = (ticket) => {
+
+    }
     return (
         <div>
-            <div>
+            <div className="flex justify-center items-center p-3">
                 <p className="text-white text-xl">Total de boletos vendidos: {totalTickets}</p>
             </div>
             <form className="max-w-md mx-auto">
@@ -88,18 +84,16 @@ const ViewTickets = () => {
                         </tr>
                     </thead>
                     <tbody>
-                        {Object.entries(tickets).map(([key, ticketsInGroup], index) => (
-                            (key === 'normal' ? ticketsInGroup : [ticketsInGroup[9]]).map((ticket, index) => (
-                                <tr key={index} className="bg-white border-b dark:bg-gray-800 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600">
-                                    <th scope="row" className="px-6 py-4 font-medium text-gray-900 whitespace-nowrap dark:text-white">{ticket.Boleto}</th>
-                                    <td className="px-6 py-4">{ticket.Costo}</td>
-                                    <td className="px-6 py-4">{ticket.comprador}</td>
-                                    <td className="px-6 py-4 text-right">
-                                        <button className="font-medium text-blue-600 dark:text-blue-500 hover:underline">Imprimir</button>
-                                        <button className="font-medium text-red-600 dark:text-red-500 hover:underline ml-4">Eliminar</button>
-                                    </td>
-                                </tr>
-                            ))
+                        {filteredTickets.map((ticket, index) => (
+                            <tr key={index} className="bg-white border-b dark:bg-gray-800 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600">
+                                <th scope="row" className="px-6 py-4 font-medium text-gray-900 whitespace-nowrap dark:text-white">{ticket.Boleto}</th>
+                                <td className="px-6 py-4">{ticket.Costo}</td>
+                                <td className="px-6 py-4">{ticket.comprador}</td>
+                                <td className="px-6 py-4 text-right">
+                                    <button className="font-medium text-blue-600 dark:text-blue-500 hover:underline" onClick={() => handlePrint(ticket)}>Imprimir</button>
+                                    <button className="font-medium text-red-600 dark:text-red-500 hover:underline ml-4" onClick={() => handleDelete(ticket)}>Eliminar</button>
+                                </td>
+                            </tr>
                         ))}
                     </tbody>
                 </table>

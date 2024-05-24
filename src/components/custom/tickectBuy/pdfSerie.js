@@ -2,6 +2,7 @@ import jsPDF from 'jspdf';
 import Swal from 'sweetalert2';
 
 const generatePDFSerie = async (data, fecha) => {
+
     // Mostrar ventana de carga
     Swal.showLoading();
     // Verificar si la longitud de data es igual a 10
@@ -21,13 +22,19 @@ const generatePDFSerie = async (data, fecha) => {
 
     // URL de la imagen
     const imageURL = '/noSencillo.jpg'; // Reemplaza con la URL de tu imagen
+    let totalCosto = 0;
+    if (totalCosto === 0) {
+        for (let i = 0; i < 10; i++) {
+            totalCosto += data[i].Costo;
+        }
+    }
 
     // Agregar la imagen al PDF
     doc.addImage(imageURL, 'JPEG', 10, 10, 60, 30);
 
     // Agregar contenidoc al PDF
     doc.text(`Factura de boleto N${data[0].Idsorteo}`, 10, 45);
-    doc.text(`$ ${data[0].Costo}`, 10, 55);
+    doc.text(`$ ${totalCosto}`, 10, 55);
     doc.text(`Serie de boletos:`, 10, 65);
     let boletos = data.map(item => item.Boleto.toString().padStart(3, '0')).join('-');
     doc.text(boletos, 10, 75);

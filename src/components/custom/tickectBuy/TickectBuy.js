@@ -69,7 +69,7 @@ const TicketBuy = () => {
         value = value.padStart(3, '0');
         setTicketNumber(value);
     };
-    const userData = JSON.parse(localStorage.getItem('userData'));
+    const userData = JSON.parse(sessionStorage.getItem('userData'));
     const idVendedor = userData.Idvendedor;
     const idSorteo = prizes.Idsorteo
     const fecha = new Date(new Date(prizes.Fecha).getTime() + new Date().getTimezoneOffset() * 60000).toLocaleDateString();
@@ -176,7 +176,7 @@ const TicketBuy = () => {
         // Envía cada boleto al servidor
         for (const ticketNumber of ticketNumbers) {
             const data = {
-                prizebox, // Cada boleto en la serie cuesta 10
+                prizebox: prizebox / 10, // Cada boleto en la serie cuesta 10
                 name,
                 ticketNumber,
                 idVendedor,

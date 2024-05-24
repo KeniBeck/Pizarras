@@ -6,6 +6,7 @@ export async function POST(req, res) {
     const data = await req.json();
     const { Idvendedor } = data;
 
+
     let sql = `SELECT * FROM boletos WHERE Idvendedor = ? ORDER BY Idsorteo DESC`;
 
     try {
