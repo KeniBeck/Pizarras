@@ -46,6 +46,24 @@ const ViewMenu = () => {
             router.push('/typeDraw')
     }
 
+    const handleboxCut = async (userData) => {
+        const response = await fetch('/api/boxCut', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(userData)
+        });
+        if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        const data = await response.json();
+
+
+    }
+    const handleViewSell = () => {
+        router.push('/viewTickects')
+    }
 
     return (
         <div>
@@ -76,13 +94,17 @@ const ViewMenu = () => {
                             </button>
                         </div>
                         <div className="relative">
-                            <button className="w-full rounded-lg bg-red-700 text-white h-9 relative">
+                            <button
+                                onClick={() => handleViewSell()}
+                                className="w-full rounded-lg bg-red-700 text-white h-9 relative">
                                 Ventas del dia
                                 <ImStatsDots className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4" />
                             </button>
                         </div>
                         <div className="relative">
-                            <button className="w-full rounded-lg bg-red-700 text-white h-9 relative" >
+                            <button
+                                onClick={() => handleboxCut(userData)}
+                                className="w-full rounded-lg bg-red-700 text-white h-9 relative" >
                                 Corte de caja
                                 <FaCashRegister className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4" />
                             </button>
