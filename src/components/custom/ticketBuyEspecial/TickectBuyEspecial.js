@@ -9,7 +9,7 @@ import { useRouter } from "next/navigation";
 import { FaHome } from "react-icons/fa";
 import generatePDFSerie from "../tickectBuy/pdfSerie";
 
-const TicketBuySerial = ({ selectedDate }) => {
+const TickectBuyEspecial = ({ selectedDate }) => {
     const [prizes, setPrizes] = useState(selectedDate);
     const [topePermitido, setTopePermitido] = useState(0);
     const [ticketNumber, setTicketNumber] = useState("");
@@ -308,7 +308,9 @@ const TicketBuySerial = ({ selectedDate }) => {
 
                 <div className="flex justify-center items-center flex-col space-y-2 pt-6 px-8">
 
-                    <button className="w-full rounded-lg bg-red-700 text-white h-9">Revisar Boletos</button>
+                    <button
+                        onClick={() => router.push('/viewTickets')}
+                        className="w-full rounded-lg bg-red-700 text-white h-9">Revisar Boletos</button>
                 </div>
             </div >
             <button
@@ -320,4 +322,4 @@ const TicketBuySerial = ({ selectedDate }) => {
         </div>
     );
 }
-export default TicketBuySerial;
+export default TickectBuyEspecial;
