@@ -11,29 +11,28 @@ const ViewTickets = () => {
     const [search, setSearch] = useState('');
     const [totalTickets, setTotalTickets] = useState(0);
 
-    useEffect(() => {
-        const fetchData = async () => {
-            const userData = getUserData();
-            setUserData(userData);
+    const fetchData = async () => {
+        const userData = getUserData();
+        setUserData(userData);
 
-            const response = await fetch('/api/viewTickects', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify(userData)
-            });
+        const response = await fetch('/api/viewTickects', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(userData)
+        });
 
-            if (!response.ok) {
-                throw new Error(`HTTP error! status: ${response.status}`);
-            }
-
-            const data = await response.json();
-            setTickets(data);
-            setTotalTickets(data.length);
-
+        if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
         }
 
+        const data = await response.json();
+        setTickets(data);
+        setTotalTickets(data.length);
+    }
+
+    useEffect(() => {
         fetchData();
     }, []);
 
@@ -47,15 +46,33 @@ const ViewTickets = () => {
     const handleSearch = (e) => {
         setSearch(e.target.value);
     };
-    const filteredTickets = tickets.filter(ticket => String(ticket.Boleto).includes(search));;
+
+    const filteredTickets = tickets.filter(ticket => String(ticket.Boleto).includes(search));
 
     const handlePrint = (ticket) => {
         let fechaSinHora = new Date(ticket.Fecha).toLocaleDateString();
         generatePDF(ticket, fechaSinHora)
     }
 
-    const handleDelete = (ticket) => {
+    const handleDelete = async (ticket) => {
+        const dataTickect = ticket;
 
+        const response = await fetch('/api/viewTickects', {
+            method: 'DELETE',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(dataTickect)
+        });
+
+        if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+        }
+
+        const data = await response.json();
+
+        // Fetch the updated list of tickets after deleting one
+        fetchData();
     }
     return (
         <div>
