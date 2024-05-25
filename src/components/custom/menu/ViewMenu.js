@@ -9,9 +9,6 @@ import { useRouter } from 'next/navigation'
 import AlertMenu from "../alerts/menu/AlertMenu";
 import { useState } from "react";
 
-
-
-
 const ViewMenu = () => {
     const { getUserData } = useSession();
     const router = useRouter();
@@ -33,17 +30,16 @@ const ViewMenu = () => {
 
 
     if (typeof window !== 'undefined') {
-        userData = JSON.parse(localStorage.getItem('userData'));
+        userData = JSON.parse(sessionStorage.getItem('userData'));
 
         const currentHour = new Date().getHours();
 
-        // currentHour >= 18 || currentHour < 8
+
+        // currentHour >= 18 || currentHour < 0
         if (currentHour >= 18 || currentHour < 0) {
             accessBlocked = true;
         }
     }
-
-
 
     const handleTypeDraw = () => {
         if (!accessBlocked)

@@ -3,14 +3,14 @@ import { PiNumberSquareOneFill } from "react-icons/pi";
 import { PiNumberSquareTwoFill } from "react-icons/pi";
 import { BsCalendarDateFill } from "react-icons/bs";
 import { useEffect, useState } from "react";
-import generatePDF from "./pdf";
-import { ErrorPrizes, loading, ErrorTope, ValidateBox, prizesSeries } from "../alerts/menu/Alerts";
+import generatePDF from "../tickectBuy/pdf";
+import { ErrorPrizes, loading, ErrorTope, ValidateBox, prizesSeries, success, selectDate } from "../alerts/menu/Alerts";
 import { useRouter } from "next/navigation";
 import { FaHome } from "react-icons/fa";
-import generatePDFSerie from "./pdfSerie";
+import generatePDFSerie from "../tickectBuy/pdfSerie";
 
-const TicketBuy = () => {
-    const [prizes, setPrizes] = useState(null);
+const TickectBuyEspecial = ({ selectedDate }) => {
+    const [prizes, setPrizes] = useState(selectedDate);
     const [topePermitido, setTopePermitido] = useState(0);
     const [ticketNumber, setTicketNumber] = useState("");
     const [foundTope, setFoundTope] = useState(null);
@@ -18,17 +18,22 @@ const TicketBuy = () => {
     const [name, setName] = useState("");
     const [prizeboxError, setPrizeboxError] = useState(null);
     const [isLoading, setIsLoading] = useState(false);
+    const [dates, setDates] = useState([]);
     const router = useRouter();
     useEffect(() => {
         Promise.all([
-            fetch('/api/ticketBuy')
-                .then(response => {
-                    if (!response.ok) {
-                        throw new Error(`HTTP error! status: ${response.status}`);
-                    }
-                    return response.json();
-                })
-                .then(data => setPrizes(data.result[0])),
+            fetch('/api/ticketBuy', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+            })
+                .then(response => response.json())
+                .then(async data => {
+                    const selectedPrize = await selectDate(data.result);
+                    setPrizes(selectedPrize);
+                }),
+
             fetch(`/api/topes`)
                 .then(response => {
                     if (!response.ok) {
@@ -40,7 +45,6 @@ const TicketBuy = () => {
         ])
             .catch(error => console.error('Error:', error));
     }, []);
-
     if (!prizes) {
         return (<div className="flex justify-center items-center min-h-screen">
             <div className="relative w-32 h-32">
@@ -51,6 +55,7 @@ const TicketBuy = () => {
             </div>
         </div>);
     }
+
     const handleTicketNumberChange = (e) => {
         let value = e.target.value;
         setTicketNumber(value);
@@ -69,14 +74,14 @@ const TicketBuy = () => {
         value = value.padStart(3, '0');
         setTicketNumber(value);
     };
-    const userData = JSON.parse(sessionStorage.getItem('userData'));
+    const userData = JSON.parse(localStorage.getItem('userData'));
     const idVendedor = userData.Idvendedor;
     const idSorteo = prizes.Idsorteo
     const fecha = new Date(new Date(prizes.Fecha).getTime() + new Date().getTimezoneOffset() * 60000).toLocaleDateString();
 
 
     const enviarDatosNormal = async () => {
-        if (!prizebox || !name) {
+        if (!prizebox || !name || ticketNumber == 0) {
             ValidateBox();
             return;
         }
@@ -176,7 +181,7 @@ const TicketBuy = () => {
         // Envía cada boleto al servidor
         for (const ticketNumber of ticketNumbers) {
             const data = {
-                prizebox: prizebox / 10, // Cada boleto en la serie cuesta 10
+                prizebox, // Cada boleto en la serie cuesta 10
                 name,
                 ticketNumber,
                 idVendedor,
@@ -304,7 +309,7 @@ const TicketBuy = () => {
                 <div className="flex justify-center items-center flex-col space-y-2 pt-6 px-8">
 
                     <button
-                        onClick={() => router.push('/viewTickects')}
+                        onClick={() => router.push('/viewTickets')}
                         className="w-full rounded-lg bg-red-700 text-white h-9">Revisar Boletos</button>
                 </div>
             </div >
@@ -317,4 +322,4 @@ const TicketBuy = () => {
         </div>
     );
 }
-export default TicketBuy;
+export default TickectBuyEspecial;

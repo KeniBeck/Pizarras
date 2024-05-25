@@ -1,5 +1,6 @@
+'use client'
 import Swal from "sweetalert2";
-
+import generatePDF from "../../tickectBuy/pdf";
 export const ErrorPrizes = () => {
     Swal.fire({
         icon: 'error',
@@ -11,7 +12,7 @@ export const ErrorTope = () => {
     Swal.fire({
         icon: 'error',
         title: 'Oops...',
-        text: 'Este boleto a llegado a su tope permitido',
+        text: 'Error en el tope de boletos',
     });
 }
 export const loading = (pathname) => {
@@ -44,3 +45,28 @@ export const ValidateBox = () => {
         text: 'Campo vacio o incorrecto',
     });
 }
+export const prizesSeries = () => {
+    Swal.fire({
+        icon: 'error',
+        title: 'Oops...',
+        text: 'El valor debe ser mayor para poder generar la serie ',
+    });
+}
+export const selectDate = async (dates) => {
+    const { value: selectedDate } = await Swal.fire({
+        title: 'Selecciona una fecha',
+        input: 'select',
+        inputOptions: dates.reduce((options, date) => {
+            let formattedDate = new Date(date.Fecha).toISOString().split('T')[0];
+            options[formattedDate] = formattedDate;
+            return options;
+        }, {}),
+        inputPlaceholder: 'Selecciona una fecha',
+        showCancelButton: false,
+        allowOutsideClick: false,
+    });
+
+    if (selectedDate) {
+        return dates.find(date => new Date(date.Fecha).toISOString().split('T')[0] === selectedDate);
+    }
+};
