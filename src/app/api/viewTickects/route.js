@@ -1,16 +1,20 @@
 import { NextResponse } from "next/server";
 import pool from "@/db/MysqlConection";
 
+
 export async function POST(req, res) {
 
     const data = await req.json();
-    const { Idvendedor } = data;
 
+    const { Idvendedor, Fecha } = data;
 
-    let sql = `SELECT * FROM boletos WHERE Idvendedor = ? ORDER BY Idsorteo DESC`;
+    const fecha = new Date(Fecha).toISOString().slice(0, 19).replace('T', ' ').split(' ')[0];
+
+    let sql = `SELECT * FROM boletos WHERE Date(Fecha) = '${fecha}' AND Idvendedor = ? ORDER BY Idsorteo DESC`;
 
     try {
         let resultView = await pool.query(sql, [Idvendedor]);
+        console.log(resultView);
         return NextResponse.json(resultView[0]);
 
     } catch (error) {
