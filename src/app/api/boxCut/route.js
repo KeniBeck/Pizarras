@@ -6,7 +6,6 @@ export async function POST(req, res) {
     const data = await req.json();
 
     const { Idvendedor, Fecha } = data;
-
     const fecha = new Date(Fecha).toISOString().slice(0, 19).replace('T', ' ').split(' ')[0];
 
     let sql = `SELECT * FROM boletos WHERE Date(Fecha) = '${fecha}' AND Idvendedor = ? ORDER BY Idsorteo DESC`;
