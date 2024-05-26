@@ -46,7 +46,7 @@ const ViewTickets = () => {
 
     useEffect(() => {
         if (typeof window !== 'undefined') {
-            const localUserData = JSON.parse(localStorage.getItem('userData'));
+            const localUserData = JSON.parse(sessionStorage.getItem('userData'));
             setUserData(localUserData);
         }
     }, []);

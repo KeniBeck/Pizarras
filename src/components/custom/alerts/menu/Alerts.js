@@ -1,6 +1,7 @@
 'use client'
 import Swal from "sweetalert2";
 import generatePDF from "../../tickectBuy/pdf";
+import generatePDFBoxCut from "../../boxCut/pdfBoxCut";
 export const ErrorPrizes = () => {
     Swal.fire({
         icon: 'error',
@@ -68,5 +69,18 @@ export const selectDate = async (dates) => {
 
     if (selectedDate) {
         return dates.find(date => new Date(date.Fecha).toISOString().split('T')[0] === selectedDate);
+    }
+};
+export const printBoxCut = async (data) => {
+    const { value: action } = await Swal.fire({
+        title: '¿Deseas hacer un corte de caja?',
+        showDenyButton: true,
+        confirmButtonText: `Corte de caja`,
+        denyButtonText: `Cancelar`,
+        allowOutsideClick: false,
+    });
+
+    if (action) {
+        generatePDFBoxCut(data) // Asume que generatePDF es la función que imprime el corte de caja
     }
 };
