@@ -65,6 +65,7 @@ const generatePDFSerie = async (data, fecha) => {
         window.open(url);
 
     }
+    window.location.reload();
 }
 
 export default generatePDFSerie;

@@ -81,7 +81,7 @@ const TickectBuyEspecial = ({ selectedDate }) => {
 
 
     const enviarDatosNormal = async () => {
-        if (!prizebox || !name || ticketNumber == 0) {
+        if (!prizebox || !name) {
             ValidateBox();
             return;
         }
@@ -136,7 +136,7 @@ const TickectBuyEspecial = ({ selectedDate }) => {
             });
     }
     const enviarDatosSerie = async () => {
-        if (!prizebox || !name || ticketNumber == 0) {
+        if (!prizebox || !name) {
             ValidateBox();
             return;
         }
@@ -145,20 +145,14 @@ const TickectBuyEspecial = ({ selectedDate }) => {
             setPrizebox("");
             return;
         }
-        if (foundTope && prizebox > foundTope) {
-            ErrorTope();
-            return;
-        }
+
 
         if (prizeboxError) {
             ErrorPrizes();
             setPrizebox("");
             return;
         }
-        if (foundTope == 0) {
-            ErrorTope();
-            return;
-        }
+
         setIsLoading(true);
         setTicketNumber("");
         setPrizebox("");
