@@ -8,6 +8,7 @@ import { ErrorPrizes, loading, ErrorTope, ValidateBox, prizesSeries } from "../a
 import { useRouter } from "next/navigation";
 import { FaHome } from "react-icons/fa";
 import generatePDFSerie from "./pdfSerie";
+import AlertMenu from "../alerts/menu/AlertMenu";
 
 const TicketBuy = () => {
     const [prizes, setPrizes] = useState(null);
@@ -19,6 +20,7 @@ const TicketBuy = () => {
     const [prizeboxError, setPrizeboxError] = useState(null);
     const [isLoading, setIsLoading] = useState(false);
     const router = useRouter();
+
     useEffect(() => {
         Promise.all([
             fetch('/api/ticketBuy')
@@ -36,10 +38,23 @@ const TicketBuy = () => {
                     }
                     return response.json();
                 })
-                .then(data => setTopePermitido(data.tope))
+                .then(data => {
+                    if (Array.isArray(data.tope)) {
+                        setTopePermitido(data.tope);
+                    } else {
+                        console.error('Expected an array for data.tope, but received:', data.tope);
+                        setTopePermitido([]);
+                    }
+                })
         ])
             .catch(error => console.error('Error:', error));
     }, []);
+    const currentHour = new Date().getHours();
+
+    if (currentHour >= 18 || currentHour < 1) {
+        return <AlertMenu />;
+    }
+
 
     if (!prizes) {
         return (<div className="flex justify-center items-center min-h-screen">
@@ -131,7 +146,7 @@ const TicketBuy = () => {
             });
     }
     const enviarDatosSerie = async () => {
-        if (!prizebox || !name || ticketNumber == 0) {
+        if (!prizebox || !name) {
             ValidateBox();
             return;
         }
@@ -140,18 +155,10 @@ const TicketBuy = () => {
             setPrizebox("");
             return;
         }
-        if (foundTope && prizebox > foundTope) {
-            ErrorTope();
-            return;
-        }
 
         if (prizeboxError) {
             ErrorPrizes();
             setPrizebox("");
-            return;
-        }
-        if (foundTope == 0) {
-            ErrorTope();
             return;
         }
         setIsLoading(true);
@@ -181,7 +188,7 @@ const TicketBuy = () => {
                 ticketNumber,
                 idVendedor,
                 idSorteo,
-                topePermitido: foundTope - prizebox,
+                // topePermitido: foundTope - prizebox,
                 fecha: prizes.Fecha,
                 primerPremio: prizes.Primerpremio,
                 segundoPremio: prizes.Segundopremio

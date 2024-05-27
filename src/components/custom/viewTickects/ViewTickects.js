@@ -3,6 +3,9 @@ import useSession from "@/hook/useSession";
 import { useEffect, useState } from "react";
 import generatePDFSerie from "../tickectBuy/pdfSerie";
 import generatePDF from "../tickectBuy/pdf";
+import { FaHome } from "react-icons/fa";
+import { useRouter } from "next/navigation";
+import AlertMenu from "../alerts/menu/AlertMenu";
 
 const ViewTickets = () => {
     const { getUserData } = useSession();
@@ -10,26 +13,32 @@ const ViewTickets = () => {
     const [tickets, setTickets] = useState([]);
     const [search, setSearch] = useState('');
     const [totalTickets, setTotalTickets] = useState(0);
+    const router = useRouter();
 
     const fetchData = async () => {
-        const userData = getUserData();
-        setUserData(userData);
+        try {
+            const userData = getUserData();
+            setUserData(userData);
 
-        const response = await fetch('/api/viewTickects', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify(userData)
-        });
 
-        if (!response.ok) {
-            throw new Error(`HTTP error! status: ${response.status}`);
+            const response = await fetch('/api/viewTickects', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(userData),
+            });
+
+            if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`);
+            }
+
+            const data = await response.json();
+            setTickets(data);
+            setTotalTickets(data.length);
+        } catch (error) {
+            console.log(error);
         }
-
-        const data = await response.json();
-        setTickets(data);
-        setTotalTickets(data.length);
     }
 
     useEffect(() => {
@@ -38,20 +47,30 @@ const ViewTickets = () => {
 
     useEffect(() => {
         if (typeof window !== 'undefined') {
-            const localUserData = JSON.parse(localStorage.getItem('userData'));
+            const localUserData = JSON.parse(sessionStorage.getItem('userData'));
             setUserData(localUserData);
         }
     }, []);
+    const currentHour = new Date().getHours();
+
+    if (currentHour >= 18 || currentHour < 1) {
+        return <AlertMenu />;
+    }
 
     const handleSearch = (e) => {
         setSearch(e.target.value);
     };
 
-    const filteredTickets = tickets.filter(ticket => String(ticket.Boleto).includes(search));
+    const filteredTickets = Array.isArray(tickets) ? tickets.filter(ticket => String(ticket.Boleto).includes(search)) : [];
 
     const handlePrint = (ticket) => {
-        let fechaSinHora = new Date(ticket.Fecha).toLocaleDateString();
-        generatePDF(ticket, fechaSinHora)
+        let fechaSinHora = ticket.Fecha;
+        if (isNaN(new Date(fechaSinHora).getTime())) {
+            console.error('Invalid date:', fechaSinHora);
+        } else {
+            fechaSinHora = new Date(fechaSinHora).toLocaleDateString();
+            generatePDF(ticket, fechaSinHora)
+        }
     }
 
     const handleDelete = async (ticket) => {
@@ -73,6 +92,9 @@ const ViewTickets = () => {
 
         // Fetch the updated list of tickets after deleting one
         fetchData();
+    }
+    const goToMenu = () => {
+        router.push('/menu');
     }
     return (
         <div>
@@ -115,6 +137,12 @@ const ViewTickets = () => {
                     </tbody>
                 </table>
             </div>
+            <button
+                onClick={goToMenu}
+                className="fixed bottom-4 right-4 bg-red-700 text-white p-2 rounded-full"
+            >
+                <FaHome />
+            </button>
         </div>
     );
 }

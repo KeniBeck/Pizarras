@@ -8,6 +8,7 @@ import { ErrorPrizes, loading, ErrorTope, ValidateBox, prizesSeries, success, se
 import { useRouter } from "next/navigation";
 import { FaHome } from "react-icons/fa";
 import generatePDFSerie from "../tickectBuy/pdfSerie";
+import AlertMenu from "../alerts/menu/AlertMenu";
 
 const TickectBuyEspecial = ({ selectedDate }) => {
     const [prizes, setPrizes] = useState(selectedDate);
@@ -20,6 +21,7 @@ const TickectBuyEspecial = ({ selectedDate }) => {
     const [isLoading, setIsLoading] = useState(false);
     const [dates, setDates] = useState([]);
     const router = useRouter();
+
     useEffect(() => {
         Promise.all([
             fetch('/api/ticketBuy', {
@@ -45,6 +47,11 @@ const TickectBuyEspecial = ({ selectedDate }) => {
         ])
             .catch(error => console.error('Error:', error));
     }, []);
+    const currentHour = new Date().getHours();
+
+    if (currentHour >= 18 || currentHour < 1) {
+        return <AlertMenu />;
+    }
     if (!prizes) {
         return (<div className="flex justify-center items-center min-h-screen">
             <div className="relative w-32 h-32">
@@ -74,14 +81,14 @@ const TickectBuyEspecial = ({ selectedDate }) => {
         value = value.padStart(3, '0');
         setTicketNumber(value);
     };
-    const userData = JSON.parse(localStorage.getItem('userData'));
+    const userData = JSON.parse(sessionStorage.getItem('userData'));
     const idVendedor = userData.Idvendedor;
     const idSorteo = prizes.Idsorteo
     const fecha = new Date(new Date(prizes.Fecha).getTime() + new Date().getTimezoneOffset() * 60000).toLocaleDateString();
 
 
     const enviarDatosNormal = async () => {
-        if (!prizebox || !name || ticketNumber == 0) {
+        if (!prizebox || !name) {
             ValidateBox();
             return;
         }
@@ -136,7 +143,7 @@ const TickectBuyEspecial = ({ selectedDate }) => {
             });
     }
     const enviarDatosSerie = async () => {
-        if (!prizebox || !name || ticketNumber == 0) {
+        if (!prizebox || !name) {
             ValidateBox();
             return;
         }
@@ -145,20 +152,14 @@ const TickectBuyEspecial = ({ selectedDate }) => {
             setPrizebox("");
             return;
         }
-        if (foundTope && prizebox > foundTope) {
-            ErrorTope();
-            return;
-        }
+
 
         if (prizeboxError) {
             ErrorPrizes();
             setPrizebox("");
             return;
         }
-        if (foundTope == 0) {
-            ErrorTope();
-            return;
-        }
+
         setIsLoading(true);
         setTicketNumber("");
         setPrizebox("");
@@ -181,12 +182,12 @@ const TickectBuyEspecial = ({ selectedDate }) => {
         // Envía cada boleto al servidor
         for (const ticketNumber of ticketNumbers) {
             const data = {
-                prizebox, // Cada boleto en la serie cuesta 10
+                prizebox: prizebox / 10, // Cada boleto en la serie cuesta 10
                 name,
                 ticketNumber,
                 idVendedor,
                 idSorteo,
-                topePermitido: foundTope - prizebox,
+                // topePermitido: foundTope - prizebox,
                 fecha: prizes.Fecha,
                 primerPremio: prizes.Primerpremio,
                 segundoPremio: prizes.Segundopremio
@@ -309,7 +310,7 @@ const TickectBuyEspecial = ({ selectedDate }) => {
                 <div className="flex justify-center items-center flex-col space-y-2 pt-6 px-8">
 
                     <button
-                        onClick={() => router.push('/viewTickets')}
+                        onClick={() => router.push('/viewTickects')}
                         className="w-full rounded-lg bg-red-700 text-white h-9">Revisar Boletos</button>
                 </div>
             </div >
