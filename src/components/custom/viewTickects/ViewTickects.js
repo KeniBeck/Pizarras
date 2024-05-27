@@ -5,6 +5,7 @@ import generatePDFSerie from "../tickectBuy/pdfSerie";
 import generatePDF from "../tickectBuy/pdf";
 import { FaHome } from "react-icons/fa";
 import { useRouter } from "next/navigation";
+import AlertMenu from "../alerts/menu/AlertMenu";
 
 const ViewTickets = () => {
     const { getUserData } = useSession();
@@ -46,10 +47,15 @@ const ViewTickets = () => {
 
     useEffect(() => {
         if (typeof window !== 'undefined') {
-            const localUserData = JSON.parse(localStorage.getItem('userData'));
+            const localUserData = JSON.parse(sessionStorage.getItem('userData'));
             setUserData(localUserData);
         }
     }, []);
+    const currentHour = new Date().getHours();
+
+    if (currentHour >= 18 || currentHour < 1) {
+        return <AlertMenu />;
+    }
 
     const handleSearch = (e) => {
         setSearch(e.target.value);

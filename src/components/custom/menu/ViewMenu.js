@@ -47,22 +47,15 @@ const ViewMenu = () => {
     }
 
     const handleboxCut = async (userData) => {
-        const response = await fetch('/api/boxCut', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify(userData)
-        });
-        if (!response.ok) {
-            throw new Error(`HTTP error! status: ${response.status}`);
-        }
-        const data = await response.json();
+        router.push('/boxCut')
 
 
     }
     const handleViewSell = () => {
         router.push('/viewTickects')
+    }
+    const handleViewAwardedTickets = () => {
+        router.push('/viewAwards')
     }
 
     return (
@@ -110,7 +103,9 @@ const ViewMenu = () => {
                             </button>
                         </div>
                         <div className="relative">
-                            <button className="w-full rounded-lg bg-red-700 text-white h-9 relative">
+                            <button
+                                onClick={handleViewAwardedTickets}
+                                className="w-full rounded-lg bg-red-700 text-white h-9 relative">
                                 Boletos premiados
                                 <GiStarStruck className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4" />
                             </button>
