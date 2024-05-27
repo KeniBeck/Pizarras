@@ -21,11 +21,7 @@ const TickectBuyEspecial = ({ selectedDate }) => {
     const [isLoading, setIsLoading] = useState(false);
     const [dates, setDates] = useState([]);
     const router = useRouter();
-    const currentHour = new Date().getHours();
 
-    if (currentHour >= 18 || currentHour < 1) {
-        return <AlertMenu />;
-    }
     useEffect(() => {
         Promise.all([
             fetch('/api/ticketBuy', {
@@ -51,6 +47,11 @@ const TickectBuyEspecial = ({ selectedDate }) => {
         ])
             .catch(error => console.error('Error:', error));
     }, []);
+    const currentHour = new Date().getHours();
+
+    if (currentHour >= 18 || currentHour < 1) {
+        return <AlertMenu />;
+    }
     if (!prizes) {
         return (<div className="flex justify-center items-center min-h-screen">
             <div className="relative w-32 h-32">

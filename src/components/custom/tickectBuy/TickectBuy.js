@@ -20,11 +20,7 @@ const TicketBuy = () => {
     const [prizeboxError, setPrizeboxError] = useState(null);
     const [isLoading, setIsLoading] = useState(false);
     const router = useRouter();
-    const currentHour = new Date().getHours();
 
-    if (currentHour >= 18 || currentHour < 1) {
-        return <AlertMenu />;
-    }
     useEffect(() => {
         Promise.all([
             fetch('/api/ticketBuy')
@@ -53,6 +49,11 @@ const TicketBuy = () => {
         ])
             .catch(error => console.error('Error:', error));
     }, []);
+    const currentHour = new Date().getHours();
+
+    if (currentHour >= 18 || currentHour < 1) {
+        return <AlertMenu />;
+    }
 
 
     if (!prizes) {

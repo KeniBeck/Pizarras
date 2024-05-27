@@ -4,12 +4,13 @@ import { FaHome } from "react-icons/fa";
 import AlertMenu from "../alerts/menu/AlertMenu";
 const TypeDraw = () => {
     const currentHour = new Date().getHours();
+    const router = useRouter();
 
     if (currentHour >= 18 || currentHour < 1) {
         return <AlertMenu />;
     }
 
-    const router = useRouter();
+
 
     const handleTickectBuy = () => {
         router.push('/tickectBuy')

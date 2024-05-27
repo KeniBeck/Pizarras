@@ -14,11 +14,7 @@ const ViewTickets = () => {
     const [search, setSearch] = useState('');
     const [totalTickets, setTotalTickets] = useState(0);
     const router = useRouter();
-    const currentHour = new Date().getHours();
 
-    if (currentHour >= 18 || currentHour < 1) {
-        return <AlertMenu />;
-    }
     const fetchData = async () => {
         try {
             const userData = getUserData();
@@ -55,6 +51,11 @@ const ViewTickets = () => {
             setUserData(localUserData);
         }
     }, []);
+    const currentHour = new Date().getHours();
+
+    if (currentHour >= 18 || currentHour < 1) {
+        return <AlertMenu />;
+    }
 
     const handleSearch = (e) => {
         setSearch(e.target.value);

@@ -12,11 +12,7 @@ const BoxCut = () => {
     const [boxCut, setBoxCut] = useState([]);
     const router = useRouter();
     const backgroundImage = '/Sencillo.png';
-    const currentHour = new Date().getHours();
 
-    if (currentHour >= 18 || currentHour < 1) {
-        return <AlertMenu />;
-    }
     const fetchData = async () => {
         try {
             const userData = getUserData();
@@ -54,6 +50,11 @@ const BoxCut = () => {
     useEffect(() => {
         fetchData();
     }, []);
+    const currentHour = new Date().getHours();
+
+    if (currentHour >= 18 || currentHour < 1) {
+        return <AlertMenu />;
+    }
     if (boxCut.length === 0) {
         return (<div className="flex justify-center items-center min-h-screen">
             <div className="relative w-32 h-32">
