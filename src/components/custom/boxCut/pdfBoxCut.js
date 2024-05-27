@@ -9,7 +9,7 @@ const generatePDFBoxCut = async (data) => {
     var doc = new jsPDF({
         orientation: "portrait",
         unit: "mm",
-        format: [80, 297]
+        format: [80, 600]
     });
 
     // Agregar contenido al PDF
@@ -34,7 +34,7 @@ const generatePDFBoxCut = async (data) => {
         let fechasSorteo = [...new Set(data.boletosEspeciales.map(boleto => boleto.FechaSorteo.split('T')[0]))];
         let fechasTexto = fechasSorteo.join(', ');
         // Agregar el nombre del vendedor al texto del sorteo especial
-        doc.text('Sorteo especial: ' + fechasTexto + ' Vendedor: ' + data.boletosEspeciales[0].nombreVendedor, 10, y);
+        doc.text('Sorteo especial: ' + fechasTexto + ' Vendedor: ' + data.boletosEspeciales[0].nombreVendedor, 5, y + 3);
         y += 5;
 
         let boletosEspeciales = data.boletosEspeciales.map(boleto => [boleto.Boleto, boleto.comprador, boleto.Costo, boleto.Fecha]);
@@ -54,22 +54,23 @@ const generatePDFBoxCut = async (data) => {
         doc.addPage();
         y = 20;
     }
-    let fecha = data.boletosNormales[0].FechaSorteo.split('T')[0];
-    // Agregar el nombre del vendedor al texto del sorteo normal
-    doc.text('Sorteo normal: ' + fecha + ' Vendedor: ' + data.boletosNormales[0].nombreVendedor, 5, y + 3);
+    if (data.boletosNormales && data.boletosNormales.length > 0) {
+        let fecha = data.boletosNormales[0].FechaSorteo.split('T')[0];
+        // Agregar el nombre del vendedor al texto del sorteo normal
+        doc.text('Sorteo normal: ' + fecha + ' Vendedor: ' + data.boletosNormales[0].nombreVendedor, 5, y + 3);
 
-    y += 5;
-    let boletosNormales = data.boletosNormales.map(boleto => [boleto.Boleto, boleto.comprador, boleto.Costo, boleto.Fecha]);
-    doc.autoTable({
-        startY: y,
-        head: [['Boleto', 'Comprador', 'Costo', 'Fecha']],
-        body: boletosNormales,
-        styles: { fontSize: 8, cellWidth: 'wrap' }, // Ajustar el tamaño de la fuente y el ancho de la celda
-        columnStyles: { 0: { cellWidth: 'auto' } }, // Ajustar el ancho de la primera columna
-        margin: { left: 5 }
-    });
-    y = doc.autoTable.previous.finalY + 5; // Actualizar la posición y para el total de boletos vendidos
-
+        y += 5;
+        let boletosNormales = data.boletosNormales.map(boleto => [boleto.Boleto, boleto.comprador, boleto.Costo, boleto.Fecha]);
+        doc.autoTable({
+            startY: y,
+            head: [['Boleto', 'Comprador', 'Costo', 'Fecha']],
+            body: boletosNormales,
+            styles: { fontSize: 8, cellWidth: 'wrap' }, // Ajustar el tamaño de la fuente y el ancho de la celda
+            columnStyles: { 0: { cellWidth: 'auto' } }, // Ajustar el ancho de la primera columna
+            margin: { left: 5 }
+        });
+        y = doc.autoTable.previous.finalY + 5; // Actualizar la posición y para el total de boletos vendidos
+    }
     // Agregar el total de boletos vendidos
     let totalBoletosVendidos = data.boletosEspeciales.length + data.boletosNormales.length;
     let totalVentas = data.boletosEspeciales.reduce((total, boleto) => total + boleto.Costo, 0) +
@@ -102,7 +103,7 @@ const generatePDFBoxCut = async (data) => {
 
     // Mostrar una alerta con opción para imprimir
     const result = await Swal.fire({
-        title: 'Compra exitosa',
+        title: 'Corte de caja exitoso',
         icon: 'success',
         showCancelButton: true,
         allowOutsideClick: false,

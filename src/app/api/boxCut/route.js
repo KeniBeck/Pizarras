@@ -17,7 +17,7 @@ export async function POST(req, res) {
         JOIN sorteo s ON b.tipo_sorteo = s.Idsorteo
         JOIN vendedores v ON b.Idvendedor = v.Idvendedor
         LEFT JOIN deuda d ON v.Idvendedor = d.usuario
-        WHERE s.Tipo_sorteo = 'especial'
+        WHERE s.Tipo_sorteo = 'especial' AND DATE(b.Fecha) = CURDATE()
         `;
 
         // Consulta para obtener los boletos normales
@@ -27,7 +27,7 @@ export async function POST(req, res) {
         JOIN sorteo s ON b.tipo_sorteo = s.Idsorteo
         JOIN vendedores v ON b.Idvendedor = v.Idvendedor
         LEFT JOIN deuda d ON v.Idvendedor = d.usuario
-        WHERE s.Tipo_sorteo = 'normal';
+        WHERE s.Tipo_sorteo = 'normal' AND DATE(b.Fecha) = CURDATE();
         `;
 
         // Ejecutar las consultas

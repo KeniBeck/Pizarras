@@ -1,7 +1,13 @@
 'use client'
 import { useRouter } from "next/navigation";
 import { FaHome } from "react-icons/fa";
+import AlertMenu from "../alerts/menu/AlertMenu";
 const TypeDraw = () => {
+    const currentHour = new Date().getHours();
+
+    if (currentHour >= 18 || currentHour < 1) {
+        return <AlertMenu />;
+    }
 
     const router = useRouter();
 

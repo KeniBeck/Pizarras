@@ -8,6 +8,7 @@ import { ErrorPrizes, loading, ErrorTope, ValidateBox, prizesSeries } from "../a
 import { useRouter } from "next/navigation";
 import { FaHome } from "react-icons/fa";
 import generatePDFSerie from "./pdfSerie";
+import AlertMenu from "../alerts/menu/AlertMenu";
 
 const TicketBuy = () => {
     const [prizes, setPrizes] = useState(null);
@@ -19,6 +20,11 @@ const TicketBuy = () => {
     const [prizeboxError, setPrizeboxError] = useState(null);
     const [isLoading, setIsLoading] = useState(false);
     const router = useRouter();
+    const currentHour = new Date().getHours();
+
+    if (currentHour >= 18 || currentHour < 1) {
+        return <AlertMenu />;
+    }
     useEffect(() => {
         Promise.all([
             fetch('/api/ticketBuy')

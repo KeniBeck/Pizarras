@@ -8,6 +8,7 @@ import { ErrorPrizes, loading, ErrorTope, ValidateBox, prizesSeries, success, se
 import { useRouter } from "next/navigation";
 import { FaHome } from "react-icons/fa";
 import generatePDFSerie from "../tickectBuy/pdfSerie";
+import AlertMenu from "../alerts/menu/AlertMenu";
 
 const TickectBuyEspecial = ({ selectedDate }) => {
     const [prizes, setPrizes] = useState(selectedDate);
@@ -20,6 +21,11 @@ const TickectBuyEspecial = ({ selectedDate }) => {
     const [isLoading, setIsLoading] = useState(false);
     const [dates, setDates] = useState([]);
     const router = useRouter();
+    const currentHour = new Date().getHours();
+
+    if (currentHour >= 18 || currentHour < 1) {
+        return <AlertMenu />;
+    }
     useEffect(() => {
         Promise.all([
             fetch('/api/ticketBuy', {
@@ -175,12 +181,12 @@ const TickectBuyEspecial = ({ selectedDate }) => {
         // Envía cada boleto al servidor
         for (const ticketNumber of ticketNumbers) {
             const data = {
-                prizebox, // Cada boleto en la serie cuesta 10
+                prizebox: prizebox / 10, // Cada boleto en la serie cuesta 10
                 name,
                 ticketNumber,
                 idVendedor,
                 idSorteo,
-                topePermitido: foundTope - prizebox,
+                // topePermitido: foundTope - prizebox,
                 fecha: prizes.Fecha,
                 primerPremio: prizes.Primerpremio,
                 segundoPremio: prizes.Segundopremio
@@ -303,7 +309,7 @@ const TickectBuyEspecial = ({ selectedDate }) => {
                 <div className="flex justify-center items-center flex-col space-y-2 pt-6 px-8">
 
                     <button
-                        onClick={() => router.push('/viewTickets')}
+                        onClick={() => router.push('/viewTickects')}
                         className="w-full rounded-lg bg-red-700 text-white h-9">Revisar Boletos</button>
                 </div>
             </div >

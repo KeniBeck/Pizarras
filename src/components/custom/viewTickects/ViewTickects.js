@@ -5,6 +5,7 @@ import generatePDFSerie from "../tickectBuy/pdfSerie";
 import generatePDF from "../tickectBuy/pdf";
 import { FaHome } from "react-icons/fa";
 import { useRouter } from "next/navigation";
+import AlertMenu from "../alerts/menu/AlertMenu";
 
 const ViewTickets = () => {
     const { getUserData } = useSession();
@@ -13,7 +14,11 @@ const ViewTickets = () => {
     const [search, setSearch] = useState('');
     const [totalTickets, setTotalTickets] = useState(0);
     const router = useRouter();
+    const currentHour = new Date().getHours();
 
+    if (currentHour >= 18 || currentHour < 1) {
+        return <AlertMenu />;
+    }
     const fetchData = async () => {
         try {
             const userData = getUserData();
