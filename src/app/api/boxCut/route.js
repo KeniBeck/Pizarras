@@ -12,7 +12,7 @@ export async function POST(req, res) {
     try {
         // Consulta para obtener los boletos especiales
         let sqlEspeciales = `
-        SELECT b.*, s.Fecha AS FechaSorteo, v.Nombre AS nombreVendedor, d.cantidad AS deuda
+        SELECT b.*, s.Fecha AS FechaSorteo, v.Nombre AS nombreVendedor,v.Comision AS comisiones, d.cantidad AS deuda
         FROM boletos b
         JOIN sorteo s ON b.tipo_sorteo = s.Idsorteo
         JOIN vendedores v ON b.Idvendedor = v.Idvendedor
@@ -22,7 +22,7 @@ export async function POST(req, res) {
 
         // Consulta para obtener los boletos normales
         let sqlNormales = `
-        SELECT b.*, s.Fecha AS FechaSorteo, v.Nombre AS nombreVendedor, d.cantidad AS deuda
+        SELECT b.*, s.Fecha AS FechaSorteo, v.Nombre AS nombreVendedor,v.Comision AS comisiones, d.cantidad AS deuda
         FROM boletos b
         JOIN sorteo s ON b.tipo_sorteo = s.Idsorteo
         JOIN vendedores v ON b.Idvendedor = v.Idvendedor

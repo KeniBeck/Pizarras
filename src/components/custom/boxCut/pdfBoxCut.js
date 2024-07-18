@@ -72,6 +72,7 @@ const generatePDFBoxCut = async (data) => {
         y = doc.autoTable.previous.finalY + 5; // Actualizar la posición y para el total de boletos vendidos
     }
     // Agregar el total de boletos vendidos
+    let comision = data.boletosEspeciales[0].comisiones;
     let totalBoletosVendidos = data.boletosEspeciales.length + data.boletosNormales.length;
     let totalVentas = data.boletosEspeciales.reduce((total, boleto) => total + boleto.Costo, 0) +
         data.boletosNormales.reduce((total, boleto) => total + boleto.Costo, 0);
@@ -84,9 +85,9 @@ const generatePDFBoxCut = async (data) => {
     }
     let caja = totalVentas - totalVentas * 0.10;
     doc.text('Total de boletos vendidos: ' + totalBoletosVendidos, 30, y);
-    doc.text('Porcentaje de comision: 10% ', 30, y + 4);
+    doc.text('Porcentaje de comision:' + comision, 30, y + 4);
     doc.text('Venta: ' + totalVentas, 60, y + 10);
-    doc.text('Comision: ' + totalVentas * 0.10, 56, y + 14);
+    doc.text('Comision: ' + totalVentas * comision, 56, y + 14);
     doc.text('Caja:' + caja, 62.4, y + 18);
     doc.text('Adeudo pendiente vendedor:' + deuda, 16, y + 30);
     doc.setFont("helvetica", "bold");

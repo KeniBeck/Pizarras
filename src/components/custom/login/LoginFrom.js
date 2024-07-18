@@ -50,6 +50,17 @@ const LoginForm = () => {
       })
       setLoading(false)
       return;
+    } else if (data[0].Estatus === 'baja') {
+      Swal.fire({
+        position: 'top-center',
+        title: 'Error',
+        text: 'Usuario bloqueado por el adminstrador',
+        icon: 'error',
+        showConfirmButton: false,
+        timer: 2500
+      })
+      setLoading(false)
+      return
     }
     let time = data[0].requestTime.indexOf('T') > 0 ? data[0].requestTime.split('T')[1].split('.')[0] : data[0].requestTime;
     let hour = parseInt(time.split(':')[0]);
@@ -60,9 +71,10 @@ const LoginForm = () => {
     if (hour < 18 && hour >= 0) {
       // Redirige al usuario a la página del menú
       login(data[0])
-      // localStorage.setItem('userData', JSON.stringify(data[0]));
+
       router.push('/menu')
-    } else {
+    }
+    else {
       // Muestra un mensaje de error
       error();
 
