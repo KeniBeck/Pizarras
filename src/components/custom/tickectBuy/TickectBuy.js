@@ -9,6 +9,8 @@ import { useRouter } from "next/navigation";
 import { FaHome } from "react-icons/fa";
 import generatePDFSerie from "./pdfSerie";
 import AlertMenu from "../alerts/menu/AlertMenu";
+import Swal from "sweetalert2";
+
 
 const TicketBuy = () => {
     const [prizes, setPrizes] = useState(null);
@@ -99,7 +101,7 @@ const TicketBuy = () => {
             return;
         }
         if (foundTope && prizebox > foundTope) {
-            ErrorTope();
+            Swal.fire(`El tope permitido es ${foundTope}`);
             setPrizebox("");
             return;
         }
@@ -149,6 +151,7 @@ const TicketBuy = () => {
             });
     }
     const enviarDatosSerie = async () => {
+
         if (!prizebox || !name) {
             ValidateBox();
             return;
@@ -156,6 +159,10 @@ const TicketBuy = () => {
         if (prizebox < 100) {
             prizesSeries()
             setPrizebox("");
+            return;
+        }
+        if (foundTope && prizebox > foundTope) {
+            Swal.fire(`El tope permitido es ${foundTope}`);
             return;
         }
 
@@ -191,7 +198,7 @@ const TicketBuy = () => {
                 ticketNumber,
                 idVendedor,
                 idSorteo,
-                // topePermitido: foundTope - prizebox,
+                topePermitido: foundTope - prizebox,
                 fecha: prizes.Fecha,
                 primerPremio: prizes.Primerpremio,
                 segundoPremio: prizes.Segundopremio
@@ -265,7 +272,7 @@ const TicketBuy = () => {
                     <div className="flex flex-row gap-12">
                         <div className="text-white flex justify-center items-center text-lg">Boleto</div>
                         <input
-                            className="bg-neutral-300 border rounded w-[110px] outline-none h-9 pl-10"
+                            className="bg-neutral-300 border rounded w-[150px] outline-none h-[40px] pl-10"
                             value={ticketNumber}
                             onChange={handleTicketNumberChange}
                             onBlur={handleBlur}
@@ -280,7 +287,7 @@ const TicketBuy = () => {
                     </div>
                     <div className="flex flex-row gap-12">
                         <div className="text-white flex justify-center items-center text-lg">Precio</div>
-                        <input className="bg-neutral-300 border rounded w-[110px] outline-none h-9 pl-10  "
+                        <input className="bg-neutral-300 border rounded w-[150px] outline-none h-[40px] pl-10  "
                             value={prizebox}
                             onChange={(event) => {
                                 const value = event.target.value;
@@ -302,7 +309,7 @@ const TicketBuy = () => {
                         <input
                             value={name}
                             onChange={(e) => setName(e.target.value)}
-                            className="bg-neutral-300 border rounded w-[110px] outline-none h-9 pl-5  " />
+                            className="bg-neutral-300 border rounded w-[150px] outline-none h-[40px] pl-10" />
                     </div>
 
                 </div>
