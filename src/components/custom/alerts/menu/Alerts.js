@@ -64,7 +64,8 @@ export const selectDate = async (dates) => {
             return options;
         }, {}),
         inputPlaceholder: 'Selecciona una fecha',
-        showCancelButton: false,
+        showCancelButton: true,
+        cancelButtonText: 'Cancelar',
         allowOutsideClick: false,
         allowEscapeKey: false,
     });
@@ -111,3 +112,11 @@ export const printBoxCut = async (data) => {
         generatePDFBoxCut(data) // Asume que generatePDF es la función que imprime el corte de caja
     }
 };
+export const Especial = () => {
+
+    Swal.fire({
+        icon: 'warning',
+        title: '¡Boleto repetido !',
+        text: 'Boleto especial repetido',
+    });
+}

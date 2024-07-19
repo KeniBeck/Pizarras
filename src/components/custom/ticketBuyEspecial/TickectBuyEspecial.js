@@ -4,49 +4,39 @@ import { PiNumberSquareTwoFill } from "react-icons/pi";
 import { BsCalendarDateFill } from "react-icons/bs";
 import { useEffect, useState } from "react";
 import generatePDF from "../tickectBuy/pdf";
-import { ErrorPrizes, loading, ErrorTope, ValidateBox, prizesSeries, success, selectDate } from "../alerts/menu/Alerts";
+import { ErrorPrizes, loading, ErrorTope, ValidateBox, success, selectDate, Especial } from "../alerts/menu/Alerts";
 import { useRouter } from "next/navigation";
 import { FaHome } from "react-icons/fa";
-import generatePDFSerie from "../tickectBuy/pdfSerie";
+
 import AlertMenu from "../alerts/menu/AlertMenu";
+import { set } from "react-hook-form";
 
 const TickectBuyEspecial = ({ selectedDate }) => {
-    const [prizes, setPrizes] = useState(selectedDate);
-    const [topePermitido, setTopePermitido] = useState(0);
+    const [prizes, setPrizes] = useState(selectedDate)
     const [ticketNumber, setTicketNumber] = useState("");
     const [foundTope, setFoundTope] = useState(null);
     const [prizebox, setPrizebox] = useState("");
     const [name, setName] = useState("");
     const [prizeboxError, setPrizeboxError] = useState(null);
     const [isLoading, setIsLoading] = useState(false);
-    const [dates, setDates] = useState([]);
+    const [boletos, setBoletos] = useState([]);
     const router = useRouter();
 
     useEffect(() => {
-        Promise.all([
-            fetch('/api/ticketBuy', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-            })
-                .then(response => response.json())
-                .then(async data => {
-                    const selectedPrize = await selectDate(data.result);
-                    setPrizes(selectedPrize);
-                }),
+        const ticket = localStorage.getItem('TickectEspecial');
+        setPrizes(JSON.parse(ticket));
 
-            fetch(`/api/topes`)
-                .then(response => {
-                    if (!response.ok) {
-                        throw new Error(`HTTP error! status: ${response.status}`);
-                    }
-                    return response.json();
-                })
-                .then(data => setTopePermitido(data.tope))
-        ])
-            .catch(error => console.error('Error:', error));
+        const options = { method: 'POST', headers: { 'Content-Type': 'application/json' }, };
+
+        fetch('/api/ticketBuy', options)
+            .then(res => res.json())
+            .then(data => {
+                setBoletos(data.result);
+            });
+
+
     }, []);
+
     const currentHour = new Date().getHours();
 
     if (currentHour >= 18 || currentHour < 1) {
@@ -66,14 +56,19 @@ const TickectBuyEspecial = ({ selectedDate }) => {
     const handleTicketNumberChange = (e) => {
         let value = e.target.value;
         setTicketNumber(value);
-        const matchingTope = topePermitido.find(tope => tope.Numero === Number(value));
-        if (matchingTope) {
-            console.log("Tope encontrado: ", matchingTope.Tope);
-            setFoundTope(matchingTope.Tope); // Guarda el tope encontrado en el estado
+
+
+        const ticket = boletos.find((ticket) => ticket.Boleto === Number(value));
+
+        if (ticket) {
+            console.log('numero en la base de datos', ticket.Boleto)
+            setFoundTope(true);
+
         } else {
-            console.log("No se encontró un tope para este número de boleto");
-            setFoundTope(null); // Si no se encuentra un tope, establece el estado a null
+            console.log('numero no en base ')
+            setFoundTope(null);
         }
+
     };
     const handleBlur = (e) => {
         let value = e.target.value;
@@ -88,26 +83,24 @@ const TickectBuyEspecial = ({ selectedDate }) => {
 
 
     const enviarDatosNormal = async () => {
+
+
         if (!prizebox || !name) {
             ValidateBox();
             return;
         }
-        if (foundTope && prizebox > foundTope) {
-            ErrorTope();
-            setPrizebox("");
+        if (foundTope !== null) {
+            Especial()
             return;
         }
+
 
         if (prizeboxError) {
             ErrorPrizes();
             setPrizebox("");
             return;
         }
-        if (foundTope == 0) {
-            ErrorTope();
-            setTicketNumber("");
-            return;
-        }
+
         setIsLoading(true);
         setTicketNumber("");
         setPrizebox("");
@@ -116,9 +109,9 @@ const TickectBuyEspecial = ({ selectedDate }) => {
             prizebox,
             name,
             ticketNumber,
+            topePermitido: null,
             idVendedor,
             idSorteo,
-            topePermitido: foundTope - prizebox,
             fecha: prizes.Fecha,
             primerPremio: prizes.Primerpremio,
             segundoPremio: prizes.Segundopremio
@@ -142,77 +135,6 @@ const TickectBuyEspecial = ({ selectedDate }) => {
 
             });
     }
-    const enviarDatosSerie = async () => {
-        if (!prizebox || !name) {
-            ValidateBox();
-            return;
-        }
-        if (prizebox < 100) {
-            prizesSeries()
-            setPrizebox("");
-            return;
-        }
-
-
-        if (prizeboxError) {
-            ErrorPrizes();
-            setPrizebox("");
-            return;
-        }
-
-        setIsLoading(true);
-        setTicketNumber("");
-        setPrizebox("");
-        setName("");
-
-        // Calcula la cantidad de boletos en la serie
-
-        const numTickets = 10;
-
-        // Genera los números de boleto en serie
-        const ticketNumbers = Array.from({ length: numTickets }, (_, i) => {
-            let ticket = (Number(ticketNumber) + 100 * i);
-            if (ticket >= 1000) {
-                ticket = ticket - 1000;
-            }
-            return ticket.toString().padStart(3, '0');
-        });
-
-
-        // Envía cada boleto al servidor
-        for (const ticketNumber of ticketNumbers) {
-            const data = {
-                prizebox: prizebox / 10, // Cada boleto en la serie cuesta 10
-                name,
-                ticketNumber,
-                idVendedor,
-                idSorteo,
-                // topePermitido: foundTope - prizebox,
-                fecha: prizes.Fecha,
-                primerPremio: prizes.Primerpremio,
-                segundoPremio: prizes.Segundopremio
-            };
-
-            const options = {
-                method: 'PUT',
-                header: {
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify(data)
-            }
-            await fetch("/api/sell", options)
-                .then(res => res.json())
-                .then(data => {
-                    generatePDFSerie(data[0], fecha);
-                });
-        }
-
-
-        setIsLoading(false);
-
-    }
-
-
 
     const handlePrizeboxChange = (e) => {
         let value = e.target.value;
@@ -248,11 +170,11 @@ const TickectBuyEspecial = ({ selectedDate }) => {
 
                 {foundTope !== null ? (
                     <div className="text-xl text-red-500 text-center pt-6">
-                        Tope permitido: {foundTope}
+                        Boleto no disponible
                     </div>
                 ) : (
-                    <div className="text-xl text-red-500 text-center pt-6">
-
+                    <div className="text-xl text-green-500 text-center pt-6">
+                        Boleto disponible
                     </div>
                 )}
 
@@ -302,9 +224,6 @@ const TickectBuyEspecial = ({ selectedDate }) => {
                         onClick={enviarDatosNormal}
                         className="w-full rounded-lg bg-red-700 text-white h-9"
                     >Normal</button>
-                    <button
-                        onClick={enviarDatosSerie}
-                        className="w-full rounded-lg bg-red-700 text-white h-9">Serie</button>
                 </div>
 
                 <div className="flex justify-center items-center flex-col space-y-2 pt-6 px-8">

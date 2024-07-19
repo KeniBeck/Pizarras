@@ -32,9 +32,10 @@ export const selectLotterySerie = async () => {
     let error = false;
 
     try {
-        let sql = `SELECT * FROM sorteo WHERE Tipo_sorteo ='especial' AND Estatus = 'abierto'`;
+        let sql = `SELECT b.Idsorteo, b.Fecha, b.Primerpremio, b.Segundopremio, b.Boleto, b.Costo, b.comprador, b.Idvendedor, b.tipo_sorteo FROM boletos b JOIN sorteo s ON b.tipo_sorteo = s.idsorteo WHERE s.Tipo_sorteo = 'especial' AND s.Estatus = 'abierto';`;
         let [rows] = await pool.query(sql);
         result = rows;
+
 
 
     } catch (err) {
