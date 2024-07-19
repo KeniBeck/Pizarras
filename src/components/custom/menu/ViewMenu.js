@@ -124,12 +124,12 @@ const ViewMenu = () => {
 
                 </div>
             )}
-            <button
+            <label
 
                 className="fixed bottom-4 right-4 bg-green-700 text-white h-[60px] w-[60px] rounded-full"
             >
                 {userData.Puntos}
-            </button>
+            </label>
 
         </div>
     );
