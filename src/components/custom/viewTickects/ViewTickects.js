@@ -6,6 +6,7 @@ import generatePDF from "../tickectBuy/pdf";
 import { FaHome } from "react-icons/fa";
 import { useRouter } from "next/navigation";
 import AlertMenu from "../alerts/menu/AlertMenu";
+import { deleteTicket } from "../alerts/menu/Alerts";
 
 const ViewTickets = () => {
     const { getUserData } = useSession();
@@ -47,11 +48,13 @@ const ViewTickets = () => {
 
     useEffect(() => {
         if (typeof window !== 'undefined') {
-            const localUserData = JSON.parse(sessionStorage.getItem('userData'));
+            const localUserData = JSON.parse(localStorage.getItem('userData'));
             setUserData(localUserData);
         }
     }, []);
     const currentHour = new Date().getHours();
+    //currentHour >= 18 || currentHour < 1
+
 
     if (currentHour >= 18 || currentHour < 1) {
         return <AlertMenu />;
@@ -75,22 +78,8 @@ const ViewTickets = () => {
 
     const handleDelete = async (ticket) => {
         const dataTickect = ticket;
+        await deleteTicket(dataTickect);
 
-        const response = await fetch('/api/viewTickects', {
-            method: 'DELETE',
-            headers: {
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify(dataTickect)
-        });
-
-        if (!response.ok) {
-            throw new Error(`HTTP error! status: ${response.status}`);
-        }
-
-        const data = await response.json();
-
-        // Fetch the updated list of tickets after deleting one
         fetchData();
     }
     const goToMenu = () => {

@@ -30,7 +30,7 @@ const ViewMenu = () => {
 
 
     if (typeof window !== 'undefined') {
-        userData = JSON.parse(sessionStorage.getItem('userData'));
+        userData = JSON.parse(localStorage.getItem('userData'));
 
         const currentHour = new Date().getHours();
 

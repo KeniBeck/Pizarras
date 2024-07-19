@@ -17,14 +17,21 @@ const generatePDF = async (data, fecha) => {
     doc.addImage(imageURL, 'JPEG', 0, 0, 80, 30); // Ajusta las coordenadas y el tamaño según sea necesario
 
     // Agregar contenido al PDF
-    doc.text(`Factura de boleto N${data.Idsorteo}`, 10, 40);
-    doc.text(`$ ${data.Costo}`, 10, 50);
+    doc.setFont('helvetica', 'bold');
+    doc.text(`Factura de boleto `, 10, 40);
+    const textoAncho = doc.getTextWidth("Factura de boleto ");
+    doc.setTextColor(255, 0, 0);
+    doc.text(`N${data.Idsorteo}`, 10 + textoAncho, 40);
+    doc.setTextColor(0, 0, 0);
+    doc.setFont('helvetica', 'normal');
+    doc.text(`Costo $ ${data.Costo}`, 10, 50);
     doc.text(`Número de boleto: ${data.Boleto}`, 10, 60);
     doc.text(`Sorteo: ${fecha}`, 10, 70);
     doc.text(`Comprador: ${data.comprador}`, 10, 80);
     doc.text(`Venta: ${data.Fecha}`, 10, 90);
 
     // Dividir el texto en varias líneas para que se ajuste al tamaño de 80mm
+    doc.setFont('helvetica', 'bold');
     var text = doc.splitTextToSize(`los premios se pueden recoger solo presentando este boleto`, 70);
     doc.text(text, 10, 100);
 

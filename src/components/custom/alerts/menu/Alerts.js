@@ -64,7 +64,8 @@ export const selectDate = async (dates) => {
             return options;
         }, {}),
         inputPlaceholder: 'Selecciona una fecha',
-        showCancelButton: false,
+        showCancelButton: true,
+        cancelButtonText: 'Cancelar',
         allowOutsideClick: false,
         allowEscapeKey: false,
     });
@@ -73,6 +74,29 @@ export const selectDate = async (dates) => {
         return dates.find(date => new Date(date.Fecha).toISOString().split('T')[0] === selectedDate);
     }
 };
+export const deleteTicket = async (ticket) => {
+    const { value: action } = await Swal.fire({
+        title: '¿Estás seguro de que deseas eliminar este boleto?',
+        showDenyButton: true,
+        confirmButtonText: `Eliminar`,
+        denyButtonText: `Cancelar`,
+        allowOutsideClick: false,
+        allowEscapeKey: false,
+    });
+    if (action) {
+        const response = await fetch('/api/viewTickects', {
+            method: 'DELETE',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(ticket)
+        });
+
+        if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+        };
+    }
+}
 export const printBoxCut = async (data) => {
 
     const { value: action } = await Swal.fire({
@@ -88,3 +112,11 @@ export const printBoxCut = async (data) => {
         generatePDFBoxCut(data) // Asume que generatePDF es la función que imprime el corte de caja
     }
 };
+export const Especial = () => {
+
+    Swal.fire({
+        icon: 'warning',
+        title: '¡Boleto repetido !',
+        text: 'Boleto especial repetido',
+    });
+}

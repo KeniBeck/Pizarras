@@ -2,9 +2,13 @@
 import { useRouter } from "next/navigation";
 import { FaHome } from "react-icons/fa";
 import AlertMenu from "../alerts/menu/AlertMenu";
+import { selectDate } from "../alerts/menu/Alerts";
+import TickectBuyEspecial from "../ticketBuyEspecial/TickectBuyEspecial";
+import { useState } from "react";
 const TypeDraw = () => {
     const currentHour = new Date().getHours();
     const router = useRouter();
+    const [selectedDate, setSelectedDate] = useState(null);
 
     if (currentHour >= 18 || currentHour < 1) {
         return <AlertMenu />;
@@ -19,7 +23,27 @@ const TypeDraw = () => {
         router.push('/menu')
     }
     const handleTicketBuySerial = () => {
-        router.push('/ticketBuyEspecial')
+        fetch('/api/ticketBuy', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+        })
+            .then(response => response.json())
+            .then(async data => {
+                const selectedPrize = await selectDate(data.result);
+                localStorage.setItem('TickectEspecial', JSON.stringify(selectedPrize));
+
+                setSelectedDate(selectedPrize);
+                if (selectedPrize) {
+                    // Redirigir al usuario a la ruta ticketBuyEspecial con la fecha seleccionada
+                    // Aquí se asume que quieres pasar la fecha seleccionada como un parámetro de consulta
+                    router.push(`/ticketBuyEspecial`);
+                } else {
+                    // Manejar el caso en que el usuario cancela la selección (si es necesario)
+                    console.log('Selección de fecha cancelada');
+                }
+            })
     }
 
 
@@ -36,6 +60,7 @@ const TypeDraw = () => {
             >
                 <FaHome />
             </button>
+
         </div>
 
 

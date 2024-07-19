@@ -68,6 +68,9 @@ const TicketBuy = () => {
     }
     const handleTicketNumberChange = (e) => {
         let value = e.target.value;
+        if (!/^[0-9]*$/.test(value)) {
+            value = value.slice(0, -1);
+        }
         setTicketNumber(value);
         const matchingTope = topePermitido.find(tope => tope.Numero === Number(value));
         if (matchingTope) {
@@ -84,7 +87,7 @@ const TicketBuy = () => {
         value = value.padStart(3, '0');
         setTicketNumber(value);
     };
-    const userData = JSON.parse(sessionStorage.getItem('userData'));
+    const userData = JSON.parse(localStorage.getItem('userData'));
     const idVendedor = userData.Idvendedor;
     const idSorteo = prizes.Idsorteo
     const fecha = new Date(new Date(prizes.Fecha).getTime() + new Date().getTimezoneOffset() * 60000).toLocaleDateString();
@@ -232,6 +235,7 @@ const TicketBuy = () => {
         router.push('/menu');
     }
 
+
     return (
         <div className="relative min-h-screen">
             <div className="max-w-sm mx-auto w-full bg-[rgb(38,38,38)]">
@@ -266,11 +270,11 @@ const TicketBuy = () => {
                             onChange={handleTicketNumberChange}
                             onBlur={handleBlur}
                             maxLength={3}
-                            onKeyPress={(event) => {
-                                if (!/[0-9]/.test(event.key)) {
-                                    event.preventDefault();
-                                }
-                            }}
+                        // onKeyPressCapture={(event) => {
+                        //     if (!/[0-9]/.test(event.key)) {
+                        //         event.preventDefault();
+                        //     }
+                        // }}
 
                         />
                     </div>
@@ -278,13 +282,19 @@ const TicketBuy = () => {
                         <div className="text-white flex justify-center items-center text-lg">Precio</div>
                         <input className="bg-neutral-300 border rounded w-[110px] outline-none h-9 pl-10  "
                             value={prizebox}
-                            onChange={handlePrizeboxChange}
-                            maxLength={4}
-                            onKeyPress={(event) => {
-                                if (!/[0-9]/.test(event.key)) {
-                                    event.preventDefault();
+                            onChange={(event) => {
+                                const value = event.target.value;
+                                if (!/^[0-9]*$/.test(value)) {
+                                    event.target.value = value.slice(0, -1);
                                 }
+                                handlePrizeboxChange(event);
                             }}
+                            maxLength={4}
+                        // onKeyPressCapture={(event) => {
+                        //     if (!/[0-9]/.test(event.key)) {
+                        //         event.preventDefault();
+                        //     }
+                        // }}
                         />
                     </div>
                     <div className="flex flex-row gap-8">

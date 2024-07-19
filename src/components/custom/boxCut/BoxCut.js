@@ -42,7 +42,7 @@ const BoxCut = () => {
 
     useEffect(() => {
         if (typeof window !== 'undefined') {
-            const localUserData = JSON.parse(sessionStorage.getItem('userData'));
+            const localUserData = JSON.parse(localStorage.getItem('userData'));
             setUserData(localUserData);
         }
     }, []);
