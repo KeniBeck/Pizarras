@@ -10,9 +10,10 @@ import AlertMenu from "../alerts/menu/AlertMenu";
 import { useState } from "react";
 
 const ViewMenu = () => {
-    const { getUserData } = useSession();
+
     const router = useRouter();
-    let userData = getUserData();
+    let userData = null;
+
     const { logout } = useSession();
     const [cerrarSession, setCerrarSession] = useState(false);
 
@@ -124,12 +125,9 @@ const ViewMenu = () => {
 
                 </div>
             )}
-            <label
-
-                className="fixed bottom-4 right-4 bg-green-700 text-white h-[60px] w-[60px] rounded-full"
-            >
-                {userData.Puntos}
-            </label>
+            <button className="fixed bottom-4 right-4 bg-green-700 text-center text-white h-[60px] w-[60px] rounded-full">
+                {userData ? userData.Puntos : 'Cargando...'}
+            </button>
 
         </div>
     );
