@@ -1,7 +1,7 @@
 'use client'
 import { IoTicketSharp } from "react-icons/io5";
 import { ImStatsDots } from "react-icons/im";
-import { FaCashRegister } from "react-icons/fa";
+import { FaCashRegister, FaHome } from "react-icons/fa";
 import { GiStarStruck } from "react-icons/gi";
 import { RiLogoutBoxFill } from "react-icons/ri";
 import useSession from "@/hook/useSession";
@@ -10,9 +10,10 @@ import AlertMenu from "../alerts/menu/AlertMenu";
 import { useState } from "react";
 
 const ViewMenu = () => {
-    const { getUserData } = useSession();
+
     const router = useRouter();
-    let userData = getUserData();
+    let userData = null;
+
     const { logout } = useSession();
     const [cerrarSession, setCerrarSession] = useState(false);
 
@@ -59,7 +60,7 @@ const ViewMenu = () => {
     }
 
     return (
-        <div>
+        <div className="relative min-h-screen">
             {accessBlocked ? (
                 <div>
                     <AlertMenu />
@@ -124,6 +125,9 @@ const ViewMenu = () => {
 
                 </div>
             )}
+            <button className="fixed bottom-4 right-4 bg-green-700 text-center text-white h-[60px] w-[60px] rounded-full">
+                {userData ? userData.Puntos : 'Cargando...'}
+            </button>
 
         </div>
     );
