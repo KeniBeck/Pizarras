@@ -26,7 +26,7 @@ const TicketBuy = () => {
 
     useEffect(() => {
         Promise.all([
-            fetch('/api/ticketBuy')
+            fetch('/api/ticketBuy', { cache: "no-store" })
                 .then(response => {
                     if (!response.ok) {
                         throw new Error(`HTTP error! status: ${response.status}`);
@@ -34,7 +34,7 @@ const TicketBuy = () => {
                     return response.json();
                 })
                 .then(data => setPrizes(data.result[0])),
-            fetch(`/api/topes`)
+            fetch(`/api/topes`, { cache: "no-store" })
                 .then(response => {
                     if (!response.ok) {
                         throw new Error(`HTTP error! status: ${response.status}`);
@@ -136,6 +136,7 @@ const TicketBuy = () => {
         };
 
         const options = {
+            cache: "no-store",
             method: 'POST',
             header: {
                 'Content-Type': 'application/json'
@@ -208,6 +209,7 @@ const TicketBuy = () => {
             };
 
             const options = {
+                cache: "no-store",
                 method: 'PUT',
                 header: {
                     'Content-Type': 'application/json'
