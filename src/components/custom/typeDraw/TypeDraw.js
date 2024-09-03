@@ -10,10 +10,9 @@ const TypeDraw = () => {
     const router = useRouter();
     const [selectedDate, setSelectedDate] = useState(null);
 
-    if (currentHour >= 18 || currentHour < 1) {
+    if (currentHour >= 19 || currentHour < 1) {
         return <AlertMenu />;
     }
-
 
 
     const handleTickectBuy = () => {
