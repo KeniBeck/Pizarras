@@ -54,7 +54,7 @@ const TicketBuy = () => {
     }, []);
     const currentHour = new Date().getHours();
 
-    if (currentHour >= 18 || currentHour < 1) {
+    if (currentHour >= 19 || currentHour < 1) {
         return <AlertMenu />;
     }
 
