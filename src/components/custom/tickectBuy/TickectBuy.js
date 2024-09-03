@@ -22,6 +22,7 @@ const TicketBuy = () => {
     const [prizeboxError, setPrizeboxError] = useState(null);
     const [isLoading, setIsLoading] = useState(false);
     const router = useRouter();
+    const [cantidad, setCantidad] = useState(0);
 
     useEffect(() => {
         Promise.all([
@@ -42,7 +43,7 @@ const TicketBuy = () => {
                 })
                 .then(data => {
                     if (Array.isArray(data.tope)) {
-                        setTopePermitido(data.tope);
+                        setTopePermitido(data);
                     } else {
                         console.error('Expected an array for data.tope, but received:', data.tope);
                         setTopePermitido([]);
@@ -74,10 +75,12 @@ const TicketBuy = () => {
             value = value.slice(0, -1);
         }
         setTicketNumber(value);
-        const matchingTope = topePermitido.find(tope => tope.Numero === Number(value));
+        const matchingTope = topePermitido.tope.find(tope => tope.Numero === Number(value));
+
         if (matchingTope) {
             console.log("Tope encontrado: ", matchingTope.Tope);
             setFoundTope(matchingTope.Tope); // Guarda el tope encontrado en el estado
+            setCantidad(matchingTope.Cantidad);
         } else {
             console.log("No se encontró un tope para este número de boleto");
             setFoundTope(null); // Si no se encuentra un tope, establece el estado a null
@@ -101,7 +104,7 @@ const TicketBuy = () => {
             return;
         }
         if (foundTope && prizebox > foundTope) {
-            Swal.fire(`El tope permitido es ${foundTope}`);
+            Swal.fire(`La cantidad permitida es ${foundTope - cantidad}`);
             setPrizebox("");
             return;
         }
@@ -162,7 +165,7 @@ const TicketBuy = () => {
             return;
         }
         if (foundTope && prizebox > foundTope) {
-            Swal.fire(`El tope permitido es ${foundTope}`);
+            Swal.fire(`El tope permitido es ${foundTope - cantidad}`);
             return;
         }
 

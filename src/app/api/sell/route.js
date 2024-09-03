@@ -11,7 +11,7 @@ export async function POST(req, res) {
         ( Fecha, Primerpremio, Segundopremio, Boleto, Costo, comprador, Idvendedor,tipo_sorteo)
         VALUES( CURRENT_TIMESTAMP(), ?, ?, ?, ?, ?, ?, ?)
     `;
-    let sqlUpdate = `UPDATE topes SET Tope = ${topePermitido}, Cantidad = Cantidad - 1 WHERE Numero = ${ticketNumber}`;
+    let sqlUpdate = `UPDATE topes SET  Cantidad = Cantidad + ${prizebox} WHERE Numero = ${ticketNumber}`;
     let sqlSelect = `SELECT * FROM boletos WHERE Boleto = ? ORDER BY Idsorteo DESC LIMIT 1`;
     let values = [primerPremio, segundoPremio, ticketNumber, prizebox, name, idVendedor, idSorteo];
 
