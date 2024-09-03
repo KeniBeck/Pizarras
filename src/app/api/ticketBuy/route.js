@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { selectLottery, selectLotterySerie } from "../model/ticketBuy"
+import { selectLottery, selectLotteryEspecial, selectLotterySerie } from "../model/ticketBuy"
 
 export async function GET(req, res) {
     try {
@@ -14,6 +14,14 @@ export async function POST(req, res) {
         const result = await selectLotterySerie()
         return NextResponse.json(result)
 
+    } catch (error) {
+        console.log(error)
+    }
+}
+export async function PUT(req, res) {
+    try {
+        const result = await selectLotteryEspecial()
+        return NextResponse.json(result)
     } catch (error) {
         console.log(error)
     }

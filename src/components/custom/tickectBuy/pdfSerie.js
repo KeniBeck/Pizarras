@@ -33,14 +33,21 @@ const generatePDFSerie = async (data, fecha) => {
     doc.addImage(imageURL, 'JPEG', 10, 10, 60, 30);
 
     // Agregar contenidoc al PDF
-    doc.text(`Factura de boleto N${data[0].Idsorteo}`, 10, 45);
-    doc.text(`$ ${totalCosto}`, 10, 55);
+    doc.setFont('helvetica', 'bold');
+    doc.text(`Factura de boleto `, 10, 45);
+    const textoAncho = doc.getTextWidth("Factura de boleto ");
+    doc.setTextColor(255, 0, 0);
+    doc.text(`N${data[0].Idsorteo}`, 10 + textoAncho, 45);
+    doc.setTextColor(0, 0, 0);
+    doc.setFont('helvetica', 'normal');
+    doc.text(`Costo: $ ${totalCosto}`, 10, 55);
     doc.text(`Serie de boletos:`, 10, 65);
     let boletos = data.map(item => item.Boleto.toString().padStart(3, '0')).join('-');
     doc.text(boletos, 10, 75);
     doc.text(`Sorteo: ${fecha}`, 10, 85);
-    doc.text(` Compardor: ${data[0].comprador}`, 10, 95);
+    doc.text(` Comprador: ${data[0].comprador}`, 10, 95);
     doc.text(`Venta: ${data[0].Fecha}`, 10, 105);
+    doc.setFont('helvetica', 'bold');
     var text = doc.splitTextToSize(`los premios se pueden recoger solo presentando este boleto`, 70);
     doc.text(text, 10, 115);
     // Abrir el diálogo de impresión cuando el usuario abra el PDF

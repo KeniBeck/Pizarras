@@ -60,7 +60,7 @@ const TickectBuyEspecial = ({ selectedDate }) => {
 
         const ticket = boletos.find((ticket) => ticket.Boleto === Number(value));
 
-        if (ticket) {
+        if (ticket && ticket.fecha_sorteo === prizes.Fecha) {
             console.log('numero en la base de datos', ticket.Boleto)
             setFoundTope(true);
 

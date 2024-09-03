@@ -24,7 +24,7 @@ const TypeDraw = () => {
     }
     const handleTicketBuySerial = () => {
         fetch('/api/ticketBuy', {
-            method: 'POST',
+            method: 'PUT',
             headers: {
                 'Content-Type': 'application/json',
             },
