@@ -22,6 +22,7 @@ const TickectBuyEspecial = ({ selectedDate }) => {
     const [boletos, setBoletos] = useState([]);
     const router = useRouter();
 
+
     useEffect(() => {
         const ticket = localStorage.getItem('TickectEspecial');
         setPrizes(JSON.parse(ticket));
