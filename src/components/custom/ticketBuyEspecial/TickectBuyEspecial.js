@@ -40,7 +40,7 @@ const TickectBuyEspecial = ({ selectedDate }) => {
 
     const currentHour = new Date().getHours();
 
-    if (currentHour >= 19 || currentHour < 1) {
+    if (currentHour >= 20 || currentHour < 1) {
         return <AlertMenu />;
     } if (!prizes) {
         return (<div className="flex justify-center items-center min-h-screen">

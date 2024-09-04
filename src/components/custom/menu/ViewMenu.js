@@ -37,7 +37,7 @@ const ViewMenu = () => {
 
 
         // currentHour >= 18 || currentHour < 0
-        if (currentHour >= 18 || currentHour < 0) {
+        if (currentHour >= 20 || currentHour < 0) {
             accessBlocked = true;
         }
     }
