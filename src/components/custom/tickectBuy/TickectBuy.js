@@ -35,27 +35,12 @@ const TicketBuy = () => {
                 })
                 .then(data => setPrizes(data.result[0])),
 
-            fetch(`/api/topes`)
-                .then(response => {
-                    if (!response.ok) {
-                        throw new Error(`HTTP error! status: ${response.status}`);
-                    }
-                    return response.json();
-                })
-                .then(data => {
-                    if (Array.isArray(data.tope)) {
-                        setTopePermitido(data);
-                    } else {
-                        console.error('Expected an array for data.tope, but received:', data.tope);
-                        setTopePermitido([]);
-                    }
-                })
         ])
             .catch(error => console.error('Error:', error));
     }, []);
     const currentHour = new Date().getHours();
 
-    if (currentHour >= 21 || currentHour < 1) {
+    if (currentHour >= 21 || currentHour < 0) {
         return <AlertMenu />;
     }
 
