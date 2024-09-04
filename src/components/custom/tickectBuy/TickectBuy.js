@@ -25,23 +25,34 @@ const TicketBuy = () => {
     const [cantidad, setCantidad] = useState(0);
 
     useEffect(() => {
-        const fetchData = async () => {
-            try {
-                const response = await fetch('/api/ticketBuy');
-                if (!response.ok) {
-                    throw new Error(`HTTP error! status: ${response.status}`);
-                }
-                const data = await response.json();
-                setPrizes(data.result[0]);
-            } catch (error) {
-                console.error('Error:', error);
-                setPrizeboxError(error.message);
-            } finally {
-                setIsLoading(false);
-            }
-        };
+        Promise.all([
 
-        fetchData();
+            fetch('/api/ticketBuy')
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error(`HTTP error! status: ${response.status}`);
+                    }
+                    return response.json();
+                })
+                .then(data => setPrizes(data.result[0])),
+
+            fetch(`/api/topes`)
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error(`HTTP error! status: ${response.status}`);
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    if (Array.isArray(data.tope)) {
+                        setTopePermitido(data);
+                    } else {
+                        console.error('Expected an array for data.tope, but received:', data.tope);
+                        setTopePermitido([]);
+                    }
+                })
+        ])
+            .catch(error => console.error('Error:', error));
     }, []);
     const currentHour = new Date().getHours();
 
@@ -103,6 +114,7 @@ const TicketBuy = () => {
         value = value.padStart(3, '0');
         setTicketNumber(value);
     };
+
     const userData = JSON.parse(localStorage.getItem('userData'));
     const idVendedor = userData.Idvendedor;
     const idSorteo = prizes.Idsorteo
