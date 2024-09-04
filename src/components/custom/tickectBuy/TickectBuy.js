@@ -26,7 +26,6 @@ const TicketBuy = () => {
 
     useEffect(() => {
         Promise.all([
-
             fetch('/api/ticketBuy')
                 .then(response => {
                     if (!response.ok) {
@@ -36,27 +35,12 @@ const TicketBuy = () => {
                 })
                 .then(data => setPrizes(data.result[0])),
 
-            fetch(`/api/topes`)
-                .then(response => {
-                    if (!response.ok) {
-                        throw new Error(`HTTP error! status: ${response.status}`);
-                    }
-                    return response.json();
-                })
-                .then(data => {
-                    if (Array.isArray(data.tope)) {
-                        setTopePermitido(data);
-                    } else {
-                        console.error('Expected an array for data.tope, but received:', data.tope);
-                        setTopePermitido([]);
-                    }
-                })
         ])
             .catch(error => console.error('Error:', error));
     }, []);
     const currentHour = new Date().getHours();
 
-    if (currentHour >= 21 || currentHour < 1) {
+    if (currentHour >= 21 || currentHour < 0) {
         return <AlertMenu />;
     }
 
@@ -159,7 +143,6 @@ const TicketBuy = () => {
         };
 
         const options = {
-            cache: "no-store",
             method: 'POST',
             header: {
                 'Content-Type': 'application/json'
@@ -232,7 +215,6 @@ const TicketBuy = () => {
             };
 
             const options = {
-                cache: "no-store",
                 method: 'PUT',
                 header: {
                     'Content-Type': 'application/json'
