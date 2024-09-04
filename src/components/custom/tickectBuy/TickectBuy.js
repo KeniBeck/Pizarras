@@ -34,27 +34,13 @@ const TicketBuy = () => {
                     return response.json();
                 })
                 .then(data => setPrizes(data.result[0])),
-            fetch(`/api/topes`, { cache: "no-store" })
-                .then(response => {
-                    if (!response.ok) {
-                        throw new Error(`HTTP error! status: ${response.status}`);
-                    }
-                    return response.json();
-                })
-                .then(data => {
-                    if (Array.isArray(data.tope)) {
-                        setTopePermitido(data);
-                    } else {
-                        console.error('Expected an array for data.tope, but received:', data.tope);
-                        setTopePermitido([]);
-                    }
-                })
+
         ])
             .catch(error => console.error('Error:', error));
     }, []);
     const currentHour = new Date().getHours();
 
-    if (currentHour >= 19 || currentHour < 1) {
+    if (currentHour >= 20 || currentHour < 1) {
         return <AlertMenu />;
     }
 
@@ -69,21 +55,41 @@ const TicketBuy = () => {
             </div>
         </div>);
     }
-    const handleTicketNumberChange = (e) => {
+    const handleTicketNumberChange = async (e) => {
         let value = e.target.value;
         if (!/^[0-9]*$/.test(value)) {
             value = value.slice(0, -1);
         }
         setTicketNumber(value);
-        const matchingTope = topePermitido.tope.find(tope => tope.Numero === Number(value));
 
-        if (matchingTope) {
-            console.log("Tope encontrado: ", matchingTope.Tope);
-            setFoundTope(matchingTope.Tope); // Guarda el tope encontrado en el estado
-            setCantidad(matchingTope.Cantidad);
-        } else {
-            console.log("No se encontró un tope para este número de boleto");
-            setFoundTope(null); // Si no se encuentra un tope, establece el estado a null
+        if (value.length === 3) { // Asegúrate de que el número de boleto tenga 3 dígitos
+            const options = {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ ticketNumber: value })
+            };
+
+            try {
+                const response = await fetch('/api/topes', options);
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                const data = await response.json();
+                const matchingTope = data.tope.find(tope => tope.Numero === Number(value));
+
+                if (matchingTope) {
+                    console.log("Tope encontrado: ", matchingTope.Tope);
+                    setFoundTope(matchingTope.Tope); // Guarda el tope encontrado en el estado
+                    setCantidad(matchingTope.Cantidad);
+                } else {
+                    console.log("No se encontró un tope para este número de boleto");
+                    setFoundTope(null); // Si no se encuentra un tope, establece el estado a null
+                }
+            } catch (error) {
+                console.error('Error:', error);
+            }
         }
     };
     const handleBlur = (e) => {
