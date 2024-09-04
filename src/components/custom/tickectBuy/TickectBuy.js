@@ -25,18 +25,23 @@ const TicketBuy = () => {
     const [cantidad, setCantidad] = useState(0);
 
     useEffect(() => {
-        Promise.all([
-            fetch('/api/ticketBuy', { cache: "no-store" })
-                .then(response => {
-                    if (!response.ok) {
-                        throw new Error(`HTTP error! status: ${response.status}`);
-                    }
-                    return response.json();
-                })
-                .then(data => setPrizes(data.result[0])),
+        const fetchData = async () => {
+            try {
+                const response = await fetch('/api/ticketBuy');
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                const data = await response.json();
+                setPrizes(data.result[0]);
+            } catch (error) {
+                console.error('Error:', error);
+                setPrizeboxError(error.message);
+            } finally {
+                setIsLoading(false);
+            }
+        };
 
-        ])
-            .catch(error => console.error('Error:', error));
+        fetchData();
     }, []);
     const currentHour = new Date().getHours();
 
