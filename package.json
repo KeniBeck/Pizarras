@@ -15,6 +15,7 @@
     "moment": "^2.30.1",
     "mysql2": "^3.9.7",
     "next": "14.1.4",
+    "pizarras": "file:",
     "react": "^18",
     "react-date-picker": "^11.0.0",
     "react-dom": "^18",

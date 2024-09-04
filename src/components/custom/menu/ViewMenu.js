@@ -37,7 +37,7 @@ const ViewMenu = () => {
 
 
         // currentHour >= 18 || currentHour < 0
-        if (currentHour >= 18 || currentHour < 0) {
+        if (currentHour >= 20 || currentHour < 0) {
             accessBlocked = true;
         }
     }
@@ -55,9 +55,7 @@ const ViewMenu = () => {
     const handleViewSell = () => {
         router.push('/viewTickects')
     }
-    const handleViewAwardedTickets = () => {
-        router.push('/viewAwards')
-    }
+
 
     return (
         <div className="relative min-h-screen">
@@ -101,14 +99,6 @@ const ViewMenu = () => {
                                 className="w-full rounded-lg bg-red-700 text-white h-9 relative" >
                                 Corte de caja
                                 <FaCashRegister className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4" />
-                            </button>
-                        </div>
-                        <div className="relative">
-                            <button
-                                onClick={handleViewAwardedTickets}
-                                className="w-full rounded-lg bg-red-700 text-white h-9 relative">
-                                Boletos premiados
-                                <GiStarStruck className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4" />
                             </button>
                         </div>
                         <div className="relative">

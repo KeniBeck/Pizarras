@@ -56,10 +56,9 @@ const ViewTickets = () => {
     //currentHour >= 18 || currentHour < 1
 
 
-    if (currentHour >= 18 || currentHour < 1) {
+    if (currentHour >= 20 || currentHour < 1) {
         return <AlertMenu />;
     }
-
     const handleSearch = (e) => {
         setSearch(e.target.value);
     };

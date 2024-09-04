@@ -22,6 +22,7 @@ const TicketBuy = () => {
     const [prizeboxError, setPrizeboxError] = useState(null);
     const [isLoading, setIsLoading] = useState(false);
     const router = useRouter();
+    const [cantidad, setCantidad] = useState(0);
 
     useEffect(() => {
         Promise.all([
@@ -33,27 +34,13 @@ const TicketBuy = () => {
                     return response.json();
                 })
                 .then(data => setPrizes(data.result[0])),
-            fetch(`/api/topes`)
-                .then(response => {
-                    if (!response.ok) {
-                        throw new Error(`HTTP error! status: ${response.status}`);
-                    }
-                    return response.json();
-                })
-                .then(data => {
-                    if (Array.isArray(data.tope)) {
-                        setTopePermitido(data.tope);
-                    } else {
-                        console.error('Expected an array for data.tope, but received:', data.tope);
-                        setTopePermitido([]);
-                    }
-                })
+
         ])
             .catch(error => console.error('Error:', error));
     }, []);
     const currentHour = new Date().getHours();
 
-    if (currentHour >= 18 || currentHour < 1) {
+    if (currentHour >= 21 || currentHour < 0) {
         return <AlertMenu />;
     }
 
@@ -68,19 +55,46 @@ const TicketBuy = () => {
             </div>
         </div>);
     }
-    const handleTicketNumberChange = (e) => {
+    const handleTicketNumberChange = async (e) => {
         let value = e.target.value;
         if (!/^[0-9]*$/.test(value)) {
             value = value.slice(0, -1);
         }
         setTicketNumber(value);
-        const matchingTope = topePermitido.find(tope => tope.Numero === Number(value));
-        if (matchingTope) {
-            console.log("Tope encontrado: ", matchingTope.Tope);
-            setFoundTope(matchingTope.Tope); // Guarda el tope encontrado en el estado
-        } else {
-            console.log("No se encontró un tope para este número de boleto");
-            setFoundTope(null); // Si no se encuentra un tope, establece el estado a null
+
+        if (value.length === 3) { // Asegúrate de que el número de boleto tenga 3 dígitos
+            const options = {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ ticketNumber: value })
+            };
+
+            try {
+                const response = await fetch('/api/topes', options);
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                const data = await response.json();
+                if (Array.isArray(data.tope)) {
+                    const matchingTope = data.tope.find(tope => tope.Numero === Number(value));
+
+                    if (matchingTope) {
+                        console.log("Tope encontrado: ", matchingTope.Tope);
+                        setFoundTope(matchingTope.Tope); // Guarda el tope encontrado en el estado
+                        setCantidad(matchingTope.Cantidad);
+                    } else {
+                        console.log("No se encontró un tope para este número de boleto");
+                        setFoundTope(null); // Si no se encuentra un tope, establece el estado a null
+                    }
+                } else {
+                    console.log("La respuesta de la API no contiene un array de topes");
+                    setFoundTope(null);
+                }
+            } catch (error) {
+                console.error('Error:', error);
+            }
         }
     };
     const handleBlur = (e) => {
@@ -89,6 +103,7 @@ const TicketBuy = () => {
         value = value.padStart(3, '0');
         setTicketNumber(value);
     };
+
     const userData = JSON.parse(localStorage.getItem('userData'));
     const idVendedor = userData.Idvendedor;
     const idSorteo = prizes.Idsorteo
@@ -100,8 +115,15 @@ const TicketBuy = () => {
             ValidateBox();
             return;
         }
+        if (cantidad >= foundTope) {
+            Swal.fire(`No se pueden vender más boletos de este número`);
+            setTicketNumber("");
+            setPrizebox("");
+            return;
+        }
+
         if (foundTope && prizebox > foundTope) {
-            Swal.fire(`El tope permitido es ${foundTope}`);
+            Swal.fire(`La cantidad permitida es ${foundTope - cantidad}`);
             setPrizebox("");
             return;
         }
@@ -162,7 +184,7 @@ const TicketBuy = () => {
             return;
         }
         if (foundTope && prizebox > foundTope) {
-            Swal.fire(`El tope permitido es ${foundTope}`);
+            Swal.fire(`El tope permitido es ${foundTope - cantidad}`);
             return;
         }
 
@@ -248,13 +270,13 @@ const TicketBuy = () => {
             <div className="max-w-sm mx-auto w-full bg-[rgb(38,38,38)]">
                 <div className="text-2xl text-white flex justify-center items-center pb-4 pt-6 ">Boletos</div>
                 <div className="w-full flex justify-center items-center flex-col space-y-1  relative">
-                    <label className="text-white text-lg flex justify-center items-center realative pr-8 ">
+                    <label className="text-white text-2xl flex justify-center items-center gap-6 realative pr-8 ">
                         <BsCalendarDateFill className="inline-block h-6 w-6 mr-1 text-red-600 " /> Sorteo:{fecha}</label>
-                    <label className="text-white text-lg flex justify-center items-center relative">
-                        <PiNumberSquareOneFill className="text-red-600 inline-block h-6 w-6 mr-1" />Premio:{prizes.Primerpremio}
+                    <label className="text-white text-2xl flex justify-center items-center ml-4 relative">
+                        <PiNumberSquareOneFill className="text-red-600 inline-block h-6 w-6 mr-1 absolute right-[210px]" />Premio:{prizes.Primerpremio}
                     </label>
-                    <label className="text-white text-lg flex justify-center items-center  realative">
-                        <PiNumberSquareTwoFill className="inline-block h-6 w-6 mr-1 text-red-600" /> Premio:{prizes.Segundopremio}
+                    <label className="text-white text-2xl flex justify-center items-center realative">
+                        <PiNumberSquareTwoFill className="inline-block h-6 w-6 mr-1 text-red-600 absolute left-[50px]" /> Premio:{prizes.Segundopremio}
                     </label>
                 </div>
 
@@ -270,7 +292,7 @@ const TicketBuy = () => {
 
                 <div className="flex justify-center items-center flex-col space-y-3 pt-6">
                     <div className="flex flex-row gap-12">
-                        <div className="text-white flex justify-center items-center text-lg">Boleto</div>
+                        <div className="text-white flex justify-center items-center text-2xl">Boleto</div>
                         <input
                             className="bg-neutral-300 border rounded w-[150px] outline-none h-[40px] pl-10"
                             value={ticketNumber}
@@ -278,7 +300,7 @@ const TicketBuy = () => {
                             onBlur={handleBlur}
                             maxLength={3}
                         // onKeyPressCapture={(event) => {
-                        //     if (!/[0-9]/.test(event.key)) {
+                        //     if (!/[0-[60px]]/.test(event.key)) {
                         //         event.preventDefault();
                         //     }
                         // }}
@@ -286,26 +308,26 @@ const TicketBuy = () => {
                         />
                     </div>
                     <div className="flex flex-row gap-12">
-                        <div className="text-white flex justify-center items-center text-lg">Precio</div>
+                        <div className="text-white flex justify-center items-center text-2xl">Precio</div>
                         <input className="bg-neutral-300 border rounded w-[150px] outline-none h-[40px] pl-10  "
                             value={prizebox}
                             onChange={(event) => {
                                 const value = event.target.value;
-                                if (!/^[0-9]*$/.test(value)) {
+                                if (!/^[0-[60px]]*$/.test(value)) {
                                     event.target.value = value.slice(0, -1);
                                 }
                                 handlePrizeboxChange(event);
                             }}
                             maxLength={4}
                         // onKeyPressCapture={(event) => {
-                        //     if (!/[0-9]/.test(event.key)) {
+                        //     if (!/[0-[60px]]/.test(event.key)) {
                         //         event.preventDefault();
                         //     }
                         // }}
                         />
                     </div>
                     <div className="flex flex-row gap-8">
-                        <div className="text-white flex justify-center items-center text-lg">Nombre</div>
+                        <div className="text-white flex justify-center items-center text-2xl">Nombre</div>
                         <input
                             value={name}
                             onChange={(e) => setName(e.target.value)}
@@ -314,27 +336,27 @@ const TicketBuy = () => {
 
                 </div>
 
-                <div className="flex justify-center items-center flex-col space-y-3 pt-8 px-8 ">
+                <div className="flex justify-center items-center flex-col space-y-2 pt-4 px-8 ">
 
                     <button
                         onClick={enviarDatosNormal}
-                        className="w-full rounded-lg bg-red-700 text-white h-9"
+                        className="w-full rounded-lg bg-red-700 text-white h-[60px] text-xl"
                     >Normal</button>
                     <button
                         onClick={enviarDatosSerie}
-                        className="w-full rounded-lg bg-red-700 text-white h-9">Serie</button>
+                        className="w-full rounded-lg bg-red-700 text-white h-[60px] text-xl">Serie</button>
                 </div>
 
-                <div className="flex justify-center items-center flex-col space-y-2 pt-6 px-8">
+                <div className="flex justify-center items-center flex-col pt-2 px-8">
 
                     <button
                         onClick={() => router.push('/viewTickects')}
-                        className="w-full rounded-lg bg-red-700 text-white h-9">Revisar Boletos</button>
+                        className="w-full rounded-lg bg-red-700 text-white h-[60px] text-xl">Revisar Boletos</button>
                 </div>
             </div >
             <button
                 onClick={goToMenu}
-                className="fixed bottom-4 right-4 bg-red-700 text-white p-2 rounded-full"
+                className="fixed bottom-2 right-4 bg-red-700 text-white flex justify-center items-center rounded-full w-[70px] h-[70px] text-3xl"
             >
                 <FaHome />
             </button>
