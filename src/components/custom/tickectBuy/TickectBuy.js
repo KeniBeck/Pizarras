@@ -26,7 +26,6 @@ const TicketBuy = () => {
 
     useEffect(() => {
         Promise.all([
-
             fetch('/api/ticketBuy')
                 .then(response => {
                     if (!response.ok) {
@@ -159,7 +158,6 @@ const TicketBuy = () => {
         };
 
         const options = {
-            cache: "no-store",
             method: 'POST',
             header: {
                 'Content-Type': 'application/json'
@@ -232,7 +230,6 @@ const TicketBuy = () => {
             };
 
             const options = {
-                cache: "no-store",
                 method: 'PUT',
                 header: {
                     'Content-Type': 'application/json'
