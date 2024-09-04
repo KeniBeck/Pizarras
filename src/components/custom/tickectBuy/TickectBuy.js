@@ -313,7 +313,7 @@ const TicketBuy = () => {
                             value={prizebox}
                             onChange={(event) => {
                                 const value = event.target.value;
-                                if (!/^[0-[60px]]*$/.test(value)) {
+                                if (!/^[0-9]*$/.test(value)) {
                                     event.target.value = value.slice(0, -1);
                                 }
                                 handlePrizeboxChange(event);
@@ -340,23 +340,23 @@ const TicketBuy = () => {
 
                     <button
                         onClick={enviarDatosNormal}
-                        className="w-full rounded-lg bg-red-700 text-white h-[60px] text-xl"
+                        className="w-full rounded-lg bg-red-700 text-white h-[50px] text-xl"
                     >Normal</button>
                     <button
                         onClick={enviarDatosSerie}
-                        className="w-full rounded-lg bg-red-700 text-white h-[60px] text-xl">Serie</button>
+                        className="w-full rounded-lg bg-red-700 text-white h-[50px] text-xl">Serie</button>
                 </div>
 
                 <div className="flex justify-center items-center flex-col pt-2 px-8">
 
                     <button
                         onClick={() => router.push('/viewTickects')}
-                        className="w-full rounded-lg bg-red-700 text-white h-[60px] text-xl">Revisar Boletos</button>
+                        className="w-full rounded-lg bg-red-700 text-white h-[50px] text-xl">Revisar Boletos</button>
                 </div>
             </div >
             <button
                 onClick={goToMenu}
-                className="fixed bottom-2 right-4 bg-red-700 text-white flex justify-center items-center rounded-full w-[70px] h-[70px] text-3xl"
+                className="fixed bottom-4 right-4 bg-red-700 text-white flex justify-center items-center rounded-full w-[70px] h-[70px] text-3xl"
             >
                 <FaHome />
             </button>
