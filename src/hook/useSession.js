@@ -7,6 +7,12 @@ const useSession = () => {
             localStorage.setItem('userData', JSON.stringify(userData));
         }
     };
+    const loginAdmin = (userData) => {
+        if (isBrowser) {
+            localStorage.setItem('loggedAdmin', true);
+            localStorage.setItem('userDataAdmin', JSON.stringify(userData));
+        }
+    };
 
     const logout = () => {
         if (isBrowser) {
@@ -24,7 +30,7 @@ const useSession = () => {
         }
     };
 
-    return { login, logout, getUserData };
+    return { login, logout, getUserData, loginAdmin };
 };
 
 export default useSession;

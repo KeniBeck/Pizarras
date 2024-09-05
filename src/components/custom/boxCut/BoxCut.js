@@ -54,7 +54,8 @@ const BoxCut = () => {
 
     if (currentHour >= 19 || currentHour < 1) {
         return <AlertMenu />;
-    } if (boxCut.length === 0) {
+    }
+    if (boxCut.length === 0) {
         return (<div className="flex justify-center items-center min-h-screen">
             <div className="relative w-32 h-32">
                 <div className="absolute top-0 left-0 animate-spin rounded-full h-32 w-32 border-t-2 border-b-2 border-red-500"></div>
@@ -68,6 +69,10 @@ const BoxCut = () => {
     const handelPrintCu = (data) => {
         printBoxCut(data);
     }
+    const goToMenu = () => {
+        router.push('/menu');
+        localStorage.removeItem('loggedAdmin');
+    }
 
 
     return (
@@ -79,8 +84,8 @@ const BoxCut = () => {
                 {handelPrintCu(boxCut)}
             </div>
             <button
-                onClick={() => router.push('/menu')}
-                className="fixed bottom-4 right-4 bg-red-700 text-white p-2 rounded-full z-10"
+                onClick={goToMenu}
+                className="fixed bottom-4 right-4 bg-red-700 text-white flex justify-center items-center text-4xl p-2 rounded-full h-[80px] w-[80px] z-10"
             >
                 <FaHome />
             </button>
