@@ -1,8 +1,7 @@
 import jsPDF from 'jspdf';
 import Swal from 'sweetalert2';
 
-const generatePDF = async (data, fecha) => {
-
+const generatePDF = async (tickets, fecha) => {
     // Crear un nuevo documento PDF
     var doc = new jsPDF({
         orientation: "portrait",
@@ -18,22 +17,33 @@ const generatePDF = async (data, fecha) => {
 
     // Agregar contenido al PDF
     doc.setFont('helvetica', 'bold');
-    doc.text(`Factura de boleto `, 10, 40);
-    const textoAncho = doc.getTextWidth("Factura de boleto ");
-    doc.setTextColor(255, 0, 0);
-    doc.text(`N${data.Idsorteo}`, 10 + textoAncho, 40);
-    doc.setTextColor(0, 0, 0);
+    doc.text(`Factura de boletos`, 10, 40);
+
+    // Mostrar detalles del comprador, sorteo y venta una sola vez
+    const firstTicket = tickets[0];
     doc.setFont('helvetica', 'normal');
-    doc.text(`Costo $ ${data.Costo}`, 10, 50);
-    doc.text(`Número de boleto: ${data.Boleto}`, 10, 60);
-    doc.text(`Sorteo: ${fecha}`, 10, 70);
-    doc.text(`Comprador: ${data.comprador}`, 10, 80);
-    doc.text(`Venta: ${data.Fecha}`, 10, 90);
+    doc.text(`Comprador: ${firstTicket.comprador}`, 10, 50);
+    doc.text(`Sorteo: ${fecha}`, 10, 60);
+    doc.text(`Venta: ${firstTicket.Fecha}`, 10, 70);
+
+    let yPosition = 80; // Posición inicial en el eje Y para los boletos
+
+    tickets.forEach((data, index) => {
+        doc.setFont('helvetica', 'bold');
+        doc.setTextColor(255, 0, 0);
+        doc.text(`N${data.Idsorteo}`, 10, yPosition);
+        doc.setTextColor(0, 0, 0);
+        doc.setFont('helvetica', 'normal');
+        doc.text(`Costo $ ${data.Costo}`, 10, yPosition + 10);
+        doc.text(`Número de boleto: ${data.Boleto}`, 10, yPosition + 20);
+
+        yPosition += 30; // Incrementar la posición Y para el siguiente boleto
+    });
 
     // Dividir el texto en varias líneas para que se ajuste al tamaño de 80mm
     doc.setFont('helvetica', 'bold');
-    var text = doc.splitTextToSize(`los premios se pueden recoger solo presentando este boleto`, 70);
-    doc.text(text, 10, 100);
+    var text = doc.splitTextToSize(`Los premios se pueden recoger solo presentando este boleto`, 70);
+    doc.text(text, 10, yPosition);
 
     // Abrir el diálogo de impresión cuando el usuario abra el PDF
     doc.autoPrint();
@@ -58,7 +68,6 @@ const generatePDF = async (data, fecha) => {
         window.open(url);
     }
     window.location.reload();
-
-}
+};
 
 export default generatePDF;

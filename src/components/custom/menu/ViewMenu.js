@@ -37,9 +37,9 @@ const ViewMenu = () => {
 
 
         // currentHour >= 18 || currentHour < 0
-        if (currentHour >= 20 || currentHour < 0) {
-            accessBlocked = true;
-        }
+        // if (currentHour >= 20 || currentHour < 0) {
+        //     accessBlocked = true;
+        // }
     }
 
     const handleTypeDraw = () => {
@@ -80,7 +80,7 @@ const ViewMenu = () => {
                     </div>
                     <div className="w-full flex flex-col space-y-10 pt-6 px-10 ">
                         <div className="relative">
-                            <button className="w-full rounded-lg bg-red-700 text-white h-9 relative" onClick={handleTypeDraw}>
+                            <button className="w-full rounded-lg bg-red-700 text-white text-xl  h-[46px] relative" onClick={handleTypeDraw}>
                                 Boletos
                                 <IoTicketSharp className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4" />
                             </button>
@@ -88,7 +88,7 @@ const ViewMenu = () => {
                         <div className="relative">
                             <button
                                 onClick={() => handleViewSell()}
-                                className="w-full rounded-lg bg-red-700 text-white h-9 relative">
+                                className="w-full rounded-lg bg-red-700 text-white text-xl  h-[46px] relative">
                                 Ventas del dia
                                 <ImStatsDots className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4" />
                             </button>
@@ -96,13 +96,13 @@ const ViewMenu = () => {
                         <div className="relative">
                             <button
                                 onClick={() => handleboxCut(userData)}
-                                className="w-full rounded-lg bg-red-700 text-white h-9 relative" >
+                                className="w-full rounded-lg bg-red-700 text-white text-xl  h-[46px] relative" >
                                 Corte de caja
                                 <FaCashRegister className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4" />
                             </button>
                         </div>
                         <div className="relative">
-                            <button className="w-full rounded-lg bg-red-700 text-white h-9 relative" onClick={session}>
+                            <button className="w-full rounded-lg bg-red-700 text-white text-xl h-[46px] relative" onClick={session}>
                                 Cerrar sesión
                                 <RiLogoutBoxFill className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4" />
                             </button>
