@@ -128,6 +128,11 @@ const TicketBuy = () => {
             setPrizebox("");
             return false;
         }
+        if (cantidad + prizebox > foundTope) {
+            Swal.fire(`La cantidad permitida es ${foundTope - cantidad}`);
+            setPrizebox("");
+            return false;
+        }
 
         if (prizeboxError) {
             ErrorPrizes();
