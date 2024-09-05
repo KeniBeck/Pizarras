@@ -36,7 +36,6 @@ const TicketBuy = () => {
                     return response.json();
                 })
                 .then(data => setPrizes(data.result[0])),
-
         ])
             .catch(error => console.error('Error:', error));
     }, []);
