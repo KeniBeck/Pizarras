@@ -123,12 +123,14 @@ const TicketBuy = () => {
             }
         }
 
-
-        if (cantidad + parseInt(prizebox) > foundTope) {
-            Swal.fire(`La cantidad permitida es ${foundTope - cantidad}`);
-            setPrizebox("");
-            return false;
+        if (foundTope) {
+            if (cantidad + parseInt(prizebox) > foundTope) {
+                Swal.fire(`La cantidad permitida es ${foundTope - cantidad}`);
+                setPrizebox("");
+                return false;
+            }
         }
+
 
         if (prizeboxError) {
             ErrorPrizes();
