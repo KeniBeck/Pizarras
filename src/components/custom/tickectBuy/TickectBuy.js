@@ -36,7 +36,6 @@ const TicketBuy = () => {
                     return response.json();
                 })
                 .then(data => setPrizes(data.result[0])),
-
         ])
             .catch(error => console.error('Error:', error));
     }, []);
@@ -125,6 +124,11 @@ const TicketBuy = () => {
         }
 
         if (foundTope && prizebox > foundTope) {
+            Swal.fire(`La cantidad permitida es ${foundTope - cantidad}`);
+            setPrizebox("");
+            return false;
+        }
+        if (cantidad + prizebox > foundTope) {
             Swal.fire(`La cantidad permitida es ${foundTope - cantidad}`);
             setPrizebox("");
             return false;
