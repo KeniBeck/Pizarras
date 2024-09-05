@@ -63,46 +63,80 @@ const TicketBuy = () => {
         }
         setTicketNumber(value);
 
-        if (value.length === 3) { // Asegúrate de que el número de boleto tenga 3 dígitos
-            const options = {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify({ ticketNumber: value })
-            };
+        // Asegúrate de que el valor tenga una longitud de 3 caracteres
+        value = value.padStart(3, '0');
 
-            try {
-                const response = await fetch('/api/topes', options);
-                if (!response.ok) {
-                    throw new Error(`HTTP error! status: ${response.status}`);
-                }
-                const data = await response.json();
-                if (Array.isArray(data.tope)) {
-                    const matchingTope = data.tope.find(tope => tope.Numero === Number(value));
+        const options = {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ ticketNumber: value })
+        };
 
-                    if (matchingTope) {
-                        console.log("Tope encontrado: ", matchingTope.Tope);
-                        setFoundTope(matchingTope.Tope); // Guarda el tope encontrado en el estado
-                        setCantidad(matchingTope.Cantidad);
-                    } else {
-                        console.log("No se encontró un tope para este número de boleto");
-                        setFoundTope(null); // Si no se encuentra un tope, establece el estado a null
-                    }
-                } else {
-                    console.log("La respuesta de la API no contiene un array de topes");
-                    setFoundTope(null);
-                }
-            } catch (error) {
-                console.error('Error:', error);
+        try {
+            const response = await fetch('/api/topes', options);
+            if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`);
             }
+            const data = await response.json();
+            if (Array.isArray(data.tope)) {
+                const matchingTope = data.tope.find(tope => tope.Numero === Number(value));
+
+                if (matchingTope) {
+                    console.log("Tope encontrado: ", matchingTope.Tope);
+                    setFoundTope(matchingTope.Tope); // Guarda el tope encontrado en el estado
+                    setCantidad(matchingTope.Cantidad);
+                } else {
+                    console.log("No se encontró un tope para este número de boleto");
+                    setFoundTope(null); // Si no se encuentra un tope, establece el estado a null
+                }
+            } else {
+                console.log("La respuesta de la API no contiene un array de topes");
+                setFoundTope(null);
+            }
+        } catch (error) {
+            console.error('Error:', error);
         }
     };
-    const handleBlur = (e) => {
+    const handleBlur = async (e) => {
         let value = e.target.value;
         // Asegúrate de que el valor sea un número y tenga una longitud de 3 caracteres
         value = value.padStart(3, '0');
         setTicketNumber(value);
+
+        const options = {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ ticketNumber: value })
+        };
+
+        try {
+            const response = await fetch('/api/topes', options);
+            if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`);
+            }
+            const data = await response.json();
+            if (Array.isArray(data.tope)) {
+                const matchingTope = data.tope.find(tope => tope.Numero === Number(value));
+
+                if (matchingTope) {
+                    console.log("Tope encontrado: ", matchingTope.Tope);
+                    setFoundTope(matchingTope.Tope); // Guarda el tope encontrado en el estado
+                    setCantidad(matchingTope.Cantidad);
+                } else {
+                    console.log("No se encontró un tope para este número de boleto");
+                    setFoundTope(null); // Si no se encuentra un tope, establece el estado a null
+                }
+            } else {
+                console.log("La respuesta de la API no contiene un array de topes");
+                setFoundTope(null);
+            }
+        } catch (error) {
+            console.error('Error:', error);
+        }
     };
 
     const userData = JSON.parse(localStorage.getItem('userData'));
