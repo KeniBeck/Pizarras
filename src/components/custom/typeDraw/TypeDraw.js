@@ -3,16 +3,16 @@ import { useRouter } from "next/navigation";
 import { FaHome } from "react-icons/fa";
 import AlertMenu from "../alerts/menu/AlertMenu";
 import { selectDate } from "../alerts/menu/Alerts";
-import TickectBuyEspecial from "../ticketBuyEspecial/TickectBuyEspecial";
 import { useState } from "react";
 const TypeDraw = () => {
     const currentHour = new Date().getHours();
     const router = useRouter();
     const [selectedDate, setSelectedDate] = useState(null);
 
-    if (currentHour >= 20 || currentHour < 0) {
-        return <AlertMenu />;
-    }
+    // // currentHour >= 20 || currentHour < 0
+    // if (currentHour >= 20 || currentHour < 0) {
+    //     return <AlertMenu />;
+    // }
 
 
     const handleTickectBuy = () => {
@@ -48,17 +48,19 @@ const TypeDraw = () => {
 
     return (
         <div className="relative flex flex-col w-full max-w-sm mx-auto">
-            <div className="text-white text-2xl text-center  ">Tipo de sorteo</div>
+            <div className="text-white text-3xl text-center  ">Tipo de sorteo</div>
             <div className="w-full mt-5 px-8 space-y-3">
-                <button className="rounded h-10 w-full bg-red-700 text-white" onClick={handleTickectBuy}>Hoy</button>
-                <button className="rounded h-10 w-full bg-red-700 text-white" onClick={handleTicketBuySerial}>Especial</button>
+                <button className="rounded h-[56px] w-full bg-red-700 text-white text-xl" onClick={handleTickectBuy}>Hoy</button>
+                <button className="rounded h-[56px] w-full bg-red-700 text-white text-xl" onClick={handleTicketBuySerial}>Especial</button>
             </div>
             <button
                 onClick={goToMenu}
-                className="fixed bottom-4 right-4 bg-red-700 text-white p-2 rounded-full"
+                className="fixed bottom-4 right-4 bg-red-700 text-white flex justify-center items-center rounded-full w-[70px] h-[70px] text-3xl"
             >
                 <FaHome />
             </button>
+
+
 
         </div>
 
