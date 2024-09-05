@@ -157,15 +157,6 @@ const TicketBuy = () => {
             }
         }
 
-        if (foundTope) {
-            if (cantidad + parseInt(prizebox) > foundTope) {
-                Swal.fire(`La cantidad permitida es ${foundTope - cantidad}`);
-                setPrizebox("");
-                return false;
-            }
-        }
-
-
         if (prizeboxError) {
             ErrorPrizes();
             setPrizebox("");
@@ -177,6 +168,13 @@ const TicketBuy = () => {
     const enviarDatosNormal = async () => {
         if (!Validate()) {
             return;
+        }
+        if (foundTope) {
+            if (cantidad + parseInt(prizebox) > foundTope) {
+                Swal.fire(`La cantidad permitida es ${foundTope - cantidad}`);
+                setPrizebox("");
+                return false;
+            }
         }
 
         if (foundTope == 0) {
@@ -233,29 +231,10 @@ const TicketBuy = () => {
     };
     const enviarDatosSerie = async () => {
 
-        if (!prizebox || !name) {
-            ValidateBox();
-            return;
-        }
-        if (prizebox < 100) {
-            prizesSeries()
-            setPrizebox("");
-            return;
-        }
-        if (foundTope && prizebox > foundTope) {
-            Swal.fire(`El tope permitido es ${foundTope - cantidad}`);
-            return;
-        }
-
-        if (prizeboxError) {
-            ErrorPrizes();
-            setPrizebox("");
+        if (!Validate()) {
             return;
         }
         setIsLoading(true);
-        setTicketNumber("");
-        setPrizebox("");
-        setName("");
 
         // Calcula la cantidad de boletos en la serie
 
@@ -302,6 +281,10 @@ const TicketBuy = () => {
 
         setIsLoading(false);
 
+        setTicketNumber("");
+        setPrizebox("");
+        setName("");
+
     }
 
 
@@ -325,6 +308,13 @@ const TicketBuy = () => {
     const addTicketToList = () => {
         if (!Validate()) {
             return false;
+        }
+        if (foundTope) {
+            if (cantidad + parseInt(prizebox) > foundTope) {
+                Swal.fire(`La cantidad permitida es ${foundTope - cantidad}`);
+                setPrizebox("");
+                return false;
+            }
         }
         if (ticketNumber && prizebox) {
             setTickets(prevTickets => [...prevTickets, { number: ticketNumber, price: prizebox, name }]);
