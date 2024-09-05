@@ -48,7 +48,7 @@ const ViewMenu = () => {
     }
 
     const handleboxCut = async (userData) => {
-        router.push('/boxCut')
+        router.push('/loginAdmin')
 
 
     }
@@ -70,8 +70,8 @@ const ViewMenu = () => {
                     <div className="w-full flex justify-center items-center  flex-col space-y-1 pb-8">
                         {userData ? (
                             <>
-                                <label className="text-white">Vendedor: {userData.Nombre}</label>
-                                <label className="text-white">Sucursal: {userData.sucursal}</label>
+                                <label className="text-white text-xl">Vendedor: {userData.Nombre}</label>
+                                <label className="text-white text-xl">Sucursal: {userData.sucursal}</label>
                             </>
                         ) : (
                             // Maneja el caso en que no hay datos de usuario

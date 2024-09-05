@@ -56,9 +56,9 @@ const ViewTickets = () => {
     //currentHour >= 18 || currentHour < 1
 
 
-    if (currentHour) {
-        return <AlertMenu />;
-    }
+    // if (currentHour >= 18 || currentHour < 1) {
+    //     return <AlertMenu />;
+    // }
     const handleSearch = (e) => {
         setSearch(e.target.value);
     };
@@ -66,12 +66,13 @@ const ViewTickets = () => {
     const filteredTickets = Array.isArray(tickets) ? tickets.filter(ticket => String(ticket.Boleto).includes(search)) : [];
 
     const handlePrint = (ticket) => {
+        const tickets = [ticket]
         let fechaSinHora = ticket.Fecha;
         if (isNaN(new Date(fechaSinHora).getTime())) {
             console.error('Invalid date:', fechaSinHora);
         } else {
             fechaSinHora = new Date(fechaSinHora).toLocaleDateString();
-            generatePDF(ticket, fechaSinHora)
+            generatePDF(tickets, fechaSinHora)
         }
     }
 
@@ -116,9 +117,9 @@ const ViewTickets = () => {
                                 <th scope="row" className="px-6 py-4 font-medium text-gray-900 whitespace-nowrap dark:text-white">{ticket.Boleto}</th>
                                 <td className="px-6 py-4">{ticket.Costo}</td>
                                 <td className="px-6 py-4">{ticket.comprador}</td>
-                                <td className="px-6 py-4 text-right">
+                                <td className="px-6 py-4 ">
                                     <button className="font-medium text-blue-600 dark:text-blue-500 hover:underline" onClick={() => handlePrint(ticket)}>Imprimir</button>
-                                    <button className="font-medium text-red-600 dark:text-red-500 hover:underline ml-4" onClick={() => handleDelete(ticket)}>Eliminar</button>
+                                    <button className="font-medium text-red-600 dark:text-red-500 hover:underline " onClick={() => handleDelete(ticket)}>Eliminar</button>
                                 </td>
                             </tr>
                         ))}
@@ -127,7 +128,7 @@ const ViewTickets = () => {
             </div>
             <button
                 onClick={goToMenu}
-                className="fixed bottom-4 right-4 bg-red-700 text-white p-2 rounded-full"
+                className="fixed bottom-4 right-4 bg-red-700 text-white flex justify-center items-center p-2 rounded-full h-[40px] w-[40px]"
             >
                 <FaHome />
             </button>
