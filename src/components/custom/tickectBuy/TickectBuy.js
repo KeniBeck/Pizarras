@@ -10,6 +10,7 @@ import { FaHome } from "react-icons/fa";
 import generatePDFSerie from "./pdfSerie";
 import AlertMenu from "../alerts/menu/AlertMenu";
 import Swal from "sweetalert2";
+import { TbSquarePlus } from "react-icons/tb";
 
 
 const TicketBuy = () => {
@@ -23,6 +24,7 @@ const TicketBuy = () => {
     const [isLoading, setIsLoading] = useState(false);
     const router = useRouter();
     const [cantidad, setCantidad] = useState(0);
+    const [tickets, setTickets] = useState([]);
 
     useEffect(() => {
         Promise.all([
@@ -40,9 +42,9 @@ const TicketBuy = () => {
     }, []);
     const currentHour = new Date().getHours();
 
-    if (currentHour >= 21 || currentHour < 0) {
-        return <AlertMenu />;
-    }
+    // if (currentHour >= 23 || currentHour < 0) {
+    //     return <AlertMenu />;
+    // }
 
 
     if (!prizes) {
@@ -108,70 +110,91 @@ const TicketBuy = () => {
     const idVendedor = userData.Idvendedor;
     const idSorteo = prizes.Idsorteo
     const fecha = new Date(new Date(prizes.Fecha).getTime() + new Date().getTimezoneOffset() * 60000).toLocaleDateString();
-
-
-    const enviarDatosNormal = async () => {
+    const Validate = () => {
         if (!prizebox || !name) {
             ValidateBox();
-            return;
+            return false;
         }
-        if (cantidad >= foundTope) {
-            Swal.fire(`No se pueden vender más boletos de este número`);
-            setTicketNumber("");
-            setPrizebox("");
-            return;
+        if (foundTope == 0) {
+            if (cantidad >= foundTope) {
+                Swal.fire(`No se pueden vender más boletos de este número`);
+                setTicketNumber("");
+                setPrizebox("");
+                return false;
+            }
         }
 
         if (foundTope && prizebox > foundTope) {
             Swal.fire(`La cantidad permitida es ${foundTope - cantidad}`);
             setPrizebox("");
-            return;
+            return false;
         }
 
         if (prizeboxError) {
             ErrorPrizes();
             setPrizebox("");
+            return false;
+        }
+        return true;
+    }
+
+    const enviarDatosNormal = async () => {
+        if (!Validate()) {
             return;
         }
+
         if (foundTope == 0) {
             ErrorTope();
             setTicketNumber("");
             return;
         }
+
         setIsLoading(true);
-        setTicketNumber("");
-        setPrizebox("");
-        setName("");
-        const data = {
-            prizebox,
-            name,
-            ticketNumber,
-            idVendedor,
-            idSorteo,
-            topePermitido: foundTope - prizebox,
-            fecha: prizes.Fecha,
-            primerPremio: prizes.Primerpremio,
-            segundoPremio: prizes.Segundopremio
-        };
 
-        const options = {
-            method: 'POST',
-            header: {
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify(data)
+        // Agregar el boleto actual a la lista de boletos acumulados si no está vacío
+        let updatedTickets = [...tickets];
+        if (ticketNumber && prizebox && name) {
+            updatedTickets.push({ number: ticketNumber, price: prizebox, name });
         }
-        await fetch("/api/sell", options)
-            .then(res => res.json())
-            .then(data => {
-                generatePDF(data[0][0], fecha);
 
+        const ticketData = [];
 
-            }).finally(() => {
-                setIsLoading(false);
+        for (const ticket of updatedTickets) {
+            const data = {
+                prizebox: ticket.price,
+                name: ticket.name,
+                ticketNumber: ticket.number,
+                idVendedor,
+                idSorteo,
+                topePermitido: foundTope - ticket.price,
+                fecha: prizes.Fecha,
+                primerPremio: prizes.Primerpremio,
+                segundoPremio: prizes.Segundopremio
+            };
 
-            });
-    }
+            const options = {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(data)
+            };
+
+            await fetch("/api/sell", options)
+                .then(res => res.json())
+                .then(data => {
+                    ticketData.push(data[0][0]);
+                });
+        }
+
+        setIsLoading(false);
+        setTickets([]); // Limpiar los boletos acumulados
+        setTicketNumber('');
+        setPrizebox('');
+        setName('');
+
+        generatePDF(ticketData, fecha);
+    };
     const enviarDatosSerie = async () => {
 
         if (!prizebox || !name) {
@@ -263,20 +286,37 @@ const TicketBuy = () => {
     const goToMenu = () => {
         router.push('/menu');
     }
+    const addTicketToList = () => {
+        if (!Validate()) {
+            return false;
+        }
+        if (ticketNumber && prizebox) {
+            setTickets(prevTickets => [...prevTickets, { number: ticketNumber, price: prizebox, name }]);
+            setTicketNumber('');
+            setPrizebox('');
+            return true;
+        }
+        return false;
+    };
+    const handlePlusTicket = () => {
+        if (addTicketToList()) {
+            console.log(tickets)
+        }
+    }
 
 
     return (
         <div className="relative min-h-screen">
             <div className="max-w-sm mx-auto w-full bg-[rgb(38,38,38)]">
-                <div className="text-2xl text-white flex justify-center items-center pb-4 pt-6 ">Boletos</div>
+                <div className="text-xl text-white flex justify-center items-center pb-4 pt-6 ">Boletos</div>
                 <div className="w-full flex justify-center items-center flex-col space-y-1  relative">
-                    <label className="text-white text-2xl flex justify-center items-center gap-6 realative pr-8 ">
+                    <label className="text-white text-lg flex justify-center items-center gap-6 realative pr-8 ">
                         <BsCalendarDateFill className="inline-block h-6 w-6 mr-1 text-red-600 " /> Sorteo:{fecha}</label>
-                    <label className="text-white text-2xl flex justify-center items-center ml-4 relative">
-                        <PiNumberSquareOneFill className="text-red-600 inline-block h-6 w-6 mr-1 absolute right-[210px]" />Premio:{prizes.Primerpremio}
+                    <label className="text-white text-lg flex justify-center items-center ml-4 relative">
+                        <PiNumberSquareOneFill className="text-red-600 inline-block h-6 w-6 mr-1 absolute right-[160px]" />Premio:{prizes.Primerpremio}
                     </label>
-                    <label className="text-white text-2xl flex justify-center items-center realative">
-                        <PiNumberSquareTwoFill className="inline-block h-6 w-6 mr-1 text-red-600 absolute left-[50px]" /> Premio:{prizes.Segundopremio}
+                    <label className="text-white text-lg flex justify-center items-center realative">
+                        <PiNumberSquareTwoFill className="inline-block h-6 w-6 mr-1 text-red-600 absolute left-[80px]" /> Premio:{prizes.Segundopremio}
                     </label>
                 </div>
 
@@ -290,7 +330,7 @@ const TicketBuy = () => {
                     </div>
                 )}
 
-                <div className="flex justify-center items-center flex-col space-y-3 pt-6">
+                <div className="flex mx-8 flex-col space-y-3 pt-6">
                     <div className="flex flex-row gap-12">
                         <div className="text-white flex justify-center items-center text-2xl">Boleto</div>
                         <input
@@ -299,13 +339,14 @@ const TicketBuy = () => {
                             onChange={handleTicketNumberChange}
                             onBlur={handleBlur}
                             maxLength={3}
-                        // onKeyPressCapture={(event) => {
-                        //     if (!/[0-[60px]]/.test(event.key)) {
-                        //         event.preventDefault();
-                        //     }
-                        // }}
 
                         />
+                        <button
+                            onClick={handlePlusTicket}
+                            className="absolute right-6 bg-green-700 text-white flex justify-center items-center rounded-lg h-[40px] w-[40px] text-4xl"
+                        >
+                            <TbSquarePlus />
+                        </button>
                     </div>
                     <div className="flex flex-row gap-12">
                         <div className="text-white flex justify-center items-center text-2xl">Precio</div>
@@ -319,11 +360,6 @@ const TicketBuy = () => {
                                 handlePrizeboxChange(event);
                             }}
                             maxLength={4}
-                        // onKeyPressCapture={(event) => {
-                        //     if (!/[0-[60px]]/.test(event.key)) {
-                        //         event.preventDefault();
-                        //     }
-                        // }}
                         />
                     </div>
                     <div className="flex flex-row gap-8">
@@ -340,26 +376,27 @@ const TicketBuy = () => {
 
                     <button
                         onClick={enviarDatosNormal}
-                        className="w-full rounded-lg bg-red-700 text-white h-[50px] text-xl"
+                        className="w-full rounded-lg bg-red-700 text-white h-[60px] text-xl"
                     >Normal</button>
                     <button
                         onClick={enviarDatosSerie}
-                        className="w-full rounded-lg bg-red-700 text-white h-[50px] text-xl">Serie</button>
+                        className="w-full rounded-lg bg-red-700 text-white h-[60px] text-xl">Serie</button>
                 </div>
 
                 <div className="flex justify-center items-center flex-col pt-2 px-8">
 
                     <button
                         onClick={() => router.push('/viewTickects')}
-                        className="w-full rounded-lg bg-red-700 text-white h-[50px] text-xl">Revisar Boletos</button>
+                        className="w-full rounded-lg bg-red-700 text-white h-[60px] text-xl">Revisar Boletos</button>
                 </div>
             </div >
             <button
                 onClick={goToMenu}
-                className="fixed bottom-4 right-4 bg-red-700 text-white flex justify-center items-center rounded-full w-[70px] h-[70px] text-3xl"
+                className="fixed bottom-4 right-4 bg-red-700 text-white flex justify-center items-center rounded-full w-[60px] h-[60px] text-3xl"
             >
                 <FaHome />
             </button>
+
         </div>
     );
 }
