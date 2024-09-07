@@ -1,4 +1,3 @@
-'use client'
 import { PiNumberSquareOneFill } from "react-icons/pi";
 import { PiNumberSquareTwoFill } from "react-icons/pi";
 import { BsCalendarDateFill } from "react-icons/bs";
@@ -11,7 +10,7 @@ import generatePDFSerie from "./pdfSerie";
 import AlertMenu from "../alerts/menu/AlertMenu";
 import Swal from "sweetalert2";
 import { TbSquarePlus } from "react-icons/tb";
-
+import TicketPreviewModal from "./TicketPreviewModal";
 
 const TicketBuy = () => {
     const [prizes, setPrizes] = useState(null);
@@ -22,6 +21,7 @@ const TicketBuy = () => {
     const [name, setName] = useState("");
     const [prizeboxError, setPrizeboxError] = useState(null);
     const [isLoading, setIsLoading] = useState(false);
+    const [showPreview, setShowPreview] = useState(false);
     const router = useRouter();
     const [cantidad, setCantidad] = useState(0);
     const [tickets, setTickets] = useState([]);
@@ -40,11 +40,6 @@ const TicketBuy = () => {
             .catch(error => console.error('Error:', error));
     }, []);
     const currentHour = new Date().getHours();
-
-    // if (currentHour >= 23 || currentHour < 0) {
-    //     return <AlertMenu />;
-    // }
-
 
     if (!prizes) {
         return (<div className="flex justify-center items-center min-h-screen">
@@ -183,17 +178,22 @@ const TicketBuy = () => {
             return;
         }
 
-        setIsLoading(true);
-
-        // Agregar el boleto actual a la lista de boletos acumulados si no está vacío
-        let updatedTickets = [...tickets];
+        // Agregar el boleto actual a la lista de boletos acumulados
         if (ticketNumber && prizebox && name) {
-            updatedTickets.push({ number: ticketNumber, price: prizebox, name });
+            setTickets(prevTickets => [...prevTickets, { number: ticketNumber, price: prizebox, name }]);
+            setTicketNumber('');
+            setPrizebox('');
         }
+
+        setShowPreview(true);
+    };
+
+    const confirmVenta = async () => {
+        setIsLoading(true);
 
         const ticketData = [];
 
-        for (const ticket of updatedTickets) {
+        for (const ticket of tickets) {
             const data = {
                 prizebox: ticket.price,
                 name: ticket.name,
@@ -228,16 +228,15 @@ const TicketBuy = () => {
         setName('');
 
         generatePDF(ticketData, fecha);
+        setShowPreview(false);
     };
     const enviarDatosSerie = async () => {
-
         if (!Validate()) {
             return;
         }
         setIsLoading(true);
 
         // Calcula la cantidad de boletos en la serie
-
         const numTickets = 10;
 
         // Genera los números de boleto en serie
@@ -248,7 +247,6 @@ const TicketBuy = () => {
             }
             return ticket.toString().padStart(3, '0');
         });
-
 
         // Envía cada boleto al servidor
         for (const ticketNumber of ticketNumbers) {
@@ -278,16 +276,11 @@ const TicketBuy = () => {
                 });
         }
 
-
         setIsLoading(false);
-
         setTicketNumber("");
         setPrizebox("");
         setName("");
-
-    }
-
-
+    };
 
     const handlePrizeboxChange = (e) => {
         let value = e.target.value;
@@ -299,12 +292,15 @@ const TicketBuy = () => {
             setPrizeboxError(null);
         }
     };
+
     if (isLoading) {
         loading();
     }
+
     const goToMenu = () => {
         router.push('/menu');
     }
+
     const addTicketToList = () => {
         if (!Validate()) {
             return false;
@@ -324,12 +320,15 @@ const TicketBuy = () => {
         }
         return false;
     };
+
     const handlePlusTicket = () => {
         if (addTicketToList()) {
             console.log(tickets)
         }
     }
-
+    const handleDeleteTicket = (index) => {
+        setTickets(prevTickets => prevTickets.filter((_, i) => i !== index));
+    };
 
     return (
         <div className="relative min-h-screen">
@@ -348,12 +347,10 @@ const TicketBuy = () => {
 
                 {foundTope !== null ? (
                     <div className="text-xl text-red-500 text-center pt-6">
-                        Tope permitido: {foundTope}
+                        Tope permitido: {foundTope - cantidad}
                     </div>
                 ) : (
-                    <div className="text-xl text-red-500 text-center pt-6">
-
-                    </div>
+                    <div className="text-xl text-red-500 text-center pt-6"></div>
                 )}
 
                 <div className="flex mx-8 flex-col space-y-3 pt-6">
@@ -365,7 +362,6 @@ const TicketBuy = () => {
                             onChange={handleTicketNumberChange}
                             onBlur={handleBlur}
                             maxLength={3}
-
                         />
                         <button
                             onClick={handlePlusTicket}
@@ -376,7 +372,8 @@ const TicketBuy = () => {
                     </div>
                     <div className="flex flex-row gap-12">
                         <div className="text-white flex justify-center items-center text-2xl">Precio</div>
-                        <input className="bg-neutral-300 border rounded w-[150px] outline-none h-[40px] pl-10  "
+                        <input
+                            className="bg-neutral-300 border rounded w-[150px] outline-none h-[40px] pl-10"
                             value={prizebox}
                             onChange={(event) => {
                                 const value = event.target.value;
@@ -393,29 +390,35 @@ const TicketBuy = () => {
                         <input
                             value={name}
                             onChange={(e) => setName(e.target.value)}
-                            className="bg-neutral-300 border rounded w-[150px] outline-none h-[40px] pl-10" />
+                            className="bg-neutral-300 border rounded w-[150px] outline-none h-[40px] pl-10"
+                        />
                     </div>
-
                 </div>
 
-                <div className="flex justify-center items-center flex-col space-y-2 pt-4 px-8 ">
-
+                <div className="flex justify-center items-center flex-col space-y-2 pt-4 px-8">
                     <button
                         onClick={enviarDatosNormal}
                         className="w-full rounded-lg bg-red-700 text-white h-[60px] text-xl"
-                    >Normal</button>
+                    >
+                        Normal
+                    </button>
                     <button
                         onClick={enviarDatosSerie}
-                        className="w-full rounded-lg bg-red-700 text-white h-[60px] text-xl">Serie</button>
+                        className="w-full rounded-lg bg-red-700 text-white h-[60px] text-xl"
+                    >
+                        Serie
+                    </button>
                 </div>
 
                 <div className="flex justify-center items-center flex-col pt-2 px-8">
-
                     <button
                         onClick={() => router.push('/viewTickects')}
-                        className="w-full rounded-lg bg-red-700 text-white h-[60px] text-xl">Revisar Boletos</button>
+                        className="w-full rounded-lg bg-red-700 text-white h-[60px] text-xl"
+                    >
+                        Revisar Boletos
+                    </button>
                 </div>
-            </div >
+            </div>
             <button
                 onClick={goToMenu}
                 className="fixed bottom-4 right-4 bg-red-700 text-white flex justify-center items-center rounded-full w-[60px] h-[60px] text-3xl"
@@ -423,7 +426,16 @@ const TicketBuy = () => {
                 <FaHome />
             </button>
 
+            {showPreview && (
+                <TicketPreviewModal
+                    tickets={tickets}
+                    onClose={() => setShowPreview(false)}
+                    onConfirm={confirmVenta}
+                    onDelete={handleDeleteTicket}
+                />
+            )}
         </div>
     );
-}
+};
+
 export default TicketBuy;
