@@ -2,6 +2,9 @@ import jsPDF from 'jspdf';
 import Swal from 'sweetalert2';
 
 const generatePDFSerie = async (data, fecha) => {
+    let leyenda = await fetch('/api/leyenda')
+        .then((res) => res.json())
+        .catch((error) => console.log(error));
 
     // Mostrar ventana de carga
     Swal.showLoading();
@@ -48,7 +51,7 @@ const generatePDFSerie = async (data, fecha) => {
     doc.text(` Comprador: ${data[0].comprador}`, 10, 95);
     doc.text(`Venta: ${data[0].Fecha}`, 10, 105);
     doc.setFont('helvetica', 'bold');
-    var text = doc.splitTextToSize(`los premios se pueden recoger solo presentando este boleto`, 70);
+    var text = doc.splitTextToSize(`${leyenda.leyenda1}`, 70);
     doc.text(text, 10, 115);
     // Abrir el diálogo de impresión cuando el usuario abra el PDF
     doc.autoPrint();
