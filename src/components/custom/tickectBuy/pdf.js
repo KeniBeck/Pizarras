@@ -2,6 +2,13 @@ import jsPDF from 'jspdf';
 import Swal from 'sweetalert2';
 
 const generatePDF = async (tickets, fecha) => {
+    //traer leyenda
+    let leyenda = await fetch('/api/leyenda')
+        .then((res) => res.json())
+        .catch((error) => console.log(error));
+
+
+
     // Crear un nuevo documento PDF
     var doc = new jsPDF({
         orientation: "portrait",
@@ -42,7 +49,7 @@ const generatePDF = async (tickets, fecha) => {
 
     // Dividir el texto en varias líneas para que se ajuste al tamaño de 80mm
     doc.setFont('helvetica', 'bold');
-    var text = doc.splitTextToSize(`Los premios se pueden recoger solo presentando este boleto`, 70);
+    var text = doc.splitTextToSize(`${leyenda.leyenda1}`, 70);
     doc.text(text, 10, yPosition);
 
     // Abrir el diálogo de impresión cuando el usuario abra el PDF
