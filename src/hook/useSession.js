@@ -3,9 +3,14 @@ const useSession = () => {
 
     const login = (userData) => {
         if (isBrowser) {
-            localStorage.setItem('logged', true);
-            localStorage.setItem('userData', JSON.stringify(userData));
+            if (userData.Estatus === 'alta') {
+                localStorage.setItem('logged', true);
+                localStorage.setItem('userData', JSON.stringify(userData));
+            } else {
+                localStorage.setItem('logged', false);
+            }
         }
+
     };
     const loginAdmin = (userData) => {
         if (isBrowser) {

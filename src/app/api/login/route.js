@@ -5,7 +5,7 @@ export async function POST(req, res) { // Define una función asíncrona llamada
     let datos = await req.json()   // Espera los datos de la solicitud y los convierte en un objeto JSON.
     const { user, pass } = datos  // Desestructura el objeto "datos" para obtener los campos "user" y "pass".
 
-    let sql = `SELECT  * FROM  vendedores WHERE  Idvendedor = '${user}' AND contrasena = '${pass}' `;   // Crea una cadena SQL para seleccionar todos los usuarios que coincidan con el correo y la contraseña proporcionados.
+    let sql = `SELECT  Idvendedor,Nombre,Fechaingreso,Aguinaldo,Domicilio,Telefono,sucursal,Comision,Estatus,Puntos FROM  vendedores WHERE  Idvendedor = '${user}' AND contrasena = '${pass}' `;   // Crea una cadena SQL para seleccionar todos los usuarios que coincidan con el correo y la contraseña proporcionados.
     let [currentTime] = await pool.query('SELECT NOW() as currentTime');
     let sqlUpdate = `UPDATE vendedores
     SET  Fechaingreso= ? 
