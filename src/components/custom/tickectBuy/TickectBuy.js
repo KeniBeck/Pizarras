@@ -25,6 +25,7 @@ const TicketBuy = () => {
     const router = useRouter();
     const [cantidad, setCantidad] = useState(0);
     const [tickets, setTickets] = useState([]);
+    const [numberTop, setNumberTop] = useState(0);
 
     useEffect(() => {
         Promise.all([
@@ -82,6 +83,7 @@ const TicketBuy = () => {
                     console.log("Tope encontrado: ", matchingTope.Tope);
                     setFoundTope(matchingTope.Tope); // Guarda el tope encontrado en el estado
                     setCantidad(matchingTope.Cantidad);
+                    setNumberTop(matchingTope.Numero);
                 } else {
                     console.log("No se encontró un tope para este número de boleto");
                     setFoundTope(null); // Si no se encuentra un tope, establece el estado a null
@@ -139,10 +141,6 @@ const TicketBuy = () => {
     const idSorteo = prizes.Idsorteo
     const fecha = new Date(new Date(prizes.Fecha).getTime() + new Date().getTimezoneOffset() * 60000).toLocaleDateString();
     const Validate = () => {
-        if (!prizebox || !name) {
-            ValidateBox();
-            return false;
-        }
         if (foundTope == 0) {
             if (cantidad >= foundTope) {
                 Swal.fire(`No se pueden vender más boletos de este número`);
@@ -161,28 +159,19 @@ const TicketBuy = () => {
     }
 
     const enviarDatosNormal = async () => {
+        if (tickets.length === 0 && (!prizebox || !name)) {
+            ValidateBox();
+            return;
+        }
+        if (tickets.length > 0) {
+            setShowPreview(true);
+        }
         if (!Validate()) {
             return;
         }
-        if (foundTope) {
-            if (cantidad + parseInt(prizebox) > foundTope) {
-                Swal.fire(`La cantidad permitida es ${foundTope - cantidad}`);
-                setPrizebox("");
-                return false;
-            }
-        }
 
-        if (foundTope == 0) {
-            ErrorTope();
-            setTicketNumber("");
+        if (!addTicketToList()) {
             return;
-        }
-
-        // Agregar el boleto actual a la lista de boletos acumulados
-        if (ticketNumber && prizebox && name) {
-            setTickets(prevTickets => [...prevTickets, { number: ticketNumber, price: prizebox, name }]);
-            setTicketNumber('');
-            setPrizebox('');
         }
 
         setShowPreview(true);
@@ -231,6 +220,10 @@ const TicketBuy = () => {
         setShowPreview(false);
     };
     const enviarDatosSerie = async () => {
+        if (!prizebox || !name) {
+            ValidateBox();
+            return
+        }
         if (!Validate()) {
             return;
         }
@@ -305,20 +298,34 @@ const TicketBuy = () => {
         if (!Validate()) {
             return false;
         }
+        const boletosConMismoTope = tickets.filter(ticket => parseInt(ticket.number) === numberTop);
+
+
+        // Calcular la cantidad acumulada de boletos en la lista
+        const totalAcumulado = boletosConMismoTope.reduce((acc, ticket) => acc + parseInt(ticket.price), 0);
+        // Validar la cantidad acumulada con el tope permitido
         if (foundTope) {
-            if (cantidad + parseInt(prizebox) > foundTope) {
-                Swal.fire(`La cantidad permitida es ${foundTope - cantidad}`);
+            const nuevaCantidad = totalAcumulado + cantidad + parseInt(prizebox);
+            if (nuevaCantidad > foundTope) {
+                Swal.fire(`La cantidad permitida es ${foundTope - cantidad - totalAcumulado}`);
                 setPrizebox("");
                 return false;
             }
         }
-        if (ticketNumber && prizebox) {
+        if (foundTope == 0) {
+            ErrorTope();
+            setTicketNumber("");
+            return false;
+        }
+
+        // Agregar el boleto actual a la lista de boletos acumulados
+        if (ticketNumber && prizebox && name) {
             setTickets(prevTickets => [...prevTickets, { number: ticketNumber, price: prizebox, name }]);
             setTicketNumber('');
             setPrizebox('');
             return true;
         }
-        return false;
+
     };
 
     const handlePlusTicket = () => {
