@@ -11,6 +11,7 @@ import AlertMenu from "../alerts/menu/AlertMenu";
 import Swal from "sweetalert2";
 import { TbSquarePlus } from "react-icons/tb";
 import TicketPreviewModal from "./TicketPreviewModal";
+import VailidationEstatus from "@/hook/validationEstatus";
 
 const TicketBuy = () => {
     const [prizes, setPrizes] = useState(null);
@@ -159,6 +160,7 @@ const TicketBuy = () => {
     }
 
     const enviarDatosNormal = async () => {
+        VailidationEstatus();
         if (tickets.length === 0 && (!prizebox || !name)) {
             ValidateBox();
             return;
@@ -178,6 +180,7 @@ const TicketBuy = () => {
     };
 
     const confirmVenta = async () => {
+        VailidationEstatus();
         setIsLoading(true);
 
         const ticketData = [];
@@ -295,6 +298,7 @@ const TicketBuy = () => {
     }
 
     const addTicketToList = () => {
+        VailidationEstatus();
         if (!Validate()) {
             return false;
         }
