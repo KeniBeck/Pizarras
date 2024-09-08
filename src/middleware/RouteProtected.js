@@ -1,6 +1,8 @@
 'use client'
+import VailidationEstatus from "@/hook/validationEstatus";
 
 const RouteProtected = ({ children }) => {
+    VailidationEstatus();
 
     let logged = false;
     if (typeof window !== 'undefined') {
