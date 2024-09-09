@@ -52,9 +52,9 @@ const BoxCut = () => {
     }, []);
     const currentHour = new Date().getHours();
 
-    if (currentHour >= 19 || currentHour < 1) {
-        return <AlertMenu />;
-    }
+    // if (currentHour >= 19 || currentHour < 1) {
+    //     return <AlertMenu />;
+    // }
     if (boxCut.length === 0) {
         return (<div className="flex justify-center items-center min-h-screen">
             <div className="relative w-32 h-32">
