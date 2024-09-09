@@ -253,7 +253,7 @@ const TickectBuyEspecial = ({ selectedDate }) => {
                             className="w-full rounded-lg bg-red-700 text-white h-[56px] text-xl"
 
                         >
-                            Ver Boletos Vendidos
+                            Boletos disponibles
                         </button>
                     </div>
                 </div>
