@@ -72,7 +72,7 @@ const generatePDFBoxCut = async (data) => {
         y = doc.autoTable.previous.finalY + 5; // Actualizar la posición y para el total de boletos vendidos
     }
     // Agregar el total de boletos vendidos
-    let comision = data.boletosEspeciales[0].comisiones;
+    let comision = data.boletosEspeciales[0].comisiones / 100;
     let totalBoletosVendidos = data.boletosEspeciales.length + data.boletosNormales.length;
     let totalVentas = data.boletosEspeciales.reduce((total, boleto) => total + boleto.Costo, 0) +
         data.boletosNormales.reduce((total, boleto) => total + boleto.Costo, 0);
