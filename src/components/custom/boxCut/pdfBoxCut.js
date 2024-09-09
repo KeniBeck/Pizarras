@@ -85,11 +85,11 @@ const generatePDFBoxCut = async (data) => {
     }
     let caja = totalVentas - totalVentas * 0.10;
     doc.text('Total de boletos vendidos: ' + totalBoletosVendidos, 30, y);
-    doc.text('Porcentaje de comision:' + comision, 30, y + 4);
+    doc.text('Porcentaje de comision: ' + comision * 100, 30, y + 4);
     doc.text('Venta: ' + totalVentas, 60, y + 10);
     doc.text('Comision: ' + totalVentas * comision, 56, y + 14);
-    doc.text('Caja:' + caja, 62.4, y + 18);
-    doc.text('Adeudo pendiente vendedor:' + deuda, 16, y + 30);
+    doc.text('Caja: ' + caja, 62.4, y + 18);
+    doc.text('Adeudo pendiente vendedor: ' + deuda, 16, y + 30);
     doc.setFont("helvetica", "bold");
     doc.text('No incluido en el corte de caja', 16, y + 35);
     doc.setFont("helvetica");
