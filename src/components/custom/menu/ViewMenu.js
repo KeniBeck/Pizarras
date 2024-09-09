@@ -7,9 +7,18 @@ import { RiLogoutBoxFill } from "react-icons/ri";
 import useSession from "@/hook/useSession";
 import { useRouter } from 'next/navigation'
 import AlertMenu from "../alerts/menu/AlertMenu";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
 const ViewMenu = () => {
+    const [menssage, setMessage] = useState('');
+
+    useEffect(() => {
+        fetch('/api/message')
+            .then(response => response.json())
+            .then(data => setMessage(data.Mensaje))
+            .catch(error => console.error(error))
+    },
+        [])
 
     const router = useRouter();
     let userData = null;
@@ -66,8 +75,8 @@ const ViewMenu = () => {
             ) : (
                 <div className="w-full bg-[rgb(38,38,38)]">
 
-                    <div className=" w-full flex justify-center items-center text-xl text-white p-10">Pizarras</div>
-                    <div className="w-full flex justify-center items-center  flex-col space-y-1 pb-8">
+                    <div className=" w-full flex justify-center items-center text-2xl text-white pt-6 pb-2">Pizarras</div>
+                    <div className="w-full flex justify-center items-center  flex-col space-y-1 pb-4">
                         {userData ? (
                             <>
                                 <label className="text-white text-xl">Vendedor: {userData.Nombre}</label>
@@ -78,33 +87,41 @@ const ViewMenu = () => {
                             <p className="text-white">Loading...</p>
                         )}
                     </div>
-                    <div className="w-full flex flex-col space-y-10 pt-6 px-10 ">
+                    {menssage && (
+                        <div className="flex justify-center items-center">
+                            <div className="flex justify-center items-center text-lg text-white h-[56px] bg-green-700 p-2 rounded-xl">
+                                {menssage}
+                            </div>
+                        </div>
+                    )}
+
+                    <div className="w-full flex flex-col space-y-6 pt-6 px-10 ">
                         <div className="relative">
-                            <button className="w-full rounded-lg bg-red-700 text-white text-xl  h-[46px] relative" onClick={handleTypeDraw}>
+                            <button className="w-full rounded-lg bg-red-700 text-white text-2xl  h-[66px] relative" onClick={handleTypeDraw}>
                                 Boletos
-                                <IoTicketSharp className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4" />
+                                <IoTicketSharp className="absolute left-3 top-1/2 transform -translate-y-1/2 h-10" />
                             </button>
                         </div>
                         <div className="relative">
                             <button
                                 onClick={() => handleViewSell()}
-                                className="w-full rounded-lg bg-red-700 text-white text-xl  h-[46px] relative">
+                                className="w-full rounded-lg bg-red-700 text-white text-2xl  h-[66px] relative">
                                 Ventas del dia
-                                <ImStatsDots className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4" />
+                                <ImStatsDots className="absolute left-3 top-1/2 transform -translate-y-1/2 h-10" />
                             </button>
                         </div>
                         <div className="relative">
                             <button
                                 onClick={() => handleboxCut(userData)}
-                                className="w-full rounded-lg bg-red-700 text-white text-xl  h-[46px] relative" >
+                                className="w-full rounded-lg bg-red-700 text-white text-2xl  h-[66px] relative" >
                                 Corte de caja
-                                <FaCashRegister className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4" />
+                                <FaCashRegister className="absolute left-3 top-1/2 transform -translate-y-1/2 h-10" />
                             </button>
                         </div>
                         <div className="relative">
-                            <button className="w-full rounded-lg bg-red-700 text-white text-xl h-[46px] relative" onClick={session}>
+                            <button className="w-full rounded-lg bg-red-700 text-white text-2xl h-[66px] relative" onClick={session}>
                                 Cerrar sesión
-                                <RiLogoutBoxFill className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4" />
+                                <RiLogoutBoxFill className="absolute left-3 top-1/2 transform -translate-y-1/2 h-10" />
                             </button>
                             <div>
                                 {cerrarSession}
@@ -115,9 +132,11 @@ const ViewMenu = () => {
 
                 </div>
             )}
-            <button className="fixed bottom-4 right-4 bg-green-700 text-center text-white h-[60px] w-[60px] rounded-full">
-                {userData ? userData.Puntos : 'Cargando...'}
-            </button>
+            <div className="fixed bottom-4 right-4 bg-green-700 flex items-center justify-center text-white h-[60px] w-[160px] rounded-full">
+                <div className="flex flex-row">
+                    {userData ? `Puntos: ${userData.Puntos}` : 'Cargando...'}
+                </div>
+            </div>
 
         </div>
     );
