@@ -69,7 +69,7 @@ const LoginForm = () => {
     //hour < 18 && hour >= 0
 
 
-    if (hour) {
+    if (hour < 18 && hour >= 0) {
       // Redirige al usuario a la página del menú
       login(data[0])
 
