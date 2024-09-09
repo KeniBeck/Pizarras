@@ -7,9 +7,11 @@ import generatePDF from "../tickectBuy/pdf";
 import { ErrorPrizes, loading, ErrorTope, ValidateBox, success, selectDate, Especial } from "../alerts/menu/Alerts";
 import { useRouter } from "next/navigation";
 import { FaHome } from "react-icons/fa";
+import EspecialPreviewModal from "./EspecialPreviewModal";
 
 import AlertMenu from "../alerts/menu/AlertMenu";
 import { set } from "react-hook-form";
+import VailidationEstatus from "@/hook/validationEstatus";
 
 const TickectBuyEspecial = ({ selectedDate }) => {
     const [prizes, setPrizes] = useState(selectedDate)
@@ -21,6 +23,7 @@ const TickectBuyEspecial = ({ selectedDate }) => {
     const [isLoading, setIsLoading] = useState(false);
     const [boletos, setBoletos] = useState([]);
     const router = useRouter();
+    const [previewModal, setPreviewModal] = useState(false);
 
 
     useEffect(() => {
@@ -41,9 +44,11 @@ const TickectBuyEspecial = ({ selectedDate }) => {
     const currentHour = new Date().getHours();
     // currentHour >= 20 || currentHour < 0
 
-    if (currentHour) {
-        return <AlertMenu />;
-    } if (!prizes) {
+    // if (currentHour >= 20 || currentHour < 0) {
+    //     return <AlertMenu />;
+    // }
+
+    if (!prizes) {
         return (<div className="flex justify-center items-center min-h-screen">
             <div className="relative w-32 h-32">
                 <div className="absolute top-0 left-0 animate-spin rounded-full h-32 w-32 border-t-2 border-b-2 border-red-500"></div>
@@ -84,6 +89,7 @@ const TickectBuyEspecial = ({ selectedDate }) => {
 
 
     const enviarDatosNormal = async () => {
+        VailidationEstatus()
 
 
         if (!prizebox || !name) {
@@ -128,7 +134,7 @@ const TickectBuyEspecial = ({ selectedDate }) => {
         await fetch("/api/sell", options)
             .then(res => res.json())
             .then(data => {
-                generatePDF(data[0][0], fecha);
+                generatePDF([data[0][0]], fecha);
 
 
             }).finally(() => {
@@ -153,18 +159,24 @@ const TickectBuyEspecial = ({ selectedDate }) => {
     const goToMenu = () => {
         router.push('/menu');
     }
+    const hanlePreviewModal = () => {
+        VailidationEstatus()
+        setPreviewModal(true);
+
+    }
+
 
     return (
         <div className="relative min-h-screen">
             <div className="max-w-sm mx-auto w-full bg-[rgb(38,38,38)]">
                 <div className="text-2xl text-white flex justify-center items-center pb-4 pt-6 ">Boletos</div>
                 <div className="w-full flex justify-center items-center flex-col space-y-1  relative">
-                    <label className="text-white text-lg flex justify-center items-center realative pr-8 ">
+                    <label className="text-white text-xl flex justify-center items-center realative pr-8 ">
                         <BsCalendarDateFill className="inline-block h-6 w-6 mr-1 text-red-600 " /> Sorteo:{fecha}</label>
-                    <label className="text-white text-lg flex justify-center items-center relative">
+                    <label className="text-white text-xl flex justify-center items-center relative">
                         <PiNumberSquareOneFill className="text-red-600 inline-block h-6 w-6 mr-1" />Premio:{prizes.Primerpremio}
                     </label>
-                    <label className="text-white text-lg flex justify-center items-center  realative">
+                    <label className="text-white text-xl flex justify-center items-center  realative">
                         <PiNumberSquareTwoFill className="inline-block h-6 w-6 mr-1 text-red-600" /> Premio:{prizes.Segundopremio}
                     </label>
                 </div>
@@ -181,9 +193,9 @@ const TickectBuyEspecial = ({ selectedDate }) => {
 
                 <div className="flex justify-center items-center flex-col space-y-3 pt-6">
                     <div className="flex flex-row gap-12">
-                        <div className="text-white flex justify-center items-center text-lg">Boleto</div>
+                        <div className="text-white flex justify-center items-center text-xl">Boleto</div>
                         <input
-                            className="bg-neutral-300 border rounded w-[110px] outline-none h-9 pl-10"
+                            className="bg-neutral-300 border rounded w-[140px] outline-none h-9 pl-10"
                             value={ticketNumber}
                             onChange={handleTicketNumberChange}
                             onBlur={handleBlur}
@@ -197,8 +209,8 @@ const TickectBuyEspecial = ({ selectedDate }) => {
                         />
                     </div>
                     <div className="flex flex-row gap-12">
-                        <div className="text-white flex justify-center items-center text-lg">Precio</div>
-                        <input className="bg-neutral-300 border rounded w-[110px] outline-none h-9 pl-10  "
+                        <div className="text-white flex justify-center items-center text-xl">Precio</div>
+                        <input className="bg-neutral-300 border rounded w-[140px] outline-none h-9 pl-10  "
                             value={prizebox}
                             onChange={handlePrizeboxChange}
                             maxLength={4}
@@ -210,36 +222,56 @@ const TickectBuyEspecial = ({ selectedDate }) => {
                         />
                     </div>
                     <div className="flex flex-row gap-8">
-                        <div className="text-white flex justify-center items-center text-lg">Nombre</div>
+                        <div className="text-white flex justify-center items-center text-xl">Nombre</div>
                         <input
                             value={name}
                             onChange={(e) => setName(e.target.value)}
-                            className="bg-neutral-300 border rounded w-[110px] outline-none h-9 pl-5  " />
+                            className="bg-neutral-300 border rounded w-[140px] outline-none h-9 pl-5  " />
                     </div>
 
                 </div>
 
-                <div className="flex justify-center items-center flex-col space-y-3 pt-8 px-8 ">
+                <div className="flex flex-col gap-3 pt-3">
 
-                    <button
-                        onClick={enviarDatosNormal}
-                        className="w-full rounded-lg bg-red-700 text-white h-9"
-                    >Normal</button>
-                </div>
+                    <div className="flex justify-center items-center flex-col  px-8 ">
 
-                <div className="flex justify-center items-center flex-col space-y-2 pt-6 px-8">
+                        <button
+                            onClick={enviarDatosNormal}
+                            className="w-full rounded-lg bg-red-700 text-white h-[56px] text-xl"
+                        >Normal</button>
+                    </div>
 
-                    <button
-                        onClick={() => router.push('/viewTickects')}
-                        className="w-full rounded-lg bg-red-700 text-white h-9">Revisar Boletos</button>
+                    <div className="flex justify-center items-center flex-col px-8">
+
+                        <button
+                            onClick={() => router.push('/viewTickects')}
+                            className="w-full rounded-lg bg-red-700 text-white h-[56px] text-xl">Revisar Boletos</button>
+                    </div>
+                    <div className="flex justify-center items-center flex-col px-8">
+                        <button
+                            onClick={hanlePreviewModal}
+                            className="w-full rounded-lg bg-red-700 text-white h-[56px] text-xl"
+
+                        >
+                            Ver Boletos Vendidos
+                        </button>
+                    </div>
                 </div>
             </div >
             <button
                 onClick={goToMenu}
-                className="fixed bottom-4 right-4 bg-red-700 text-white p-2 rounded-full"
+                className="fixed bottom-4 right-4 bg-red-700 text-3xl text-white flex justify-center items-center h-[56px] w-[56px] rounded-full"
             >
                 <FaHome />
             </button>
+
+            {previewModal && (
+                <EspecialPreviewModal
+                    tickets={boletos}
+                    onClose={() => setPreviewModal(false)}
+
+                />
+            )}
         </div>
     );
 }

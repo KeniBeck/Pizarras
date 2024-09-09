@@ -35,6 +35,7 @@ const VailidationEstatus = async () => {
         } catch (error) {
             console.error('Error al obtener la información del usuario:', error);
             localStorage.setItem('logged', false);
+            window.location.href = '/';
         }
     }
 };
