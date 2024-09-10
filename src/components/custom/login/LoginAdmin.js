@@ -63,7 +63,7 @@ const LoginAdmin = () => {
         if (!verificarHora || (hour < 18 && hour >= 0)) {
           // Redirige al usuario a la página del menú
           loginAdmin(data[0]);
-          router.push('/menu');
+          router.push(/boxCut);
         } else {
           // Muestra un mensaje de error
           error();
