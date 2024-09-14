@@ -5,8 +5,21 @@ export const selectLottery = async () => {
 
     try {
         const currentDate = new Date();
-        const month = (currentDate.getMonth() + 1).toString().padStart(2, '0');
-        const formattedDate = `${currentDate.getFullYear()}-${month}-${currentDate.getDate()}`;
+        const dayOfWeek = currentDate.getDay(); // 0 (Sunday) to 6 (Saturday)
+        let targetDate = new Date(currentDate);
+
+        if (dayOfWeek === 1 || dayOfWeek === 2) { // Monday or Tuesday
+            targetDate.setDate(currentDate.getDate() + (2 - dayOfWeek)); // Set to Tuesday
+        } else if (dayOfWeek >= 3 && dayOfWeek <= 5) { // Wednesday, Thursday, or Friday
+            targetDate.setDate(currentDate.getDate() + (5 - dayOfWeek)); // Set to Friday
+        } else if (dayOfWeek === 6) { // Saturday
+            targetDate.setDate(currentDate.getDate() + 1); // Set to Sunday
+        }
+
+        const month = (targetDate.getMonth() + 1).toString().padStart(2, '0');
+        const day = targetDate.getDate().toString().padStart(2, '0');
+        const formattedDate = `${targetDate.getFullYear()}-${month}-${day}`;
+
         let sql = `SELECT * FROM sorteo WHERE Fecha = ? AND (Tipo_sorteo = 'normal' OR (Tipo_sorteo = 'domingo' AND DAYOFWEEK(Fecha) = 1))`;
         let [rows] = await pool.query(sql, [formattedDate]);
         result = rows;

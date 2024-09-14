@@ -1,12 +1,10 @@
 'use client'
 import useSession from "@/hook/useSession";
 import { useEffect, useState } from "react";
-import generatePDFSerie from "../tickectBuy/pdfSerie";
 import generatePDF from "../tickectBuy/pdf";
 import { FaHome } from "react-icons/fa";
 import { useRouter } from "next/navigation";
-import AlertMenu from "../alerts/menu/AlertMenu";
-import { deleteTicket } from "../alerts/menu/Alerts";
+
 
 const ViewTickets = () => {
     const { getUserData } = useSession();
@@ -76,12 +74,6 @@ const ViewTickets = () => {
         }
     }
 
-    const handleDelete = async (ticket) => {
-        const dataTickect = ticket;
-        await deleteTicket(dataTickect);
-
-        fetchData();
-    }
     const goToMenu = () => {
         router.push('/menu');
     }
@@ -119,7 +111,6 @@ const ViewTickets = () => {
                                 <td className="px-6 py-4">{ticket.comprador}</td>
                                 <td className="px-6 py-4 ">
                                     <button className="font-medium text-blue-600 dark:text-blue-500 hover:underline" onClick={() => handlePrint(ticket)}>Imprimir</button>
-                                    <button className="font-medium text-red-600 dark:text-red-500 hover:underline " onClick={() => handleDelete(ticket)}>Eliminar</button>
                                 </td>
                             </tr>
                         ))}
