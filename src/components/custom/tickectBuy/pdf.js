@@ -56,14 +56,14 @@ const generatePDF = async (tickets, fecha) => {
     // Crear un archivo a partir del blob
     const file = new File([blob], 'factura_boletos.pdf', { type: 'application/pdf' });
 
-    // Mostrar una alerta con opciones para descargar o compartir
+    // Mostrar una alerta con opciones para compartir o cancelar
     const result = await Swal.fire({
-        title: 'Compra exitosa',
+        title: 'Operacion exitosa',
         icon: 'success',
         showCancelButton: true,
         allowOutsideClick: false,
         confirmButtonText: 'Compartir',
-        cancelButtonText: 'Descargar',
+        cancelButtonText: 'Cancelar',
     });
 
     if (result.isConfirmed) {
@@ -84,15 +84,9 @@ const generatePDF = async (tickets, fecha) => {
                 icon: 'error',
             });
         }
-    } else {
-        // Crear un enlace de descarga
-        const downloadLink = document.createElement('a');
-        downloadLink.href = URL.createObjectURL(blob);
-        downloadLink.download = 'factura_boletos.pdf';
-        downloadLink.click();
     }
 
-    window.location.reload();
+    Swal.close();
 };
 
 export default generatePDF;
