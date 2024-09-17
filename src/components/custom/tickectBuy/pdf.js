@@ -7,8 +7,6 @@ const generatePDF = async (tickets, fecha) => {
         .then((res) => res.json())
         .catch((error) => console.log(error));
 
-
-
     // Crear un nuevo documento PDF
     var doc = new jsPDF({
         orientation: "portrait",
@@ -52,29 +50,43 @@ const generatePDF = async (tickets, fecha) => {
     var text = doc.splitTextToSize(`${leyenda.leyenda1}`, 70);
     doc.text(text, 10, yPosition);
 
-    // Abrir el diálogo de impresión cuando el usuario abra el PDF
-    doc.autoPrint();
-
     // Obtener una representación de datos del documento
     var blob = doc.output('blob');
 
-    // Crear una URL para los datos
-    var url = URL.createObjectURL(blob);
+    // Crear un archivo a partir del blob
+    const file = new File([blob], 'factura_boletos.pdf', { type: 'application/pdf' });
 
-    // Mostrar una alerta con opción para imprimir
+    // Mostrar una alerta con opciones para compartir o cancelar
     const result = await Swal.fire({
-        title: 'Compra exitosa',
+        title: 'Operacion exitosa',
         icon: 'success',
         showCancelButton: true,
         allowOutsideClick: false,
-        confirmButtonText: 'Imprimir o Compartir',
+        confirmButtonText: 'Compartir',
+        cancelButtonText: 'Cancelar',
     });
 
     if (result.isConfirmed) {
-        // Si el usuario elige imprimir, abrir URL en una nueva pestaña
-        window.open(url);
+        if (navigator.share) {
+            navigator.share({
+                title: 'Factura de boletos',
+                text: 'Hola, aquí tienes tu factura de boletos.',
+                files: [file],
+            }).then(() => {
+                console.log('Compartido exitosamente');
+            }).catch((error) => {
+                console.error('Error al compartir:', error);
+            });
+        } else {
+            Swal.fire({
+                title: 'Error',
+                text: 'La funcionalidad de compartir no está disponible en este dispositivo.',
+                icon: 'error',
+            });
+        }
     }
-    window.location.reload();
+
+    Swal.close();
 };
 
 export default generatePDF;

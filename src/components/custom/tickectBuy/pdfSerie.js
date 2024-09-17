@@ -59,23 +59,38 @@ const generatePDFSerie = async (data, fecha) => {
     // Obtener una representación de datos del documento
     var blob = doc.output('blob');
 
-    // Crear una URL para los datos
-    var url = URL.createObjectURL(blob);
+    const file = new File([blob], 'factura_boletos.pdf', { type: 'application/pdf' });
 
     const result = await Swal.fire({
         title: 'Compra exitosa',
         icon: 'success',
         showCancelButton: true,
         allowOutsideClick: false,
-        confirmButtonText: 'Imprimir o Compartir',
+        confirmButtonText: 'Compartir',
     });
 
     // Si el usuario elige imprimir, abrir la URL en una nueva pestaña
     if (result.isConfirmed) {
-        window.open(url);
+        if (navigator.share) {
+            navigator.share({
+                title: 'Factura de boletos',
+                text: 'Hola, aquí tienes tu factura de boletos.',
+                files: [file],
+            }).then(() => {
+                console.log('Compartido exitosamente');
+            }).catch((error) => {
+                console.error('Error al compartir:', error);
+            });
+        } else {
+            Swal.fire({
+                title: 'Error',
+                text: 'La funcionalidad de compartir no está disponible en este dispositivo.',
+                icon: 'error',
+            });
+        }
 
     }
-    window.location.reload();
+
 }
 
 export default generatePDFSerie;
