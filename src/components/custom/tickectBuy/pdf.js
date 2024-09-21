@@ -1,92 +1,95 @@
-import jsPDF from 'jspdf';
-import Swal from 'sweetalert2';
+import jsPDF from "jspdf";
+import Swal from "sweetalert2";
 
 const generatePDF = async (tickets, fecha) => {
-    //traer leyenda
-    let leyenda = await fetch('/api/leyenda')
-        .then((res) => res.json())
-        .catch((error) => console.log(error));
+  //traer leyenda
+  let leyenda = await fetch("/api/leyenda")
+    .then((res) => res.json())
+    .catch((error) => console.log(error));
 
-    // Crear un nuevo documento PDF
-    var doc = new jsPDF({
-        orientation: "portrait",
-        unit: "mm",
-        format: [80, 297]
-    });
+  // Crear un nuevo documento PDF
+  var doc = new jsPDF({
+    orientation: "portrait",
+    unit: "mm",
+    format: [80, 297],
+  });
 
-    // URL de la imagen
-    const imageURL = '/noSencillo.jpg'; // Reemplaza con la URL de tu imagen
+  // URL de la imagen
+  const imageURL = "/noSencillo.jpg"; // Reemplaza con la URL de tu imagen
 
-    // Agregar la imagen al PDF
-    doc.addImage(imageURL, 'JPEG', 0, 0, 80, 30); // Ajusta las coordenadas y el tamaño según sea necesario
+  // Agregar la imagen al PDF
+  doc.addImage(imageURL, "JPEG", 0, 0, 80, 30); // Ajusta las coordenadas y el tamaño según sea necesario
 
-    // Agregar contenido al PDF
-    doc.setFont('helvetica', 'bold');
-    doc.text(`Factura de boletos`, 10, 40);
+  // Agregar contenido al PDF
+  doc.setFont("helvetica", "bold");
+  doc.text(`Factura de boletos`, 10, 40);
 
-    // Mostrar detalles del comprador, sorteo y venta una sola vez
-    const firstTicket = tickets[0];
-    doc.setFont('helvetica', 'normal');
-    doc.text(`Comprador: ${firstTicket.comprador}`, 10, 50);
-    doc.text(`Sorteo: ${fecha}`, 10, 60);
-    doc.text(`Venta: ${firstTicket.Fecha}`, 10, 70);
+  // Mostrar detalles del comprador, sorteo y venta una sola vez
+  const firstTicket = tickets[0];
+  doc.setFont("helvetica", "normal");
+  doc.text(`Comprador: ${firstTicket.comprador}`, 10, 50);
+  doc.text(`Sorteo: ${fecha}`, 10, 60);
+  doc.text(`Venta: ${firstTicket.Fecha}`, 10, 70);
 
-    let yPosition = 80; // Posición inicial en el eje Y para los boletos
+  let yPosition = 80; // Posición inicial en el eje Y para los boletos
 
-    tickets.forEach((data, index) => {
-        doc.setFont('helvetica', 'bold');
-        doc.setTextColor(255, 0, 0);
-        doc.text(`N${data.Idsorteo}`, 10, yPosition);
-        doc.setTextColor(0, 0, 0);
-        doc.setFont('helvetica', 'normal');
-        doc.text(`Costo $ ${data.Costo}`, 10, yPosition + 10);
-        doc.text(`Número de boleto: ${data.Boleto}`, 10, yPosition + 20);
+  tickets.forEach((data, index) => {
+    doc.setFont("helvetica", "bold");
+    doc.setTextColor(255, 0, 0);
+    doc.text(`N${data.Idsorteo}`, 10, yPosition);
+    doc.setTextColor(0, 0, 0);
+    doc.setFont("helvetica", "normal");
+    doc.text(`Costo $ ${data.Costo}`, 10, yPosition + 10);
+    doc.text(`Número de boleto: ${data.Boleto}`, 10, yPosition + 20);
 
-        yPosition += 30; // Incrementar la posición Y para el siguiente boleto
-    });
+    yPosition += 30; // Incrementar la posición Y para el siguiente boleto
+  });
 
-    // Dividir el texto en varias líneas para que se ajuste al tamaño de 80mm
-    doc.setFont('helvetica', 'bold');
-    var text = doc.splitTextToSize(`${leyenda.leyenda1}`, 70);
-    doc.text(text, 10, yPosition);
+  // Dividir el texto en varias líneas para que se ajuste al tamaño de 80mm
+  doc.setFont("helvetica", "bold");
+  var text = doc.splitTextToSize(`${leyenda.leyenda1}`, 70);
+  doc.text(text, 10, yPosition);
 
-    // Obtener una representación de datos del documento
-    var blob = doc.output('blob');
+  // Obtener una representación de datos del documento
+  var blob = doc.output("blob");
 
-    // Crear un archivo a partir del blob
-    const file = new File([blob], 'factura_boletos.pdf', { type: 'application/pdf' });
+  // Crear un archivo a partir del blob
+  const file = new File([blob], "factura_boletos.pdf", {
+    type: "application/pdf",
+  });
 
-    // Mostrar una alerta con opciones para compartir o cancelar
-    const result = await Swal.fire({
-        title: 'Operacion exitosa',
-        icon: 'success',
-        showCancelButton: true,
-        allowOutsideClick: false,
-        confirmButtonText: 'Compartir',
-        cancelButtonText: 'Cancelar',
-    });
+  // Mostrar una alerta con opciones para compartir o cancelar
+  const result = await Swal.fire({
+    title: "Operacion exitosa",
+    icon: "success",
+    showCancelButton: true,
+    allowOutsideClick: false,
+    confirmButtonText: "Compartir",
+    cancelButtonText: "Cancelar",
+  });
 
-    if (result.isConfirmed) {
-        if (navigator.share) {
-            navigator.share({
-                title: 'Factura de boletos',
-                text: 'Hola, aquí tienes tu factura de boletos.',
-                files: [file],
-            }).then(() => {
-                console.log('Compartido exitosamente');
-            }).catch((error) => {
-                console.error('Error al compartir:', error);
-            });
-        } else {
-            Swal.fire({
-                title: 'Error',
-                text: 'La funcionalidad de compartir no está disponible en este dispositivo.',
-                icon: 'error',
-            });
-        }
+  if (result.isConfirmed) {
+    if (navigator.share) {
+      navigator
+        .share({
+          title: "Factura de boletos",
+          text: "Hola, aquí tienes tu factura de boletos.",
+          files: [file],
+        })
+        .then(() => {
+          console.log("Compartido exitosamente");
+        })
+        .catch((error) => {
+          console.error("Error al compartir:", error);
+        });
+    } else {
+      Swal.fire({
+        title: "Error",
+        text: "La funcionalidad de compartir no está disponible en este dispositivo.",
+        icon: "error",
+      });
     }
-
-    Swal.close();
+  }
 };
 
 export default generatePDF;
