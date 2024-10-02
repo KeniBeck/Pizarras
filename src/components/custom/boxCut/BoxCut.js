@@ -4,6 +4,7 @@ import useSession from "@/hook/useSession";
 import { printBoxCut } from "../alerts/menu/Alerts";
 import { useRouter } from "next/navigation";
 import { FaHome } from "react-icons/fa";
+import Swal from "sweetalert2";
 
 const BoxCut = () => {
   const { getUserData } = useSession();
@@ -46,11 +47,7 @@ const BoxCut = () => {
   useEffect(() => {
     fetchData();
   }, []);
-  const currentHour = new Date().getHours();
 
-  // if (currentHour >= 19 || currentHour < 1) {
-  //     return <AlertMenu />;
-  // }
   if (boxCut.length === 0) {
     return (
       <div className="flex justify-center items-center min-h-screen">

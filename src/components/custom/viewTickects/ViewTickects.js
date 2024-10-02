@@ -48,12 +48,7 @@ const ViewTickets = () => {
       setUserData(localUserData);
     }
   }, []);
-  const currentHour = new Date().getHours();
-  //currentHour >= 18 || currentHour < 1
 
-  // if (currentHour >= 18 || currentHour < 1) {
-  //     return <AlertMenu />;
-  // }
   const handleSearch = (e) => {
     setSearch(e.target.value);
   };
@@ -76,6 +71,7 @@ const ViewTickets = () => {
   const goToMenu = () => {
     router.push("/menu");
   };
+
   return (
     <div>
       <div className="flex justify-center items-center p-3">
@@ -172,4 +168,5 @@ const ViewTickets = () => {
     </div>
   );
 };
+
 export default ViewTickets;

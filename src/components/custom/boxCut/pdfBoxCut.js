@@ -31,6 +31,7 @@ const generatePDFBoxCut = async (data) => {
   doc.text(formattedNow, dateX, 15);
 
   let y = 20;
+  // Verificar si hay boletos especiales
 
   if (data.boletosEspeciales && data.boletosEspeciales.length > 0) {
     let fechasSorteo = [
@@ -54,7 +55,7 @@ const generatePDFBoxCut = async (data) => {
       boleto.Boleto,
       boleto.comprador,
       boleto.Costo,
-      boleto.Fecha,
+      boleto.Fecha_venta,
     ]);
     doc.autoTable({
       startY: y,
@@ -89,7 +90,7 @@ const generatePDFBoxCut = async (data) => {
       boleto.Boleto,
       boleto.comprador,
       boleto.Costo,
-      boleto.Fecha,
+      boleto.Fecha_venta,
     ]);
     doc.autoTable({
       startY: y,
@@ -102,7 +103,15 @@ const generatePDFBoxCut = async (data) => {
     y = doc.autoTable.previous.finalY + 5; // Actualizar la posición y para el total de boletos vendidos
   }
   // Agregar el total de boletos vendidos
-  let comision = data.boletosNormales[0].comisiones / 100;
+
+  // Calcular la comisión
+  let comision = 0;
+  if (data.boletosEspeciales.length > 0) {
+    comision = data.boletosEspeciales[0].comisiones / 100;
+  } else if (data.boletosNormales.length > 0) {
+    comision = data.boletosNormales[0].comisiones / 100;
+  }
+
   let totalBoletosVendidos =
     data.boletosEspeciales.length + data.boletosNormales.length;
   let totalVentas =
@@ -114,6 +123,9 @@ const generatePDFBoxCut = async (data) => {
     deuda = data.boletosEspeciales[0].deuda;
   } else if (data.boletosNormales.length > 0) {
     deuda = data.boletosNormales[0].deuda;
+  }
+  if (totalBoletosVendidos === 0) {
+    Swal.fire({ title: "No hay boletos vendidos", icon: "error" });
   }
   let caja = totalVentas - totalVentas * 0.1;
   doc.text("Total de boletos vendidos: " + totalBoletosVendidos, 20, y);
