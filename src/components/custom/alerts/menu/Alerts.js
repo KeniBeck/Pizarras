@@ -103,8 +103,8 @@ export const deleteTicket = async (ticket) => {
 
 export const printBoxCut = async (data) => {
   if (
-    data.boletosEspeciales.length === 0 &&
-    data.boletosNormales.length === 0
+    data.boletosEspeciales === undefined &&
+    data.boletosNormales === undefined
   ) {
     Swal.fire({ title: "Corte de caja realizado", icon: "error" });
     return;
