@@ -127,7 +127,7 @@ const generatePDFBoxCut = async (data) => {
   if (totalBoletosVendidos === 0) {
     Swal.fire({ title: "No hay boletos vendidos", icon: "error" });
   }
-  let caja = totalVentas - totalVentas * 0.1;
+  let caja = totalVentas - totalVentas * comision;
   doc.text("Total de boletos vendidos: " + totalBoletosVendidos, 20, y);
   doc.text("Porcentaje de comision: " + comision * 100, 20, y + 4);
   doc.text("Venta: " + totalVentas, 42, y + 10);
