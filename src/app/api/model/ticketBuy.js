@@ -5,7 +5,10 @@ export const selectLottery = async () => {
   let error = false;
 
   try {
-    let sql = `SELECT * FROM sorteo WHERE Tipo_sorteo = 'normal' OR (Tipo_sorteo = 'domingo' AND DAYOFWEEK(Fecha) = 1)`;
+    let sql = `SELECT * 
+                FROM sorteo 
+                WHERE (Tipo_sorteo = 'normal' OR (Tipo_sorteo = 'domingo' AND DAYOFWEEK(Fecha) = 1)) 
+                AND Estatus = 'abierto';`;
     let [rows] = await pool.query(sql);
     result = rows;
   } catch (err) {
