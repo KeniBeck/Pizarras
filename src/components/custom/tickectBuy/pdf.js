@@ -78,17 +78,23 @@ const generatePDF = async (tickets, fecha) => {
         })
         .then(() => {
           console.log("Compartido exitosamente");
+          window.location.reload(); // Recargar la página después de compartir
         })
         .catch((error) => {
           console.error("Error al compartir:", error);
+          window.location.reload(); // Recargar la página si hay un error al compartir
         });
     } else {
       Swal.fire({
         title: "Error",
         text: "La funcionalidad de compartir no está disponible en este dispositivo.",
         icon: "error",
+      }).then(() => {
+        window.location.reload(); // Recargar la página después de mostrar el error
       });
     }
+  } else {
+    window.location.reload(); // Recargar la página si se cancela o se hace clic fuera de la ventana
   }
 };
 
