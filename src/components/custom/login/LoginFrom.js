@@ -28,7 +28,6 @@ const LoginForm = () => {
       },
       body: JSON.stringify(dataUser)
     }
-   
     await fetch("/api/login", options)
       .then(res => res.json())
       .then(data => processData(data))
@@ -39,7 +38,7 @@ const LoginForm = () => {
 
   }
 
-  const processData = async (data) => {
+  const processData = (data) => {
     if (data.length === 0) {
       Swal.fire({
         position: 'top-center',
@@ -74,18 +73,6 @@ const verificarHora = false;
 
 if (!verificarHora || (hour < 18 && hour >= 0)) {
   // Redirige al usuario a la página del menú
-  try {
-    const response = await fetch('/api/message', {
-      headers: {
-        'Cache-Control': 'no-cache'
-      }
-    });
-    const messageData = await response.json();
-    localStorage.setItem('message', messageData.Mensaje);
-  } catch (error) {
-    console.error('Error al obtener el mensaje:', error);
-  }
-
   login(data[0]);
   router.push('/menu');
 } else {
