@@ -11,14 +11,23 @@ import { useEffect, useState } from "react";
 
 const ViewMenu = () => {
     const [menssage, setMessage] = useState('');
-
     useEffect(() => {
-        fetch('/api/message')
-            .then(response => response.json())
-            .then(data => setMessage(data.Mensaje))
-            .catch(error => console.error(error))
-    },
-        [])
+        const fetchMessage = async () => {
+            try {
+                const response = await fetch('/api/message', {
+                    headers: {
+                        'Cache-Control': 'no-cache'
+                    }
+                });
+                const data = await response.json();
+                setMessage(data.Mensaje);
+            } catch (error) {
+                console.error(error);
+            }
+        };
+
+        fetchMessage();
+    }, []);
 
     const router = useRouter();
     let userData = null;
