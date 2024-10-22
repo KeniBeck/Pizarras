@@ -21,6 +21,7 @@ const ViewMenu = () => {
                 });
                 const data = await response.json();
                 setMessage(data.Mensaje);
+                console.log(data.Mensaje);
             } catch (error) {
                 console.error(error);
             }
