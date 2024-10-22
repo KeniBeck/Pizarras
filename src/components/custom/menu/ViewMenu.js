@@ -27,12 +27,7 @@ const ViewMenu = () => {
             }
         };
 
-        const savedMessage = localStorage.getItem('message');
-        if (savedMessage) {
-            setMessage(savedMessage);
-        } else {
-            fetchMessage();
-        }
+        fetchMessage(); // Siempre consulta la API al cargar el componente
     }, []);
     const router = useRouter();
     let userData = null;
