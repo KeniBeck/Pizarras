@@ -9,29 +9,12 @@ import { useRouter } from 'next/navigation'
 import AlertMenu from "../alerts/menu/AlertMenu";
 import { useEffect, useState } from "react";
 
-const ViewMenu = () => {
-    const [menssage, setMessage] = useState('');
-    useEffect(() => {
-        const fetchMessage = async () => {
-            try {
-                const response = await fetch('/api/message', {
-                    headers: {
-                        'Cache-Control': 'no-cache'
-                    }
-                });
-                const data = await response.json();
-                setMessage(data.Mensaje);
-                localStorage.setItem('message', data.Mensaje); // Guardar el mensaje en localStorage
-            } catch (error) {
-                console.error(error);
-            }
-        };
 
-        fetchMessage(); // Siempre consulta la API al cargar el componente
-    }, []);
+const ViewMenu = () => {
+
     const router = useRouter();
     let userData = null;
-
+    let menssage = '';
     const { logout } = useSession();
     const [cerrarSession, setCerrarSession] = useState(false);
 
@@ -50,6 +33,8 @@ const ViewMenu = () => {
 
     if (typeof window !== 'undefined') {
         userData = JSON.parse(localStorage.getItem('userData'));
+        console.log(localStorage.getItem('message'))
+        menssage = localStorage.getItem('message');
 
         const currentHour = new Date().getHours();
 
