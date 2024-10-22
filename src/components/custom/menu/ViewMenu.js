@@ -21,14 +21,19 @@ const ViewMenu = () => {
                 });
                 const data = await response.json();
                 setMessage(data.Mensaje);
+                localStorage.setItem('message', data.Mensaje); // Guardar el mensaje en localStorage
             } catch (error) {
                 console.error(error);
             }
         };
 
-        fetchMessage();
+        const savedMessage = localStorage.getItem('message');
+        if (savedMessage) {
+            setMessage(savedMessage);
+        } else {
+            fetchMessage();
+        }
     }, []);
-
     const router = useRouter();
     let userData = null;
 
