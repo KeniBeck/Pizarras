@@ -54,7 +54,7 @@ const LoginForm = () => {
       Swal.fire({
         position: 'top-center',
         title: 'Error',
-        text: 'Usuario bloqueado por el adminstrador',
+        text: 'Usuario bloqueado por el  administrador',
         icon: 'error',
         showConfirmButton: false,
         timer: 2500
