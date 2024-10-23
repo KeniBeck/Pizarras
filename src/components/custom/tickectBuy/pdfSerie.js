@@ -74,7 +74,7 @@ const generatePDFSerie = async (data, fecha) => {
         if (navigator.share) {
             navigator.share({
                 title: 'Factura de boletos',
-                text: 'Hola, aquí tienes tu factura de boletos.',
+                text: 'Hola, aquí tienes tu boleto, Suerte!.',
                 files: [file],
             }).then(() => {
                 console.log('Compartido exitosamente');

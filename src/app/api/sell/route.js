@@ -28,6 +28,7 @@ export async function POST(req, res) {
     `;
   let sqlUpdate = `UPDATE topes SET  Cantidad = Cantidad + ${prizebox} WHERE Numero = ${ticketNumber}`;
   let sqlSelect = `SELECT * FROM boletos WHERE Boleto = ? ORDER BY Idsorteo DESC LIMIT 1`;
+  let sqlLeyenda =`SELECT leyenda1 FROM configuracion`;
   let values = [
     fechaModificada,
     primerPremio,
@@ -43,8 +44,15 @@ export async function POST(req, res) {
     let result = await pool.query(sql, values);
     let resultUpdate = await pool.query(sqlUpdate);
     let resultSelect = await pool.query(sqlSelect, [ticketNumber]);
+    let resulLeyenda = await pool.query(sqlLeyenda);
+    
+    let leyenda = resulLeyenda[0][0];
+    let resultWithLeyenda = resultSelect.map(item => ({
+      ...item,
+      leyenda: leyenda
+    }));
 
-    return NextResponse.json(resultSelect);
+    return NextResponse.json(resultWithLeyenda);
   } catch (error) {
     console.log(error);
   }
@@ -75,7 +83,7 @@ export async function PUT(req, res) {
     `;
   // Obtener los últimos 10 elementos insertados
   let sqlSelect = `SELECT * FROM boletos WHERE comprador = ? ORDER BY Idsorteo DESC LIMIT 10`;
-
+  let sqlLeyenda =`SELECT leyenda1 FROM configuracion`;
   let values = [
     fechaModificada,
     primerPremio,
@@ -89,6 +97,7 @@ export async function PUT(req, res) {
 
   try {
     let result = await pool.query(sql, values);
+    let resulLeyenda = await pool.query(sqlLeyenda);
     let resultSelect = await pool.query(sqlSelect, [name]);
     return NextResponse.json(resultSelect);
   } catch (error) {
