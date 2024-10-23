@@ -10,10 +10,17 @@ export async function POST(req, res) { // Define una función asíncrona llamada
     let sqlUpdate = `UPDATE vendedores
     SET  Fechaingreso= ? 
     WHERE Idvendedor='${user}';`
+    let sqlLeyenda = `SELECT Mensaje FROM Mensajes WHERE Idmensaje = 1`;
+
     try {
         let resulUpdate = await pool.query(sqlUpdate, currentTime[0].currentTime);
         let [rows] = await pool.query(sql)
-        rows.forEach(row => row.requestTime = currentTime[0].currentTime);
+        let [resultLeyenda] = await pool.query(sqlLeyenda);
+        rows.forEach(row => {
+            row.requestTime = currentTime[0].currentTime;
+            row.mensaje = resultLeyenda[0].Mensaje;
+        });
+
         return NextResponse.json(rows);  // Devuelve los datos obtenidos como respuesta en formato JSON utilizando NextResponse.
 
     } catch (error) {
