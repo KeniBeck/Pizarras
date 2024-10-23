@@ -50,7 +50,6 @@ export async function POST(req, res) {
     let resultUpdate = await pool.query(sqlUpdate);
     let resultSelect = await pool.query(sqlSelect, [ticketNumber]);
 
-    console.log(resultSelect);
     return NextResponse.json(resultSelect);
   } catch (error) {
     console.log(error);

@@ -27,6 +27,7 @@ const TicketBuy = () => {
     const [cantidad, setCantidad] = useState(0);
     const [tickets, setTickets] = useState([]);
     const [numberTop, setNumberTop] = useState(0);
+    const [topes,setTopes] = useState({});
 
     useEffect(() => {
         Promise.all([
@@ -63,12 +64,21 @@ const TicketBuy = () => {
         // Asegúrate de que el valor tenga una longitud de 3 caracteres
         value = value.padStart(3, '0');
 
+      
+    };
+    const fecha = new Date(new Date(prizes.Fecha).getTime() + new Date().getTimezoneOffset() * 60000).toLocaleDateString();
+    const handleBlur = async (e) => {
+        let value = e.target.value;
+        // Asegúrate de que el valor sea un número y tenga una longitud de 3 caracteres
+        value = value.padStart(3, '0');
+        setTicketNumber(value);
+
         const options = {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json'
             },
-            body: JSON.stringify({ ticketNumber: value })
+            body: JSON.stringify({ ticketNumber: value,fecha: fecha })
         };
 
         try {
@@ -85,45 +95,10 @@ const TicketBuy = () => {
                     setFoundTope(matchingTope.Tope); // Guarda el tope encontrado en el estado
                     setCantidad(matchingTope.Cantidad);
                     setNumberTop(matchingTope.Numero);
-                } else {
-                    console.log("No se encontró un tope para este número de boleto");
-                    setFoundTope(null); // Si no se encuentra un tope, establece el estado a null
-                }
-            } else {
-                console.log("La respuesta de la API no contiene un array de topes");
-                setFoundTope(null);
-            }
-        } catch (error) {
-            console.error('Error:', error);
-        }
-    };
-    const handleBlur = async (e) => {
-        let value = e.target.value;
-        // Asegúrate de que el valor sea un número y tenga una longitud de 3 caracteres
-        value = value.padStart(3, '0');
-        setTicketNumber(value);
-
-        const options = {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify({ ticketNumber: value })
-        };
-
-        try {
-            const response = await fetch('/api/topes', options);
-            if (!response.ok) {
-                throw new Error(`HTTP error! status: ${response.status}`);
-            }
-            const data = await response.json();
-            if (Array.isArray(data.tope)) {
-                const matchingTope = data.tope.find(tope => tope.Numero === Number(value));
-
-                if (matchingTope) {
-                    console.log("Tope encontrado: ", matchingTope.Tope);
-                    setFoundTope(matchingTope.Tope); // Guarda el tope encontrado en el estado
-                    setCantidad(matchingTope.Cantidad);
+                    setTopes(prevTopes =>({
+                        ...prevTopes,
+                        [matchingTope.Numero]:matchingTope.Cantidad
+                    }))
                 } else {
                     console.log("No se encontró un tope para este número de boleto");
                     setFoundTope(null); // Si no se encuentra un tope, establece el estado a null
@@ -140,7 +115,7 @@ const TicketBuy = () => {
     const userData = JSON.parse(localStorage.getItem('userData'));
     const idVendedor = userData.Idvendedor;
     const idSorteo = prizes.Idsorteo
-    const fecha = new Date(new Date(prizes.Fecha).getTime() + new Date().getTimezoneOffset() * 60000).toLocaleDateString();
+   
     const Validate = () => {
         if (foundTope == 0) {
             if (cantidad >= foundTope) {
@@ -289,6 +264,7 @@ const TicketBuy = () => {
         }
     };
 
+
     if (isLoading) {
         loading();
     }
@@ -297,31 +273,41 @@ const TicketBuy = () => {
         router.push('/menu');
     }
 
-    const addTicketToList = () => {
+        const addTicketToList = () => {
         VailidationEstatus();
         if (!Validate()) {
             return false;
         }
-        const boletosConMismoTope = tickets.filter(ticket => parseInt(ticket.number) === numberTop);
+    
+        // Filtrar boletos con el mismo número de tope
+        const boletosConMismoTope = tickets.filter(ticket => {
+            console.log(`Comparando ${parseInt(ticket.number)} con ${numberTop}`);
+            return parseInt(ticket.number) === numberTop;
+        });
 
-
+    
+        console.log('Boletos con el mismo tope:', boletosConMismoTope);
+    
         // Calcular la cantidad acumulada de boletos en la lista
-        const totalAcumulado = boletosConMismoTope.reduce((acc, ticket) => acc + parseInt(ticket.price), 0);
-        // Validar la cantidad acumulada con el tope permitido
-        if (foundTope) {
-            const nuevaCantidad = totalAcumulado + cantidad + parseInt(prizebox);
+        const totalAcumulado = boletosConMismoTope.reduce((acc, ticket) => {
+            console.log(`Acumulando ${acc} + ${parseInt(ticket.price)}`);
+            return acc + parseInt(ticket.price);
+        }, 0);
+
+    
+        if (foundTope > 0) {
+            const nuevaCantidad = totalAcumulado + parseInt(prizebox);
             if (nuevaCantidad > foundTope) {
-                Swal.fire(`La cantidad permitida es ${foundTope - cantidad - totalAcumulado}`);
+                Swal.fire(`La cantidad permitida es ${foundTope - totalAcumulado}. Te estás pasando en ${nuevaCantidad - foundTope} pesos.`);
                 setPrizebox("");
                 return false;
             }
-        }
-        if (foundTope == 0) {
+        } else if (foundTope === 0) {
             ErrorTope();
             setTicketNumber("");
             return false;
         }
-
+    
         // Agregar el boleto actual a la lista de boletos acumulados
         if (ticketNumber && prizebox && name) {
             setTickets(prevTickets => [...prevTickets, { number: ticketNumber, price: prizebox, name }]);
@@ -329,9 +315,7 @@ const TicketBuy = () => {
             setPrizebox('');
             return true;
         }
-
     };
-
     const handlePlusTicket = () => {
         if (addTicketToList()) {
             console.log(tickets)
@@ -340,6 +324,7 @@ const TicketBuy = () => {
     const handleDeleteTicket = (index) => {
         setTickets(prevTickets => prevTickets.filter((_, i) => i !== index));
     };
+   
 
     return (
         <div className="relative min-h-screen">
