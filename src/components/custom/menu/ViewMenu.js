@@ -14,7 +14,6 @@ const ViewMenu = () => {
     let mensaje = null;
     const router = useRouter();
     let userData = null;
-    const [menssage, setMessage] = useState('');
     useEffect(() => {
         const fetchMessage = async () => {
             try {
@@ -33,7 +32,6 @@ const ViewMenu = () => {
         fetchMessage();
     }, []);
 
-    mensaje = menssage;
     const { logout } = useSession();
     const [cerrarSession, setCerrarSession] = useState(false);
 
@@ -52,6 +50,7 @@ const ViewMenu = () => {
 
     if (typeof window !== 'undefined') {
         userData = JSON.parse(localStorage.getItem('userData'));
+        mensaje = userData.mensaje;
         const currentHour = new Date().getHours();
     }
 
