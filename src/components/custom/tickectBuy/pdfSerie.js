@@ -1,14 +1,16 @@
 import jsPDF from 'jspdf';
 import Swal from 'sweetalert2';
 
+const formatDate = (dateString) => {
+    const [day, month, year] = dateString.split(/[\/\-]/);
+    return `${year}-${month}-${day}`;
+};
+
 const generatePDFSerie = async (data, fecha) => {
+    const fechaSorteoFormateada = formatDate(fecha);
+  
     // Mostrar ventana de carga
     Swal.showLoading();
-    // Verificar si la longitud de data es igual a 10
-    if (data.length !== 11) {
-        // Si no es igual a 10, cerrar la ventana de carga y salir de la función
-        return;
-    }
 
     // Crear un nuevo documento PDF
     var doc = new jsPDF({
@@ -17,17 +19,12 @@ const generatePDFSerie = async (data, fecha) => {
         format: [80, 297]
     });
 
+
     doc.setFontSize(8); // Ajustar el tamaño de la fuente
 
     // URL de la imagen
     const imageURL = '/noSencillo.jpg'; // Reemplaza con la URL de tu imagen
-    let totalCosto = 0;
-    if (totalCosto === 0) {
-        for (let i = 0; i < 10; i++) {
-            totalCosto += data[i].Costo;
-        }
-    }
-    console.log(data)
+  let totalCosto = data.map(item => item.Costo).reduce((acc, costo) => acc + costo, 0);
 
     // Agregar la imagen al PDF
     doc.addImage(imageURL, 'JPEG', 10, 10, 60, 30);
@@ -44,11 +41,11 @@ const generatePDFSerie = async (data, fecha) => {
     doc.text(`Serie de boletos:`, 10, 65);
     let boletos = data.map(item => item.Boleto?.toString().padStart(3, '0')).join('-');
     doc.text(boletos, 10, 75);
-    doc.text(`Sorteo: ${fecha}`, 10, 85);
+    doc.text(`Sorteo: ${fechaSorteoFormateada}`, 10, 85);
     doc.text(` Comprador: ${data[0].comprador}`, 10, 95);
-    doc.text(`Venta: ${data[0].Fecha}`, 10, 105);
+    doc.text(`Venta: ${data[0].Fecha_venta}`, 10, 105);
     doc.setFont('helvetica', 'bold');
-    var text = doc.splitTextToSize(`${data[10].leyenda1}`, 70);
+    var text = doc.splitTextToSize(`${data[0].leyenda}`, 70);
     doc.text(text, 10, 115);
     // Abrir el diálogo de impresión cuando el usuario abra el PDF
     doc.autoPrint();
@@ -57,7 +54,8 @@ const generatePDFSerie = async (data, fecha) => {
     var blob = doc.output('blob');
 
     const file = new File([blob], 'factura_boletos.pdf', { type: 'application/pdf' });
- const fileURL = URL.createObjectURL(file)
+  
+
     const result = await Swal.fire({
         title: 'Compra exitosa',
         icon: 'success',
@@ -65,32 +63,28 @@ const generatePDFSerie = async (data, fecha) => {
         allowOutsideClick: false,
         confirmButtonText: 'Compartir',
     });
-if(result.isConfirmed){
-    const pdfWindow = window.open(fileURL);
-    pdfWindow.print();
 
-}
     // Si el usuario elige imprimir, abrir la URL en una nueva pestaña
-    // if (result.isConfirmed) {
-    //     if (navigator.share) {
-    //         navigator.share({
-    //             title: 'Factura de boletos',
-    //             text: 'Hola, aquí tienes tu boleto, Suerte!.',
-    //             files: [file],
-    //         }).then(() => {
-    //             console.log('Compartido exitosamente');
-    //         }).catch((error) => {
-    //             console.error('Error al compartir:', error);
-    //         });
-    //     } else {
-    //         Swal.fire({
-    //             title: 'Error',
-    //             text: 'La funcionalidad de compartir no está disponible en este dispositivo.',
-    //             icon: 'error',
-    //         });
-    //     }
+    if (result.isConfirmed) {
+        if (navigator.share) {
+            navigator.share({
+                title: 'Factura de boletos',
+                text: 'Hola, aquí tienes tu boleto, Suerte!.',
+                files: [file],
+            }).then(() => {
+                console.log('Compartido exitosamente');
+            }).catch((error) => {
+                console.error('Error al compartir:', error);
+            });
+        } else {
+            Swal.fire({
+                title: 'Error',
+                text: 'La funcionalidad de compartir no está disponible en este dispositivo.',
+                icon: 'error',
+            });
+        }
 
-    // }
+    }
 
 }
 
