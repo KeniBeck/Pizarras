@@ -293,15 +293,18 @@ const TicketBuy = () => {
             console.log(`Acumulando ${acc} + ${parseInt(ticket.price)}`);
             return acc + parseInt(ticket.price);
         }, 0);
-
+        const nuevaCantidad = totalAcumulado + cantidad + parseInt(prizebox);
+           
     
         if (foundTope > 0) {
-            const nuevaCantidad = totalAcumulado + parseInt(prizebox);
+            console.log(nuevaCantidad,'>',foundTope)
+            console.log(totalAcumulado)
             if (nuevaCantidad > foundTope) {
-                Swal.fire(`La cantidad permitida es ${foundTope - totalAcumulado}. Te estás pasando en ${nuevaCantidad - foundTope} pesos.`);
+                Swal.fire(`La cantidad permitida es ${(totalAcumulado + cantidad - foundTope)*(-1)}. Te estás pasando en ${nuevaCantidad - foundTope} pesos.`);
                 setPrizebox("");
                 return false;
             }
+          
         } else if (foundTope === 0) {
             ErrorTope();
             setTicketNumber("");
