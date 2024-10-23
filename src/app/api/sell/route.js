@@ -99,7 +99,16 @@ export async function PUT(req, res) {
     let result = await pool.query(sql, values);
     let resulLeyenda = await pool.query(sqlLeyenda);
     let resultSelect = await pool.query(sqlSelect, [name]);
-    return NextResponse.json(resultSelect);
+    let leyenda = resulLeyenda[0][0];
+
+    // Agregar la leyenda a cada objeto del array de resultados
+    let resultWithLeyenda = resultSelect.map(item => ({
+      ...item,
+      leyenda: leyenda
+    }));
+    let resultArray = resultWithLeyenda.map(item => Object.values(item));
+
+    return NextResponse.json(resultArray);
   } catch (error) {
     console.log(error);
   }

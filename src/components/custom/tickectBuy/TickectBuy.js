@@ -268,6 +268,7 @@ const TicketBuy = () => {
             await fetch("/api/sell", options)
                 .then(res => res.json())
                 .then(data => {
+                    console.log(data,'fronted')
                     generatePDFSerie(data[0], fecha);
                 });
         }
