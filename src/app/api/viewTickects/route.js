@@ -8,8 +8,9 @@ export async function POST(req, res) {
   try {
     // Consulta para obtener los boletos especiales
     let sqlEspeciales = `
-        SELECT b.*, s.Fecha AS FechaSorteo, v.Nombre AS nombreVendedor, v.Comision AS comisiones, d.cantidad AS deuda
+        SELECT b.*, c.leyenda1 AS leyenda, s.Fecha AS FechaSorteo, v.Nombre AS nombreVendedor, v.Comision AS comisiones, d.cantidad AS deuda
         FROM boletos b
+        CROSS JOIN configuracion c
         JOIN sorteo s ON b.tipo_sorteo = s.Idsorteo
         JOIN vendedores v ON b.Idvendedor = v.Idvendedor
         LEFT JOIN deuda d ON v.Idvendedor = d.usuario
@@ -18,8 +19,9 @@ export async function POST(req, res) {
 
     // Consulta para obtener los boletos normales
     let sqlNormales = `
-        SELECT b.*, s.Fecha AS FechaSorteo, v.Nombre AS nombreVendedor, v.Comision AS comisiones, d.cantidad AS deuda
+        SELECT b.*, c.leyenda1 AS leyenda, s.Fecha AS FechaSorteo, v.Nombre AS nombreVendedor, v.Comision AS comisiones, d.cantidad AS deuda
         FROM boletos b
+        CROSS JOIN configuracion c
         JOIN sorteo s ON b.tipo_sorteo = s.Idsorteo
         JOIN vendedores v ON b.Idvendedor = v.Idvendedor
         LEFT JOIN deuda d ON v.Idvendedor = d.usuario
@@ -34,7 +36,9 @@ export async function POST(req, res) {
     // Combinar los resultados en un solo array
     let boletos = [...boletosEspeciales, ...boletosNormales];
 
+
     // Devolver los resultados
+    console.log(boletos);
     return NextResponse.json(boletos);
   } catch (error) {
     console.log(error);
