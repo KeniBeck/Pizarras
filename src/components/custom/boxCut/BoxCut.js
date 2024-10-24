@@ -8,7 +8,6 @@ import Swal from "sweetalert2";
 import updateInfo from "../validation/updateInfo";
 
 const BoxCut = () => {
-  const { getUserData } = useSession();
   const [userData, setUserData] = useState(null);
   const router = useRouter();
   const backgroundImage = "/Sencillo.png";
@@ -22,7 +21,7 @@ const BoxCut = () => {
   }, []);
 
   const handelPrintCu = () => {
-    printBoxCut();
+    printBoxCut(userData);
   };
   const goToMenu = () => {
     updateInfo(userData.Idvendedor).then(()=>{

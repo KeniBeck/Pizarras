@@ -1,9 +1,7 @@
 "use client";
 import Swal from "sweetalert2";
 import generatePDFBoxCut from "../../boxCut/pdfBoxCut";
-import { FaHome } from "react-icons/fa"; // Asegúrate de importar el ícono que estás utilizando
-import useSession from "@/hook/useSession";
-import { useState } from "react";
+
 
 export const ErrorPrizes = () => {
   Swal.fire({
@@ -103,9 +101,7 @@ export const deleteTicket = async (ticket) => {
   }
 };
 
-export const printBoxCut = async () => {
-  const {getUserData} = useSession();
- const userData = getUserData();
+export const printBoxCut = async (userData) => {
   const fetchData = async () => {
     try {
       const response = await fetch("/api/boxCut", {
