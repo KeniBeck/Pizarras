@@ -7,9 +7,11 @@ import { useRouter } from 'next/navigation'
 import Swal from 'sweetalert2'
 import { useState } from "react";
 import { error, loading } from "../alerts/menu/Alerts";
+import updateInfo from "../validation/updateInfo";
 
 const LoginAdmin = () => {
-    const { loginAdmin } = useSession();
+    const { loginAdmin, getUserData } = useSession();
+    const userData = getUserData();
     const router = useRouter();
     const [isloading, setLoading] = useState(false);
     const {
@@ -83,7 +85,9 @@ const LoginAdmin = () => {
         );
     }
     const goToMenu = () => {
-        router.push('/menu')
+        updateInfo(userData.Idvendedor).then(() => {
+            router.push('/menu')
+        });
     }
 
 

@@ -1,25 +1,25 @@
 'use client'
 import { useRouter } from "next/navigation";
 import { FaHome } from "react-icons/fa";
-import AlertMenu from "../alerts/menu/AlertMenu";
 import { selectDate } from "../alerts/menu/Alerts";
 import { useState } from "react";
+import updateInfo from "../validation/updateInfo";
+import useSession from "@/hook/useSession";
 const TypeDraw = () => {
-    const currentHour = new Date().getHours();
+    const { getUserData } = useSession();
     const router = useRouter();
     const [selectedDate, setSelectedDate] = useState(null);
-
-    // // currentHour >= 20 || currentHour < 0
-    // if (currentHour >= 20 || currentHour < 0) {
-    //     return <AlertMenu />;
-    // }
-
+    const userData = getUserData();
 
     const handleTickectBuy = () => {
         router.push('/tickectBuy')
     }
+    
+ 
     const goToMenu = () => {
-        router.push('/menu')
+        updateInfo(userData.Idvendedor).then(() => {
+            router.push('/menu')
+        });  
     }
     const handleTicketBuySerial = () => {
         fetch('/api/ticketBuy', {

@@ -12,6 +12,7 @@ import Swal from "sweetalert2";
 import { TbSquarePlus } from "react-icons/tb";
 import TicketPreviewModal from "./TicketPreviewModal";
 import VailidationEstatus from "@/hook/validationEstatus";
+import updateInfo from "../validation/updateInfo";
 
 const TicketBuy = () => {
     const [prizes, setPrizes] = useState(null);
@@ -270,7 +271,9 @@ const TicketBuy = () => {
     }
 
     const goToMenu = () => {
-        router.push('/menu');
+        updateInfo(idVendedor).then(() => {
+            router.push('/menu')
+        });
     }
 
         const addTicketToList = () => {

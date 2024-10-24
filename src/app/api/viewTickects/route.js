@@ -38,7 +38,6 @@ export async function POST(req, res) {
 
 
     // Devolver los resultados
-    console.log(boletos);
     return NextResponse.json(boletos);
   } catch (error) {
     console.log(error);
