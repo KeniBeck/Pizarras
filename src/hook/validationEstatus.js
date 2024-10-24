@@ -28,7 +28,7 @@ const VailidationEstatus = async () => {
             // Verificar el estado del usuario
             if (userApiData.Estatus === 'alta') {
                 localStorage.setItem('logged', true);
-            } else {
+            } else if (userApiData.Estatus === 'baja') {
                 localStorage.setItem('logged', false);
                 window.location.href = '/';
             }

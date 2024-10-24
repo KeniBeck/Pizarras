@@ -14,6 +14,7 @@ import { useRouter } from "next/navigation";
 import { FaHome } from "react-icons/fa";
 import EspecialPreviewModal from "./EspecialPreviewModal";
 import VailidationEstatus from "@/hook/validationEstatus";
+import updateInfo from "../validation/updateInfo";
 
 const TickectBuyEspecial = ({ selectedDate }) => {
   const [prizes, setPrizes] = useState(selectedDate);
@@ -154,9 +155,11 @@ const TickectBuyEspecial = ({ selectedDate }) => {
   if (isLoading) {
     loading();
   }
-  const goToMenu = () => {
-    router.push("/menu");
-  };
+ const goToMenu = () => {
+        updateInfo(idVendedor).then(() => {
+            router.push('/menu')
+        });
+    }
   const hanlePreviewModal = () => {
     VailidationEstatus();
     setPreviewModal(true);
