@@ -4,19 +4,23 @@ import { useEffect, useState } from "react";
 import generatePDF from "../tickectBuy/pdf";
 import { FaHome } from "react-icons/fa";
 import { useRouter } from "next/navigation";
+import updateInfo from "../validation/updateInfo";
 
 const ViewTickets = () => {
   const { getUserData } = useSession();
-  const [userData, setUserData] = useState(null);
+  const [userData, setUserData] = useState([]);
   const [tickets, setTickets] = useState([]);
   const [search, setSearch] = useState("");
   const [totalTickets, setTotalTickets] = useState(0);
   const router = useRouter();
+  let idVendedor = null;
+
 
   const fetchData = async () => {
     try {
       const userData = getUserData();
       setUserData(userData);
+      idVendedor= userData.idVendedor;
 
       const response = await fetch("/api/viewTickects", {
         method: "POST",
@@ -53,6 +57,7 @@ const ViewTickets = () => {
     setSearch(e.target.value);
   };
 
+
   const filteredTickets = Array.isArray(tickets)
     ? tickets.filter((ticket) => String(ticket.Boleto).includes(search))
     : [];
@@ -69,9 +74,11 @@ const ViewTickets = () => {
     }
   };
 
-  const goToMenu = () => {
-    router.push("/menu");
-  };
+ const goToMenu = () => {
+        updateInfo(userData.Idvendedor).then(() => {
+            router.push('/menu')
+        });
+    }
 
   return (
     <div>

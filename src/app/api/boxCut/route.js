@@ -86,6 +86,12 @@ export async function POST(req, res) {
         (idcorte, Fecha_actual, fechasorteo, vendedor, sucursal, boletosvendidos, venta, porcentajecomision, comision, totalcaja, Tipo_sorteo, totalentregado)
         VALUES (0, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);
         `;
+    let sqlUpdatePuntos = `
+        UPDATE vendedores
+        SET Puntos = Puntos + ?
+        WHERE Idvendedor = ?;
+        `;
+
     let values = [
       new Date().toISOString().slice(0, 19).replace("T", " "),
       fecha,
@@ -100,8 +106,12 @@ export async function POST(req, res) {
       totalEntregado,
     ];
     await pool.query(sqlInsert, values);
+    let puntosSumados = Math.floor(totalVentas / 100)
+    console.log(puntosSumados,'aja')
+    await pool.query(sqlUpdatePuntos, [puntosSumados, Idvendedor]);
 
     // Devolver los resultados
+    
     return NextResponse.json({
       boletosEspeciales: boletosEspeciales,
       boletosNormales: boletosNormales,

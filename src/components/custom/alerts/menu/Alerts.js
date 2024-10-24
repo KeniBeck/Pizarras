@@ -1,7 +1,7 @@
 "use client";
 import Swal from "sweetalert2";
 import generatePDFBoxCut from "../../boxCut/pdfBoxCut";
-import { FaHome } from "react-icons/fa"; // Asegúrate de importar el ícono que estás utilizando
+
 
 export const ErrorPrizes = () => {
   Swal.fire({
@@ -101,14 +101,29 @@ export const deleteTicket = async (ticket) => {
   }
 };
 
-export const printBoxCut = async (data) => {
-  if (
-    data.boletosEspeciales === undefined &&
-    data.boletosNormales === undefined
-  ) {
-    Swal.fire({ title: "Corte de caja realizado", icon: "error" });
-    return;
-  }
+export const printBoxCut = async (userData) => {
+  const fetchData = async () => {
+    try {
+      const response = await fetch("/api/boxCut", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(userData),
+      });
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+
+      const data = await response.json();
+      return data;
+    } catch (error) {
+      console.log(error);
+      return null;
+    }
+  };
+ 
   const { value: action } = await Swal.fire({
     title: "¿Deseas hacer un corte de caja?",
     showDenyButton: true,
@@ -119,7 +134,18 @@ export const printBoxCut = async (data) => {
   });
 
   if (action) {
-    generatePDFBoxCut(data); // Asume que generatePDF es la función que imprime el corte de caja
+    console.log("generatePDFBoxCut called");
+    const boxCut = await fetchData();
+    if ( boxCut.boletosEspeciales === undefined && boxCut.boletosNormales === undefined) {
+       Swal.fire({ title: "Corte de caja realizado", icon: "error" });
+        return;
+    }
+    if (boxCut) {
+      console.log("boxCut", boxCut);
+      generatePDFBoxCut(boxCut); // Asume que generatePDF es la función que imprime el corte de caja
+    } else {
+      Swal.fire({ title: "Error al obtener los datos", icon: "error" });
+    }
   }
 };
 export const Especial = () => {

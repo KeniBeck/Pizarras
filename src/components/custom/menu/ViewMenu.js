@@ -2,35 +2,17 @@
 import { IoTicketSharp } from "react-icons/io5";
 import { ImStatsDots } from "react-icons/im";
 import { FaCashRegister, FaHome } from "react-icons/fa";
-import { GiStarStruck } from "react-icons/gi";
 import { RiLogoutBoxFill } from "react-icons/ri";
 import useSession from "@/hook/useSession";
 import { useRouter } from 'next/navigation'
 import AlertMenu from "../alerts/menu/AlertMenu";
 import { useEffect, useState } from "react";
-import { set } from "react-hook-form";
+
 
 const ViewMenu = () => {
     let mensaje = null;
     const router = useRouter();
     let userData = null;
-    useEffect(() => {
-        const fetchMessage = async () => {
-            try {
-                const response = await fetch('/api/message', {
-                    headers: {
-                        'Cache-Control': 'no-cache'
-                    }
-                });
-                const data = await response.json();
-                setMessage(data.Mensaje);
-                console.log(data.Mensaje);
-            } catch (error) {
-                console.error(error);
-            }
-        };
-        fetchMessage();
-    }, []);
 
     const { logout } = useSession();
     const [cerrarSession, setCerrarSession] = useState(false);
