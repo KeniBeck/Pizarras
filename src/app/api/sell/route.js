@@ -27,7 +27,13 @@ export async function POST(req, res) {
         VALUES( ?, ?, ?, ?, ?, ?, ?, ?,CURRENT_TIMESTAMP)
     `;
   let sqlUpdate = `UPDATE topes SET  Cantidad = Cantidad + ${prizebox} WHERE Numero = ${ticketNumber}`;
-  let sqlSelect = `SELECT * FROM boletos WHERE Boleto = ? ORDER BY Idsorteo DESC LIMIT 1`;
+  let sqlSelect = `SELECT b.*, c.leyenda1 AS leyenda
+        FROM boletos b
+        CROSS JOIN configuracion c
+        WHERE b.Boleto = ? 
+        ORDER BY b.Idsorteo DESC 
+        LIMIT 1;`;
+ 
   let values = [
     fechaModificada,
     primerPremio,
@@ -74,8 +80,9 @@ export async function PUT(req, res) {
         VALUES( ?, ?, ?, ?, ?, ?, ?, ?,CURRENT_TIMESTAMP)
     `;
   // Obtener los últimos 10 elementos insertados
-  let sqlSelect = `SELECT * FROM boletos WHERE comprador = ? ORDER BY Idsorteo DESC LIMIT 10`;
-
+  let sqlSelect = `SELECT b.*, c.leyenda1 AS leyenda FROM boletos b 
+  CROSS JOIN configuracion c
+  WHERE comprador = ? ORDER BY Idsorteo DESC LIMIT 10`;
   let values = [
     fechaModificada,
     primerPremio,
@@ -90,6 +97,7 @@ export async function PUT(req, res) {
   try {
     let result = await pool.query(sql, values);
     let resultSelect = await pool.query(sqlSelect, [name]);
+ 
     return NextResponse.json(resultSelect);
   } catch (error) {
     console.log(error);

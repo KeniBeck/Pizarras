@@ -8,9 +8,12 @@ import useSession from "@/hook/useSession";
 import { useRouter } from 'next/navigation'
 import AlertMenu from "../alerts/menu/AlertMenu";
 import { useEffect, useState } from "react";
+import { set } from "react-hook-form";
 
 const ViewMenu = () => {
-    const [menssage, setMessage] = useState('');
+    let mensaje = null;
+    const router = useRouter();
+    let userData = null;
     useEffect(() => {
         const fetchMessage = async () => {
             try {
@@ -21,21 +24,13 @@ const ViewMenu = () => {
                 });
                 const data = await response.json();
                 setMessage(data.Mensaje);
-                localStorage.setItem('message', data.Mensaje); // Guardar el mensaje en localStorage
+                console.log(data.Mensaje);
             } catch (error) {
                 console.error(error);
             }
         };
-
-        const savedMessage = localStorage.getItem('message');
-        if (savedMessage) {
-            setMessage(savedMessage);
-        } else {
-            fetchMessage();
-        }
+        fetchMessage();
     }, []);
-    const router = useRouter();
-    let userData = null;
 
     const { logout } = useSession();
     const [cerrarSession, setCerrarSession] = useState(false);
@@ -55,14 +50,8 @@ const ViewMenu = () => {
 
     if (typeof window !== 'undefined') {
         userData = JSON.parse(localStorage.getItem('userData'));
-
+        mensaje = userData.mensaje;
         const currentHour = new Date().getHours();
-
-
-        // currentHour >= 18 || currentHour < 0
-        // if (currentHour >= 20 || currentHour < 0) {
-        //     accessBlocked = true;
-        // }
     }
 
     const handleTypeDraw = () => {
@@ -101,10 +90,10 @@ const ViewMenu = () => {
                             <p className="text-white">Loading...</p>
                         )}
                     </div>
-                    {menssage && (
+                    {mensaje && (
                         <div className="flex justify-center items-center">
                             <div className="flex justify-center items-center text-lg text-white h-[56px] bg-green-700 p-2 rounded-xl">
-                                {menssage}
+                                {mensaje}
                             </div>
                         </div>
                     )}

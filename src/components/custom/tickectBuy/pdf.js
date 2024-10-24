@@ -2,10 +2,7 @@ import jsPDF from "jspdf";
 import Swal from "sweetalert2";
 
 const generatePDF = async (tickets, fecha) => {
-  //traer leyenda
-  let leyenda = await fetch("/api/leyenda")
-    .then((res) => res.json())
-    .catch((error) => console.log(error));
+  
 
   // Crear un nuevo documento PDF
   var doc = new jsPDF({
@@ -24,12 +21,14 @@ const generatePDF = async (tickets, fecha) => {
   doc.setFont("helvetica", "bold");
   doc.text(`Factura de boletos`, 10, 40);
 
+  
+
   // Mostrar detalles del comprador, sorteo y venta una sola vez
   const firstTicket = tickets[0];
   doc.setFont("helvetica", "normal");
   doc.text(`Comprador: ${firstTicket.comprador}`, 10, 50);
   doc.text(`Sorteo: ${fecha}`, 10, 60);
-  doc.text(`Venta: ${firstTicket.Fecha}`, 10, 70);
+  doc.text(`Venta: ${firstTicket.Fecha_venta}`, 10, 70);
 
   let yPosition = 80; // Posición inicial en el eje Y para los boletos
 
@@ -47,7 +46,8 @@ const generatePDF = async (tickets, fecha) => {
 
   // Dividir el texto en varias líneas para que se ajuste al tamaño de 80mm
   doc.setFont("helvetica", "bold");
-  var text = doc.splitTextToSize(`${leyenda.leyenda1}`, 70);
+  let leyenda = tickets[0].leyenda;
+  var text = doc.splitTextToSize(`${leyenda}`, 70);
   doc.text(text, 10, yPosition);
 
   // Obtener una representación de datos del documento
@@ -57,6 +57,7 @@ const generatePDF = async (tickets, fecha) => {
   const file = new File([blob], "factura_boletos.pdf", {
     type: "application/pdf",
   });
+
 
   // Mostrar una alerta con opciones para compartir o cancelar
   const result = await Swal.fire({
@@ -68,12 +69,13 @@ const generatePDF = async (tickets, fecha) => {
     cancelButtonText: "Cancelar",
   });
 
+
   if (result.isConfirmed) {
     if (navigator.share) {
       navigator
         .share({
           title: "Factura de boletos",
-          text: "Hola, aquí tienes tu factura de boletos.",
+          text: "Hola, aquí tienes tu boleto, Suerte!.",
           files: [file],
         })
         .then(() => {
@@ -96,6 +98,7 @@ const generatePDF = async (tickets, fecha) => {
   } else {
     window.location.reload(); // Recargar la página si se cancela o se hace clic fuera de la ventana
   }
+
 };
 
 export default generatePDF;

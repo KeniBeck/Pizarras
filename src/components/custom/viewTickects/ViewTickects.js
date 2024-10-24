@@ -58,7 +58,8 @@ const ViewTickets = () => {
     : [];
 
   const handlePrint = (ticket) => {
-    const tickets = [ticket];
+    const tickets = [];
+    tickets.push(ticket);
     let fechaSinHora = ticket.Fecha;
     if (isNaN(new Date(fechaSinHora).getTime())) {
       console.error("Invalid date:", fechaSinHora);
