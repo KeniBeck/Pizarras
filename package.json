@@ -9,6 +9,7 @@
     "lint": "next lint"
   },
   "dependencies": {
+    "dotenv": "^16.4.5",
     "flowbite-datepicker": "^1.2.6",
     "jspdf": "^2.5.1",
     "jspdf-autotable": "^3.8.2",
