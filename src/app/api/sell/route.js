@@ -26,6 +26,7 @@ export async function POST(req, res) {
         ( Fecha, Primerpremio, Segundopremio, Boleto, Costo, comprador, Idvendedor,tipo_sorteo,Fecha_venta)
         VALUES( ?, ?, ?, ?, ?, ?, ?, ?,CURRENT_TIMESTAMP)
     `;
+  let sqlTopes = `SELECT * FROM topes WHERE Numero = ? AND Fecha_sorteo = ?`;  
   let sqlUpdate = `UPDATE topes SET  Cantidad = Cantidad + ${prizebox} WHERE Numero = ${ticketNumber}`;
   let sqlSelect = `SELECT b.*, c.leyenda1 AS leyenda
         FROM boletos b
@@ -33,7 +34,6 @@ export async function POST(req, res) {
         WHERE b.Boleto = ? 
         ORDER BY b.Idsorteo DESC 
         LIMIT 1;`;
- 
   let values = [
     fechaModificada,
     primerPremio,
@@ -46,6 +46,15 @@ export async function POST(req, res) {
   ];
 
   try {
+     // Verificar el tope antes de realizar la venta
+     let [resultTopes] = await pool.query(sqlTopes, [ticketNumber, fechaModificada]);
+     if (resultTopes.length > 0) {
+       let tope = resultTopes[0].Tope;
+       let cantidadActual = resultTopes[0].Cantidad;
+       if (cantidadActual + prizebox > tope) {
+         return NextResponse.json({ error: "La cantidad de boletos vendidos supera el tope permitido" });
+       }
+     }
     let result = await pool.query(sql, values);
     let resultUpdate = await pool.query(sqlUpdate);
     let resultSelect = await pool.query(sqlSelect, [ticketNumber]);

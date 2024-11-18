@@ -7,7 +7,7 @@ import useSession from "@/hook/useSession";
 import { useRouter } from 'next/navigation'
 import AlertMenu from "../alerts/menu/AlertMenu";
 import { useEffect, useState } from "react";
-
+import { FaClover } from "react-icons/fa6";
 
 const ViewMenu = () => {
     let mensaje = null;
@@ -59,8 +59,10 @@ const ViewMenu = () => {
                 </div>
             ) : (
                 <div className="w-full bg-[rgb(38,38,38)]">
-
-                    <div className=" w-full flex justify-center items-center text-2xl text-white pt-6 pb-2">Pizarras</div>
+                    <div className=" w-full flex justify-center items-center text-2xl  pt-6 pb-2">
+                         <FaClover className="h-10 mr-2 text-green-700" />
+                         <label className="text-[#FFF113]">El Trebol De La Suerte</label>
+                        </div>
                     <div className="w-full flex justify-center items-center  flex-col space-y-1 pb-4">
                         {userData ? (
                             <>
