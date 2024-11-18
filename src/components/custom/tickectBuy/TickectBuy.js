@@ -185,7 +185,11 @@ const TicketBuy = () => {
             await fetch("/api/sell", options)
                 .then(res => res.json())
                 .then(data => {
-                    ticketData.push(data[0][0]);
+                    console.log(data,'data')
+                    if(data.error){
+                        Swal.fire(data.error);
+                    }else if (data[0][0]){ticketData.push(data[0][0]);}
+                    
                 });
         }
 
