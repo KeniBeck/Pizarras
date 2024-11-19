@@ -134,7 +134,6 @@ export const printBoxCut = async (userData) => {
   });
 
   if (action) {
-    console.log("generatePDFBoxCut called");
     const boxCut = await fetchData();
     if ( boxCut.boletosEspeciales === undefined && boxCut.boletosNormales === undefined) {
        Swal.fire({ title: "Corte de caja realizado", icon: "error" });

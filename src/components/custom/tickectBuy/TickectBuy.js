@@ -92,7 +92,6 @@ const TicketBuy = () => {
                 const matchingTope = data.tope.find(tope => tope.Numero === Number(value));
 
                 if (matchingTope) {
-                    console.log("Tope encontrado: ", matchingTope.Tope);
                     setFoundTope(matchingTope.Tope); // Guarda el tope encontrado en el estado
                     setCantidad(matchingTope.Cantidad);
                     setNumberTop(matchingTope.Numero);
@@ -101,11 +100,9 @@ const TicketBuy = () => {
                         [matchingTope.Numero]:matchingTope.Cantidad
                     }))
                 } else {
-                    console.log("No se encontró un tope para este número de boleto");
                     setFoundTope(null); // Si no se encuentra un tope, establece el estado a null
                 }
             } else {
-                console.log("La respuesta de la API no contiene un array de topes");
                 setFoundTope(null);
             }
         } catch (error) {
@@ -185,7 +182,6 @@ const TicketBuy = () => {
             await fetch("/api/sell", options)
                 .then(res => res.json())
                 .then(data => {
-                    console.log(data,'data')
                     if(data.error){
                         Swal.fire(data.error);
                     }else if (data[0][0]){ticketData.push(data[0][0]);}
@@ -224,6 +220,8 @@ const TicketBuy = () => {
             return ticket.toString().padStart(3, '0');
         });
 
+        const allTicketData = [];
+
         // Envía cada boleto al servidor
         for (const ticketNumber of ticketNumbers) {
             const data = {
@@ -248,7 +246,7 @@ const TicketBuy = () => {
             await fetch("/api/sell", options)
                 .then(res => res.json())
                 .then(data => {
-                    generatePDFSerie(data[0], fecha);
+                    allTicketData.push(...data[0]);
                 });
         }
 
@@ -256,6 +254,8 @@ const TicketBuy = () => {
         setTicketNumber("");
         setPrizebox("");
         setName("");
+
+        generatePDFSerie(allTicketData, fecha);
     };
 
     const handlePrizeboxChange = (e) => {
@@ -288,24 +288,20 @@ const TicketBuy = () => {
     
         // Filtrar boletos con el mismo número de tope
         const boletosConMismoTope = tickets.filter(ticket => {
-            console.log(`Comparando ${parseInt(ticket.number)} con ${numberTop}`);
             return parseInt(ticket.number) === numberTop;
         });
 
     
-        console.log('Boletos con el mismo tope:', boletosConMismoTope);
+       
     
         // Calcular la cantidad acumulada de boletos en la lista
         const totalAcumulado = boletosConMismoTope.reduce((acc, ticket) => {
-            console.log(`Acumulando ${acc} + ${parseInt(ticket.price)}`);
             return acc + parseInt(ticket.price);
         }, 0);
         const nuevaCantidad = totalAcumulado + cantidad + parseInt(prizebox);
            
     
         if (foundTope > 0) {
-            console.log(nuevaCantidad,'>',foundTope)
-            console.log(totalAcumulado)
             if (nuevaCantidad > foundTope) {
                 Swal.fire(`La cantidad permitida es ${(totalAcumulado + cantidad - foundTope)*(-1)}. Te estás pasando en ${nuevaCantidad - foundTope} pesos.`);
                 setPrizebox("");

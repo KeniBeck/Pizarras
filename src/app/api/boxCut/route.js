@@ -107,7 +107,6 @@ export async function POST(req, res) {
     ];
     await pool.query(sqlInsert, values);
     let puntosSumados = Math.floor(totalVentas / 100)
-    console.log(puntosSumados,'aja')
     await pool.query(sqlUpdatePuntos, [puntosSumados, Idvendedor]);
 
     // Devolver los resultados

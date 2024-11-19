@@ -28,6 +28,7 @@ export async function POST(req, res) {
     `;
   let sqlTopes = `SELECT * FROM topes WHERE Numero = ? AND Fecha_sorteo = ?`;  
   let sqlUpdate = `UPDATE topes SET  Cantidad = Cantidad + ${prizebox} WHERE Numero = ${ticketNumber}`;
+  let sqlValidation = `SELECT * FROM boletos WHERE Fecha = ? AND Boleto = ?`;
   let sqlSelect = `SELECT b.*, c.leyenda1 AS leyenda
         FROM boletos b
         CROSS JOIN configuracion c
@@ -55,6 +56,10 @@ export async function POST(req, res) {
          return NextResponse.json({ error: "La cantidad de boletos vendidos supera el tope permitido" });
        }
      }
+    let [resultValidation] = await pool.query(sqlValidation, [fechaModificada, ticketNumber]);
+    if (resultValidation.length > 0) {
+      return NextResponse.json({ error: "El boleto ya fue vendido" });
+    }
     let result = await pool.query(sql, values);
     let resultUpdate = await pool.query(sqlUpdate);
     let resultSelect = await pool.query(sqlSelect, [ticketNumber]);
