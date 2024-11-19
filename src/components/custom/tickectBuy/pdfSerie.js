@@ -7,7 +7,6 @@ const formatDate = (dateString) => {
 };
 
 const generatePDFSerie = async (data, fecha) => {
-    console.log(data,'pdf');
     const fechaSorteoFormateada = formatDate(fecha);
   
     // Mostrar ventana de carga
