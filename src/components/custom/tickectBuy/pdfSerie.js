@@ -7,6 +7,7 @@ const formatDate = (dateString) => {
 };
 
 const generatePDFSerie = async (data, fecha) => {
+    console.log(data,'pdf');
     const fechaSorteoFormateada = formatDate(fecha);
   
     // Mostrar ventana de carga
@@ -53,38 +54,54 @@ const generatePDFSerie = async (data, fecha) => {
     // Obtener una representación de datos del documento
     var blob = doc.output('blob');
 
-    const file = new File([blob], 'factura_boletos.pdf', { type: 'application/pdf' });
+    var url = URL.createObjectURL(blob);
+
+    // Mostrar una alerta con opción para imprimir
+    const result = await Swal.fire({
+      title: "Corte de caja exitoso",
+      icon: "success",
+      showCancelButton: true,
+      allowOutsideClick: false,
+      confirmButtonText: "Imprimir o Compartir",
+    });
+  
+    if (result.isConfirmed) {
+      // Si el usuario elige imprimir, abrir en una nueva pestaña
+      window.open(url);
+    }
+
+    // const file = new File([blob], 'factura_boletos.pdf', { type: 'application/pdf' });
   
 
-    const result = await Swal.fire({
-        title: 'Compra exitosa',
-        icon: 'success',
-        showCancelButton: true,
-        allowOutsideClick: false,
-        confirmButtonText: 'Compartir',
-    });
+    // const result = await Swal.fire({
+    //     title: 'Compra exitosa',
+    //     icon: 'success',
+    //     showCancelButton: true,
+    //     allowOutsideClick: false,
+    //     confirmButtonText: 'Compartir',
+    // });
 
-    // Si el usuario elige imprimir, abrir la URL en una nueva pestaña
-    if (result.isConfirmed) {
-        if (navigator.share) {
-            navigator.share({
-                title: 'Factura de boletos',
-                text: 'Hola, aquí tienes tu boleto, Suerte!.',
-                files: [file],
-            }).then(() => {
-                console.log('Compartido exitosamente');
-            }).catch((error) => {
-                console.error('Error al compartir:', error);
-            });
-        } else {
-            Swal.fire({
-                title: 'Error',
-                text: 'La funcionalidad de compartir no está disponible en este dispositivo.',
-                icon: 'error',
-            });
-        }
+    // // Si el usuario elige imprimir, abrir la URL en una nueva pestaña
+    // if (result.isConfirmed) {
+    //     if (navigator.share) {
+    //         navigator.share({
+    //             title: 'Factura de boletos',
+    //             text: 'Hola, aquí tienes tu boleto, Suerte!.',
+    //             files: [file],
+    //         }).then(() => {
+    //             console.log('Compartido exitosamente');
+    //         }).catch((error) => {
+    //             console.error('Error al compartir:', error);
+    //         });
+    //     } else {
+    //         Swal.fire({
+    //             title: 'Error',
+    //             text: 'La funcionalidad de compartir no está disponible en este dispositivo.',
+    //             icon: 'error',
+    //         });
+    //     }
 
-    }
+    // }
 
 }
 
