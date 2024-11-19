@@ -21,10 +21,10 @@ export async function POST(req, res) { // Define una función asíncrona llamada
             row.mensaje = resultLeyenda[0].Mensaje;
         });
 
-        return NextResponse.json(rows);  // Devuelve los datos obtenidos como respuesta en formato JSON utilizando NextResponse.
+        return NextResponse.json(rows);  
 
     } catch (error) {
-        console.log(error)  // Captura cualquier error que ocurra durante la ejecución de la consulta y lo registra en la consola.
+        console.log(error)  
     }
 
 }
