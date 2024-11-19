@@ -246,7 +246,9 @@ const TicketBuy = () => {
             await fetch("/api/sell", options)
                 .then(res => res.json())
                 .then(data => {
-                    allTicketData.push(...data[0]);
+                    if(data[0]){
+                        allTicketData.push(data[0][0]);
+                    }
                 });
         }
 
