@@ -31,8 +31,8 @@ const generatePDFBoxCut = async (data) => {
   doc.text(formattedNow, dateX, 15);
 
   let y = 20;
-  // Verificar si hay boletos especiales
 
+  // Verificar si hay boletos especiales
   if (data.boletosEspeciales && data.boletosEspeciales.length > 0) {
     let fechasSorteo = [
       ...new Set(
@@ -68,24 +68,20 @@ const generatePDFBoxCut = async (data) => {
 
     y = doc.autoTable.previous.finalY + 5; // Actualizar la posición y para la siguiente tabla
   }
+
   // Verificar si necesitamos agregar una nueva página
   if (y > 280) {
     doc.addPage();
     y = 20;
   }
+
   if (data.boletosNormales && data.boletosNormales.length > 0) {
     let fecha = data.boletosNormales[0].FechaSorteo.split("T")[0];
     // Agregar el nombre del vendedor al texto del sorteo normal
-    doc.text(
-      "Sorteo normal: " +
-        fecha +
-        " Vendedor: " +
-        data.boletosNormales[0].nombreVendedor,
-      5,
-      y + 3
-    );
+    doc.text("Sorteo normal: " + fecha, 5, y + 3);
+    doc.text("Vendedor: " + data.boletosNormales[0].nombreVendedor, 5, y + 7);
 
-    y += 5;
+    y += 10;
     let boletosNormales = data.boletosNormales.map((boleto) => [
       boleto.Boleto,
       boleto.comprador,
@@ -102,41 +98,63 @@ const generatePDFBoxCut = async (data) => {
     });
     y = doc.autoTable.previous.finalY + 5; // Actualizar la posición y para el total de boletos vendidos
   }
+
+  // Verificar si necesitamos agregar una nueva página
+  if (y > 280) {
+    doc.addPage();
+    y = 20;
+  }
+
   // Agregar el total de boletos vendidos
+  let totalBoletosVendidos =
+    (data.boletosEspeciales ? data.boletosEspeciales.length : 0) +
+    (data.boletosNormales ? data.boletosNormales.length : 0);
+  let totalVentas =
+    (data.boletosEspeciales
+      ? data.boletosEspeciales.reduce((total, boleto) => total + boleto.Costo, 0)
+      : 0) +
+    (data.boletosNormales
+      ? data.boletosNormales.reduce((total, boleto) => total + boleto.Costo, 0)
+      : 0);
 
   // Calcular la comisión
   let comision = 0;
-  if (data.boletosEspeciales.length > 0) {
+  if (data.boletosEspeciales && data.boletosEspeciales.length > 0) {
     comision = data.boletosEspeciales[0].comisiones / 100;
-  } else if (data.boletosNormales.length > 0) {
+  } else if (data.boletosNormales && data.boletosNormales.length > 0) {
     comision = data.boletosNormales[0].comisiones / 100;
   }
 
-  let totalBoletosVendidos =
-    data.boletosEspeciales.length + data.boletosNormales.length;
-  let totalVentas =
-    data.boletosEspeciales.reduce((total, boleto) => total + boleto.Costo, 0) +
-    data.boletosNormales.reduce((total, boleto) => total + boleto.Costo, 0);
   // Agregar la deuda del vendedor
   let deuda = 0;
-  if (data.boletosEspeciales.length > 0) {
+  if (data.boletosEspeciales && data.boletosEspeciales.length > 0) {
     deuda = data.boletosEspeciales[0].deuda;
-  } else if (data.boletosNormales.length > 0) {
+  } else if (data.boletosNormales && data.boletosNormales.length > 0) {
     deuda = data.boletosNormales[0].deuda;
   }
+  if (deuda === null) {
+    deuda = 0;
+  }
+
   if (totalBoletosVendidos === 0) {
     Swal.fire({ title: "No hay boletos vendidos", icon: "error" });
+    return;
   }
+
   let caja = totalVentas - totalVentas * comision;
-  doc.text("Total de boletos vendidos: " + totalBoletosVendidos, 20, y);
-  doc.text("Porcentaje de comision: " + comision * 100, 20, y + 4);
-  doc.text("Venta: " + totalVentas, 42, y + 10);
-  doc.text("Comision: " + (totalVentas * comision).toFixed(2), 42, y + 14);
-  doc.text("Caja: " + caja, 42.4, y + 18);
-  doc.text("Adeudo pendiente vendedor: " + deuda, 16, y + 30);
+  let puntosSumados = Math.floor(totalVentas / 100);
+
+  doc.text("Total de boletos vendidos: " + totalBoletosVendidos, 5, y);
+  doc.text("Porcentaje de comisión: " + comision * 100 + "%", 5, y + 5);
+  doc.text("Puntos sumados: " + puntosSumados, 5, y + 10);
+  doc.text("Venta: " + totalVentas, 5, y + 15);
+  doc.text("Comisión: " + (totalVentas * comision).toFixed(2), 5, y + 20);
+  doc.text("Caja: " + caja.toFixed(2), 5, y + 25);
+  doc.text("Adeudo pendiente vendedor: " + deuda, 5, y + 30);
   doc.setFont("helvetica", "bold");
-  doc.text("No incluido en el corte de caja", 16, y + 35);
+  doc.text("No incluido en el corte de caja", 5, y + 35);
   doc.setFont("helvetica");
+
   // Abrir el diálogo de impresión cuando el usuario abra el PDF
   doc.autoPrint();
 

@@ -15,6 +15,7 @@ import { FaHome } from "react-icons/fa";
 import EspecialPreviewModal from "./EspecialPreviewModal";
 import VailidationEstatus from "@/hook/validationEstatus";
 import updateInfo from "../validation/updateInfo";
+import Swal from "sweetalert2";
 
 const TickectBuyEspecial = ({ selectedDate }) => {
   const [prizes, setPrizes] = useState(selectedDate);
@@ -64,10 +65,8 @@ const TickectBuyEspecial = ({ selectedDate }) => {
     const ticket = boletos.find((ticket) => ticket.Boleto === Number(value));
 
     if (ticket && ticket.fecha_sorteo === prizes.Fecha) {
-      console.log("numero en la base de datos", ticket.Boleto);
       setFoundTope(true);
     } else {
-      console.log("numero no en base ");
       setFoundTope(null);
     }
   };
@@ -128,7 +127,11 @@ const TickectBuyEspecial = ({ selectedDate }) => {
     await fetch("/api/sell", options)
       .then((res) => res.json())
       .then((data) => {
-        generatePDF([data[0][0]], fecha);
+        if(data.error){
+          Swal.fire(data.error);
+        }else if(data[0][0]){
+          generatePDF([data[0][0]], fecha);
+        };
       })
       .finally(() => {
         setIsLoading(false);
