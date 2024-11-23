@@ -28,7 +28,9 @@ export async function POST(req, res) {
     `;
   let sqlTopes = `SELECT * FROM topes WHERE Numero = ? AND Fecha_sorteo = ?`;  
   let sqlUpdate = `UPDATE topes SET  Cantidad = Cantidad + ${prizebox} WHERE Numero = ${ticketNumber}`;
-  let sqlValidation = `SELECT * FROM boletos WHERE Fecha = ? AND Boleto = ?`;
+  let sqlValidation = `SELECT b.Idsorteo AS idsorteo, b.Fecha AS Fecha_sorteo , b.Boleto AS boleto, s.Tipo_sorteo AS tipo FROM boletos b
+         JOIN sorteo s ON b.tipo_sorteo
+         WHERE s.Tipo_sorteo = 'especial' AND b.Fecha = ? AND b.Boleto = ?`;
   let sqlSelect = `SELECT b.*, c.leyenda1 AS leyenda
         FROM boletos b
         CROSS JOIN configuracion c
