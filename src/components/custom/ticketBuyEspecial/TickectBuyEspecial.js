@@ -145,6 +145,9 @@ const TickectBuyEspecial = ({ selectedDate }) => {
 
   const handlePrizeboxChange = (e) => {
     let value = e.target.value;
+    if (!/^[0-9]*$/.test(value)) {
+      value = value.slice(0, -1);
+    }
     setPrizebox(value);
     // Verifica si el valor es un múltiplo de 10
     if (value % 10 !== 0) {
@@ -219,11 +222,6 @@ const TickectBuyEspecial = ({ selectedDate }) => {
               value={prizebox}
               onChange={handlePrizeboxChange}
               maxLength={4}
-              onKeyPress={(event) => {
-                if (!/[0-9]/.test(event.key)) {
-                  event.preventDefault();
-                }
-              }}
             />
           </div>
           <div className="flex flex-row gap-8">
