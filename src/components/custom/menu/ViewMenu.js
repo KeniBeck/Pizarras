@@ -75,8 +75,8 @@ const ViewMenu = () => {
                         )}
                     </div>
                     {mensaje && (
-                        <div className="flex justify-center items-center">
-                            <div className="flex justify-center items-center text-lg text-white h-[56px] bg-green-700 p-2 rounded-xl">
+                        <div className="flex justify-center items-center px-8">
+                            <div className="flex justify-center items-center text-lg text-white h-[56px] bg-green-700 p-4 rounded-xl">
                                 {mensaje}
                             </div>
                         </div>
