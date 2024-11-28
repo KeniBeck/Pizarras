@@ -60,6 +60,9 @@ const TickectBuyEspecial = ({ selectedDate }) => {
 
   const handleTicketNumberChange = (e) => {
     let value = e.target.value;
+    if (!/^[0-9]*$/.test(value)) {
+      value = value.slice(0, -1);
+    }
     setTicketNumber(value);
 
     const ticket = boletos.find((ticket) => ticket.Boleto === Number(value));
@@ -79,6 +82,7 @@ const TickectBuyEspecial = ({ selectedDate }) => {
   const userData = JSON.parse(localStorage.getItem("userData"));
   const idVendedor = userData.Idvendedor;
   const idSorteo = prizes.Idsorteo;
+  const tipoSorteo = prizes.Tipo_sorteo;
   const fecha = new Date(
     new Date(prizes.Fecha).getTime() + new Date().getTimezoneOffset() * 60000
   ).toLocaleDateString();
@@ -108,6 +112,7 @@ const TickectBuyEspecial = ({ selectedDate }) => {
     const data = {
       prizebox,
       name,
+      tipoSorteo,
       ticketNumber,
       topePermitido: null,
       idVendedor,
@@ -127,11 +132,11 @@ const TickectBuyEspecial = ({ selectedDate }) => {
     await fetch("/api/sell", options)
       .then((res) => res.json())
       .then((data) => {
-        if(data.error){
+        if (data.error) {
           Swal.fire(data.error);
-        }else if(data[0][0]){
+        } else if (data[0][0]) {
           generatePDF([data[0][0]], fecha);
-        };
+        }
       })
       .finally(() => {
         setIsLoading(false);
@@ -151,11 +156,11 @@ const TickectBuyEspecial = ({ selectedDate }) => {
   if (isLoading) {
     loading();
   }
- const goToMenu = () => {
-        updateInfo(idVendedor).then(() => {
-            router.push('/menu')
-        });
-    }
+  const goToMenu = () => {
+    updateInfo(idVendedor).then(() => {
+      router.push("/menu");
+    });
+  };
   const hanlePreviewModal = () => {
     VailidationEstatus();
     setPreviewModal(true);
@@ -203,11 +208,6 @@ const TickectBuyEspecial = ({ selectedDate }) => {
               onChange={handleTicketNumberChange}
               onBlur={handleBlur}
               maxLength={3}
-              onKeyPress={(event) => {
-                if (!/[0-9]/.test(event.key)) {
-                  event.preventDefault();
-                }
-              }}
             />
           </div>
           <div className="flex flex-row gap-12">

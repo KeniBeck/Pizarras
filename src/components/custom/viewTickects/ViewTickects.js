@@ -12,6 +12,7 @@ const ViewTickets = () => {
   const [tickets, setTickets] = useState([]);
   const [search, setSearch] = useState("");
   const [totalTickets, setTotalTickets] = useState(0);
+  const [total, setTotal] = useState(0);
   const router = useRouter();
   let idVendedor = null;
 
@@ -37,6 +38,8 @@ const ViewTickets = () => {
       const data = await response.json();
       setTickets(data);
       setTotalTickets(data.length);
+      const total = data.reduce((acc, ticket) => acc + ticket.Costo, 0);
+      setTotal(total);
     } catch (error) {
       console.log(error);
     }
@@ -64,12 +67,13 @@ const ViewTickets = () => {
 
   const handlePrint = (ticket) => {
     const tickets = [];
-    tickets.push(ticket);
-    let fechaSinHora = ticket.Fecha;
+    tickets.push(ticket); 
+    console.log("tickets", tickets);    
+    let fechaSinHora = tickets[0].Fecha;
     if (isNaN(new Date(fechaSinHora).getTime())) {
       console.error("Invalid date:", fechaSinHora);
     } else {
-      fechaSinHora = new Date(fechaSinHora).toLocaleDateString();
+      console.log("fechaSinHora", fechaSinHora);
       generatePDF(tickets, fechaSinHora);
     }
   };
@@ -82,9 +86,12 @@ const ViewTickets = () => {
 
   return (
     <div>
-      <div className="flex justify-center items-center p-3">
+      <div className="flex flex-col justify-center items-center p-3">
         <p className="text-white text-xl">
           Total de boletos vendidos: {totalTickets}
+        </p>
+        <p className="text-white text-xl">
+          Venta total : ${total}
         </p>
       </div>
       <form className="max-w-md mx-auto">
