@@ -3,7 +3,7 @@ import { NextResponse } from "next/server";
 
 export async function POST(req, res) {
   const data = await req.json();
-  const { Idvendedor, Fechaingreso, sucursal } = data;
+  const { Idvendedor, Fechaingreso, sucursal, Nombre } = data;
 
   const fecha = new Date(Fechaingreso)
     .toISOString()
@@ -95,7 +95,7 @@ export async function POST(req, res) {
     let values = [
       new Date().toISOString().slice(0, 19).replace("T", " "),
       fecha,
-      Idvendedor,
+      Nombre,
       sucursal,
       totalBoletosVendidos,
       totalVentas,
@@ -106,7 +106,7 @@ export async function POST(req, res) {
       totalEntregado,
     ];
     await pool.query(sqlInsert, values);
-    let puntosSumados = Math.floor(totalVentas / 100)
+    let puntosSumados = Math.round(totalVentas / 100)
     await pool.query(sqlUpdatePuntos, [puntosSumados, Idvendedor]);
 
     // Devolver los resultados

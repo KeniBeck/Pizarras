@@ -140,7 +140,6 @@ export const printBoxCut = async (userData) => {
         return;
     }
     if (boxCut) {
-      console.log("boxCut", boxCut);
       generatePDFBoxCut(boxCut); // Asume que generatePDF es la función que imprime el corte de caja
     } else {
       Swal.fire({ title: "Error al obtener los datos", icon: "error" });
