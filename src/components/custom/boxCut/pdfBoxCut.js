@@ -41,15 +41,9 @@ const generatePDFBoxCut = async (data) => {
     ];
     let fechasTexto = fechasSorteo.join(", ");
     // Agregar el nombre del vendedor al texto del sorteo especial
-    doc.text(
-      "Sorteo especial: " +
-        fechasTexto +
-        " Vendedor: " +
-        data.boletosEspeciales[0].nombreVendedor,
-      5,
-      y + 3
-    );
-    y += 5;
+    doc.text("Sorteo especial: " + fechasTexto, 5, y + 3);
+    doc.text("Vendedor: " + data.boletosEspeciales[0].nombreVendedor, 5, y + 7);
+    y += 10; // Incrementar la posición y para asegurar suficiente espacio
 
     let boletosEspeciales = data.boletosEspeciales.map((boleto) => [
       boleto.Boleto,
@@ -142,7 +136,7 @@ const generatePDFBoxCut = async (data) => {
   }
 
   let caja = totalVentas - totalVentas * comision;
-  let puntosSumados = Math.floor(totalVentas / 100);
+  let puntosSumados = Math.round(totalVentas / 100);
 
   doc.text("Total de boletos vendidos: " + totalBoletosVendidos, 5, y);
   doc.text("Porcentaje de comisión: " + comision * 100 + "%", 5, y + 5);

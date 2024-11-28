@@ -13,7 +13,7 @@ export async function POST(req, res) {
     prizebox,
     segundoPremio,
     ticketNumber,
-    topePermitido,
+    tipoSorteo,
   } = datos;
   const fechaModificada = new Date(fecha)
     .toISOString()
@@ -26,12 +26,12 @@ export async function POST(req, res) {
         ( Fecha, Primerpremio, Segundopremio, Boleto, Costo, comprador, Idvendedor,tipo_sorteo,Fecha_venta)
         VALUES( ?, ?, ?, ?, ?, ?, ?, ?,CURRENT_TIMESTAMP)
     `;
-  let sqlTopes = `SELECT * FROM topes WHERE Numero = ? AND Fecha_sorteo = ?`;  
+  let sqlTopes = `SELECT * FROM topes WHERE Numero = ? AND Fecha_sorteo = ?`;
   let sqlUpdate = `UPDATE topes SET  Cantidad = Cantidad + ${prizebox} WHERE Numero = ${ticketNumber}`;
   let sqlValidation = `SELECT b.Idsorteo AS idsorteo, b.Fecha AS Fecha_sorteo , b.Boleto AS boleto, s.Tipo_sorteo AS tipo FROM boletos b
          JOIN sorteo s ON b.tipo_sorteo
          WHERE s.Tipo_sorteo = 'especial' AND b.Fecha = ? AND b.Boleto = ?`;
-  let sqlSelect = `SELECT b.*, c.leyenda1 AS leyenda
+  let sqlSelect = `SELECT b.*, c.leyenda1,c.leyenda2
         FROM boletos b
         CROSS JOIN configuracion c
         WHERE b.Boleto = ? 
@@ -49,21 +49,34 @@ export async function POST(req, res) {
   ];
 
   try {
-     // Verificar el tope antes de realizar la venta
-     let [resultTopes] = await pool.query(sqlTopes, [ticketNumber, fechaModificada]);
-     if (resultTopes.length > 0) {
-       let tope = resultTopes[0].Tope;
-       let cantidadActual = resultTopes[0].Cantidad;
-       if (cantidadActual + prizebox > tope) {
-         return NextResponse.json({ error: "La cantidad de boletos vendidos supera el tope permitido" });
-       }
-     }
-    let [resultValidation] = await pool.query(sqlValidation, [fechaModificada, ticketNumber]);
-    if (resultValidation.length > 0) {
-      return NextResponse.json({ error: "El boleto ya fue vendido" });
+    // Verificar el tope antes de realizar la venta
+    let [resultTopes] = await pool.query(sqlTopes, [
+      ticketNumber,
+      fechaModificada,
+    ]);
+    if (resultTopes.length > 0) {
+      let tope = resultTopes[0].Tope;
+      let cantidadActual = resultTopes[0].Cantidad;
+      if (cantidadActual + prizebox > tope) {
+        return NextResponse.json({
+          error: "La cantidad de boletos vendidos supera el tope permitido",
+        });
+      }
+    }
+    if (tipoSorteo == "especial") {
+      let [resultValidation] = await pool.query(sqlValidation, [
+        fechaModificada,
+        ticketNumber,
+      ]);
+      if (resultValidation.length > 0) {
+        return NextResponse.json({ error: "El boleto ya fue vendido" });
+      }
+    }
+    if (tipoSorteo === "normal") {
+      let resultUpdate = await pool.query(sqlUpdate);
     }
     let result = await pool.query(sql, values);
-    let resultUpdate = await pool.query(sqlUpdate);
+
     let resultSelect = await pool.query(sqlSelect, [ticketNumber]);
 
     return NextResponse.json(resultSelect);
@@ -113,7 +126,7 @@ export async function PUT(req, res) {
   try {
     let result = await pool.query(sql, values);
     let resultSelect = await pool.query(sqlSelect, [name]);
- 
+
     return NextResponse.json(resultSelect);
   } catch (error) {
     console.log(error);
