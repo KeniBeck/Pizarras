@@ -86,7 +86,6 @@ export async function POST(req, res) {
     }
     if (tipoSorteo === "especial") {
       let result = await pool.query(sql, values);
-      let resultUpdate = await pool.query(sqlUpdate);
       let resultSelectUpdate = await pool.query(sqlSelectEspecial, [
         ticketNumber,
       ]);
