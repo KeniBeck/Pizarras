@@ -37,6 +37,12 @@ export async function POST(req, res) {
         WHERE b.Boleto = ? 
         ORDER BY b.Idsorteo DESC 
         LIMIT 1;`;
+  let sqlSelectEspecial = `SELECT b.*, c.leyenda1 AS leyenda1,c.leyenda3 AS leyenda2
+        FROM boletos b
+        CROSS JOIN configuracion c
+        WHERE b.Boleto = ? 
+        ORDER BY b.Idsorteo DESC 
+        LIMIT 1;`;
   let values = [
     fechaModificada,
     primerPremio,
@@ -73,13 +79,19 @@ export async function POST(req, res) {
       }
     }
     if (tipoSorteo === "normal") {
+      let result = await pool.query(sql, values);
       let resultUpdate = await pool.query(sqlUpdate);
+      let resultSelect = await pool.query(sqlSelect, [ticketNumber]);
+      return NextResponse.json(resultSelect);
     }
-    let result = await pool.query(sql, values);
-
-    let resultSelect = await pool.query(sqlSelect, [ticketNumber]);
-
-    return NextResponse.json(resultSelect);
+    if (tipoSorteo === "especial") {
+      let result = await pool.query(sql, values);
+      let resultUpdate = await pool.query(sqlUpdate);
+      let resultSelectUpdate = await pool.query(sqlSelectEspecial, [
+        ticketNumber,
+      ]);
+      return NextResponse.json(resultSelectUpdate);
+    }
   } catch (error) {
     console.log(error);
   }
