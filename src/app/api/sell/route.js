@@ -120,7 +120,7 @@ export async function PUT(req, res) {
         VALUES( ?, ?, ?, ?, ?, ?, ?, ?,CURRENT_TIMESTAMP)
     `;
   // Obtener los últimos 10 elementos insertados
-  let sqlSelect = `SELECT b.*, c.leyenda1 AS leyenda FROM boletos b 
+  let sqlSelect = `SELECT b.*, c.leyenda1 AS leyenda1, c.leyenda2 AS leyenda2 FROM boletos b 
   CROSS JOIN configuracion c
   WHERE comprador = ? ORDER BY Idsorteo DESC LIMIT 10`;
   let values = [
