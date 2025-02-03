@@ -74,7 +74,15 @@ const TicketBuy = () => {
   };
   const fecha = new Date(
     new Date(prizes.Fecha).getTime() + new Date().getTimezoneOffset() * 60000
-  ).toLocaleDateString();
+).toLocaleDateString();
+
+const [day, month, year] = fecha.split('/').map(num => num.padStart(2, '0'));
+const formattedFecha = `${day}/${month}/${year}`;
+
+console.log(`fechaaa *** ${formattedFecha}`)
+
+
+
   const handleBlur = async (e) => {
     let value = e.target.value;
     // Asegúrate de que el valor sea un número y tenga una longitud de 3 caracteres
@@ -86,7 +94,7 @@ const TicketBuy = () => {
       headers: {
         "Content-Type": "application/json",
       },
-      body: JSON.stringify({ ticketNumber: value, fecha: fecha }),
+      body: JSON.stringify({ ticketNumber: value, fecha: formattedFecha }),
     };
 
     try {
