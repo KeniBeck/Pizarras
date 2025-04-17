@@ -55,6 +55,7 @@ const generatePDF = async (tickets, fecha) => {
   var text = doc.splitTextToSize(`${leyendaFinal}`, 70);
   doc.text(text, 5, yPosition); // Ajustar la coordenada x a 5 para pegarlo más al borde
 
+  doc.autoPrint();
   // Obtener una representación de datos del documento
   var blob = doc.output("blob");
 
@@ -63,44 +64,47 @@ const generatePDF = async (tickets, fecha) => {
     type: "application/pdf",
   });
 
-  // Mostrar una alerta con opciones para compartir o cancelar
-  const result = await Swal.fire({
-    title: "Operacion exitosa",
-    icon: "success",
-    showCancelButton: true,
-    allowOutsideClick: false,
-    confirmButtonText: "Compartir",
-    cancelButtonText: "Cancelar",
-  });
+  var url = URL.createObjectURL(blob);
+  window.open(url);
 
-  if (result.isConfirmed) {
-    if (navigator.share) {
-      navigator
-        .share({
-          title: "Factura de boletos",
-          text: "Hola, aquí tienes tu boleto, Suerte!.",
-          files: [file],
-        })
-        .then(() => {
-          console.log("Compartido exitosamente");
-          window.location.reload(); // Recargar la página después de compartir
-        })
-        .catch((error) => {
-          console.error("Error al compartir:", error);
-          window.location.reload(); // Recargar la página si hay un error al compartir
-        });
-    } else {
-      Swal.fire({
-        title: "Error",
-        text: "La funcionalidad de compartir no está disponible en este dispositivo.",
-        icon: "error",
-      }).then(() => {
-        window.location.reload(); // Recargar la página después de mostrar el error
-      });
-    }
-  } else {
-    window.location.reload(); // Recargar la página si se cancela o se hace clic fuera de la ventana
-  }
+  // // Mostrar una alerta con opciones para compartir o cancelar
+  // const result = await Swal.fire({
+  //   title: "Operacion exitosa",
+  //   icon: "success",
+  //   showCancelButton: true,
+  //   allowOutsideClick: false,
+  //   confirmButtonText: "Compartir",
+  //   cancelButtonText: "Cancelar",
+  // });
+
+  // if (result.isConfirmed) {
+  //   if (navigator.share) {
+  //     navigator
+  //       .share({
+  //         title: "Factura de boletos",
+  //         text: "Hola, aquí tienes tu boleto, Suerte!.",
+  //         files: [file],
+  //       })
+  //       .then(() => {
+  //         console.log("Compartido exitosamente");
+  //         window.location.reload(); // Recargar la página después de compartir
+  //       })
+  //       .catch((error) => {
+  //         console.error("Error al compartir:", error);
+  //         window.location.reload(); // Recargar la página si hay un error al compartir
+  //       });
+  //   } else {
+  //     Swal.fire({
+  //       title: "Error",
+  //       text: "La funcionalidad de compartir no está disponible en este dispositivo.",
+  //       icon: "error",
+  //     }).then(() => {
+  //       window.location.reload(); // Recargar la página después de mostrar el error
+  //     });
+  //   }
+  // } else {
+  //   window.location.reload(); // Recargar la página si se cancela o se hace clic fuera de la ventana
+  // }
 };
 
 export default generatePDF;

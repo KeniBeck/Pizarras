@@ -8,6 +8,8 @@ import { useRouter } from 'next/navigation'
 import AlertMenu from "../alerts/menu/AlertMenu";
 import { useEffect, useState } from "react";
 import { FaClover } from "react-icons/fa6";
+import { GiPodiumWinner } from "react-icons/gi";
+
 
 const ViewMenu = () => {
     let mensaje = null;
@@ -43,13 +45,14 @@ const ViewMenu = () => {
 
     const handleboxCut = async (userData) => {
         router.push('/loginAdmin')
-
-
     }
     const handleViewSell = () => {
         router.push('/viewTickects')
     }
 
+    const handleWinnigTicket = () => {
+        router.push('/loginWinner')
+    }
 
     return (
         <div className="relative min-h-screen">
@@ -103,6 +106,14 @@ const ViewMenu = () => {
                                 className="w-full rounded-lg bg-red-700 text-white text-2xl  h-[66px] relative" >
                                 Corte de caja
                                 <FaCashRegister className="absolute left-3 top-1/2 transform -translate-y-1/2 h-10" />
+                            </button>
+                        </div>
+                        <div className="relative">
+                            <button
+                                onClick={() => handleWinnigTicket(userData)}
+                                className="w-full rounded-lg bg-red-700 text-white text-2xl  h-[66px] relative" >
+                                Boletos ganadores
+                                <GiPodiumWinner className="absolute left-3 top-1/2 transform -translate-y-1/2 h-10" />
                             </button>
                         </div>
                         <div className="relative">

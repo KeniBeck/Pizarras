@@ -257,7 +257,7 @@ console.log(`fechaaa *** ${formattedFecha}`)
 
       const options = {
         method: "PUT",
-        header: {
+        headers: {
           "Content-Type": "application/json",
         },
         body: JSON.stringify(data),

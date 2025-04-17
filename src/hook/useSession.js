@@ -19,6 +19,13 @@ const useSession = () => {
         }
     };
 
+    const loginWinner = (userData) => {
+        if (isBrowser) {
+            localStorage.setItem('loggedWinner', true);
+            localStorage.setItem('userDataWinner', JSON.stringify(userData));
+        }
+    };
+
     const logout = () => {
         if (isBrowser) {
             localStorage.clear();
@@ -35,7 +42,7 @@ const useSession = () => {
         }
     };
 
-    return { login, logout, getUserData, loginAdmin };
+    return { login, logout, getUserData, loginAdmin, loginWinner };
 };
 
 export default useSession;
