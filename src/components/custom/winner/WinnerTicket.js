@@ -50,12 +50,13 @@ const WinnerTicket = () => {
       });
       
       const data = await response.json();
+      console.log("Respuesta del servidor:", data);
       
       if (data.success) {
         // Actualizar el estado local para reflejar el cambio
         setPremiados(prev => 
           prev.map(boleto => 
-            boleto.idpremiados === id ? { ...boleto, pagado: 1 } : boleto
+            boleto.Id_ganador === id ? { ...boleto, Estatus: "Pagado", Fecha_pago: new Date().toISOString() } : boleto
           )
         );
         
@@ -94,9 +95,9 @@ const WinnerTicket = () => {
     router.push('/menu');
   };
 
-  // Filtrar boletos según la búsqueda
+  // Filtrar boletos según la búsqueda (por número de boleto)
   const filteredPremiados = premiados.filter(boleto => 
-    boleto.idpremiados && boleto.idpremiados.toString().includes(search)
+    boleto.Boleto && boleto.Boleto.toString().includes(search)
   );
   
   // Cargar datos al montar el componente
@@ -114,10 +115,10 @@ const WinnerTicket = () => {
           <p className="font-semibold">Total de boletos premiados: {premiados.length}</p>
         </div>
         <div className="bg-gray-800 p-3 rounded-md mb-2 md:mb-0 md:mx-2 flex-1">
-          <p className="font-semibold">Pagados: {premiados.filter(b => b.pagado === 1).length}</p>
+          <p className="font-semibold">Pagados: {premiados.filter(b => b.Estatus === "Pagado").length}</p>
         </div>
         <div className="bg-gray-800 p-3 rounded-md md:ml-2 flex-1">
-          <p className="font-semibold">Pendientes: {premiados.filter(b => b.pagado === 0).length}</p>
+          <p className="font-semibold">Pendientes: {premiados.filter(b => b.Estatus === "No pagado").length}</p>
         </div>
       </div>
       
@@ -126,7 +127,7 @@ const WinnerTicket = () => {
         <input
           type="search"
           className="block w-full p-4 text-sm text-gray-900 border border-gray-300 rounded-lg bg-gray-50 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white"
-          placeholder="Buscar boleto premiado..."
+          placeholder="Buscar por número de boleto..."
           value={search}
           onChange={(e) => setSearch(e.target.value)}
         />
@@ -137,8 +138,9 @@ const WinnerTicket = () => {
         <table className="w-full text-sm text-left text-gray-500 dark:text-gray-400">
           <thead className="text-xs text-gray-700 uppercase bg-gray-50 dark:bg-gray-700 dark:text-gray-400">
             <tr>
-              <th scope="col" className="px-6 py-3">Primer Premio</th>
-              <th scope="col" className="px-6 py-3">Segundo Premio</th>
+              <th scope="col" className="px-6 py-3">Boleto</th>
+              <th scope="col" className="px-6 py-3">Cliente</th>
+              <th scope="col" className="px-6 py-3">Premio</th>
               <th scope="col" className="px-6 py-3">Fecha</th>
               <th scope="col" className="px-6 py-3">Estado</th>
               <th scope="col" className="px-6 py-3">Acción</th>
@@ -147,25 +149,28 @@ const WinnerTicket = () => {
           <tbody>
             {filteredPremiados.length > 0 ? (
               filteredPremiados.map((boleto) => (
-                <tr key={boleto.idpremiados} className="bg-white border-b dark:bg-gray-800 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600">
+                <tr key={boleto.Id_ganador} className="bg-white border-b dark:bg-gray-800 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600">
                   <td className="px-6 py-4 font-medium text-gray-900 whitespace-nowrap dark:text-white">
-                    ${boleto.primerlugar}
+                    {boleto.Boleto}
                   </td>
                   <td className="px-6 py-4">
-                    ${boleto.segundolugar}
+                    {boleto.Cliente}
                   </td>
                   <td className="px-6 py-4">
-                    {new Date(boleto.fechasorteo).toLocaleDateString()}
+                    ${boleto.Premio}
                   </td>
                   <td className="px-6 py-4">
-                    <span className={`px-2 py-1 rounded-full text-xs ${boleto.pagado === 1 ? 'bg-green-200 text-green-800' : 'bg-red-200 text-red-800'}`}>
-                      {boleto.pagado === 1 ? 'Pagado' : 'Pendiente'}
+                    {new Date(boleto.Fecha_sorteo).toLocaleDateString()}
+                  </td>
+                  <td className="px-6 py-4">
+                    <span className={`px-2 py-1 rounded-full text-xs ${boleto.Estatus === "Pagado" ? 'bg-green-200 text-green-800' : 'bg-red-200 text-red-800'}`}>
+                      {boleto.Estatus}
                     </span>
                   </td>
                   <td className="px-6 py-4">
-                    {boleto.pagado === 0 ? (
+                    {boleto.Estatus === "No pagado" ? (
                       <button
-                        onClick={() => confirmarPago(boleto.idpremiados)}
+                        onClick={() => confirmarPago(boleto.Id_ganador)}
                         className="text-blue-600 dark:text-blue-500 hover:text-blue-800 text-xl"
                         disabled={isLoading}
                       >
@@ -179,7 +184,7 @@ const WinnerTicket = () => {
               ))
             ) : (
               <tr>
-                <td colSpan="5" className="px-6 py-4 text-center">
+                <td colSpan="6" className="px-6 py-4 text-center">
                   {isLoading ? "Cargando..." : "No hay boletos premiados que coincidan con la búsqueda"}
                 </td>
               </tr>

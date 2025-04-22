@@ -5,7 +5,7 @@ import pool from "@/db/MysqlConection";
 export async function GET() {
   try {
     // Consulta para obtener todos los boletos premiados
-    const [premiados] = await pool.query('SELECT * FROM premiados');
+    const [premiados] = await pool.query('SELECT * FROM Ganadores');
     
     // Devolver la respuesta con los datos
     return NextResponse.json({ 
@@ -39,11 +39,25 @@ export async function PUT(request) {
         status: 400 
       });
     }
+
+    // Verificar si el ID_ganadoir ya esta pagado
+    const [boletoExistente] = await pool.query(
+      'SELECT * FROM Ganadores WHERE Id_ganador = ? AND Estatus = "pagado"', 
+      [id]
+    );
+    if (boletoExistente.length > 0) {
+      return NextResponse.json({ 
+        error: "El boleto ya está marcado como pagado", 
+        success: false 
+      }, { 
+        status: 400 
+      });
+    }
     
     // Consulta para actualizar el estado del boleto a pagado
     const resultado = await pool.query(
-      'UPDATE premiados SET pagado = true WHERE idpremiados = ?', 
-      [id]
+      'UPDATE Ganadores SET Estatus = ? WHERE Id_ganador = ?', 
+      ["pagado",id]
     );
     
     if (resultado[0].affectedRows === 0) {
@@ -57,6 +71,7 @@ export async function PUT(request) {
     
     // Devolver respuesta exitosa
     return NextResponse.json({ 
+      value: resultado,
       message: "Boleto premiado actualizado correctamente",
       success: true 
     });
