@@ -6,7 +6,7 @@ const generateWinnerPDF  = async (boleto, folio) => {
   var doc = new jsPDF({
     orientation: "portrait",
     unit: "mm",
-    format: [80, 200], // Reducir altura para evitar espacio en blanco excesivo
+    format: [80, 140], // Reducir altura para evitar espacio en blanco excesivo
   });
 
   // URL de la imagen
