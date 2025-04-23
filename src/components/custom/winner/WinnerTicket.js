@@ -1,13 +1,18 @@
 "use client";
-import { useEffect, useState } from "react";
-import { FaHome, FaMoneyBillWave } from "react-icons/fa";
+import { useEffect, useState, useRef } from "react";
+import { FaHome, FaMoneyBillWave, FaCamera, FaShare } from "react-icons/fa";
 import { useRouter } from "next/navigation";
 import Swal from "sweetalert2";
+import generateWinnerPDF from "./generateWinnerPDF";
 
 const WinnerTicket = () => {
   const [premiados, setPremiados] = useState([]);
   const [search, setSearch] = useState("");
   const [isLoading, setIsLoading] = useState(false);
+  const [selectedImage, setSelectedImage] = useState(null);
+  const [previewImage, setPreviewImage] = useState(null);
+  const [currentBoletoId, setCurrentBoletoId] = useState(null);
+  const fileInputRef = useRef(null);
   const router = useRouter();
 
   // Cargar los boletos premiados al iniciar
@@ -23,7 +28,6 @@ const WinnerTicket = () => {
       const data = await response.json();
       
       if (data.success && data.premiados) {
-        console.log("Boletos premiados:", data.premiados);
         setPremiados(data.premiados);
       } else {
         Swal.fire("Error", "No se pudieron cargar los boletos premiados", "error");
@@ -36,9 +40,54 @@ const WinnerTicket = () => {
     }
   };
 
+  // Convertir imagen a base64
+  const fileToBase64 = (file) => {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.readAsDataURL(file);
+      reader.onload = () => resolve(reader.result);
+      reader.onerror = (error) => reject(error);
+    });
+  };
+
+  // Manejar selección de imagen
+  // Manejar selección de imagen
+  const handleImageChange = async (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      try {
+        console.log("Archivo seleccionado:", file.name);
+        const base64Image = await fileToBase64(file);
+        setSelectedImage(base64Image);
+        setPreviewImage(URL.createObjectURL(file));
+        
+        // Mostrar confirmación visual
+        const previewContainer = document.getElementById("previewContainer");
+        const previewImageElement = document.getElementById("previewImage");
+        
+        if (previewContainer && previewImageElement) {
+          previewContainer.style.display = "block";
+          previewImageElement.src = URL.createObjectURL(file);
+        }
+        
+        console.log("Imagen cargada correctamente");
+      } catch (error) {
+        console.error("Error al convertir imagen:", error);
+        Swal.fire("Error", "No se pudo procesar la imagen", "error");
+      }
+    }
+  };
+
   // Marcar un boleto como pagado
-  const marcarComoPagado = async (id) => {
+  const marcarComoPagado = async (id, imageData = null) => {
     try {
+
+      const ineImage = imageData || selectedImage;
+      if (!ineImage) {
+        Swal.fire("Error", "Debe capturar la identificación del cliente", "error");
+        return;
+      }
+      
       setIsLoading(true);
       
       const response = await fetch("/api/winner", {
@@ -46,21 +95,50 @@ const WinnerTicket = () => {
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({ id }),
+        body: JSON.stringify({ 
+          id, 
+          ine: ineImage 
+        }),
       });
       
       const data = await response.json();
-      console.log("Respuesta del servidor:", data);
       
       if (data.success) {
         // Actualizar el estado local para reflejar el cambio
+        const boletoActualizado = {...premiados.find(b => b.Id_ganador === id)};
+        boletoActualizado.Estatus = "Pagado";
+        boletoActualizado.Fecha_pago = new Date().toISOString();
+        boletoActualizado.Folio = data.folio || boletoActualizado.Folio;
+        
         setPremiados(prev => 
           prev.map(boleto => 
-            boleto.Id_ganador === id ? { ...boleto, Estatus: "Pagado", Fecha_pago: new Date().toISOString() } : boleto
+            boleto.Id_ganador === id ? boletoActualizado : boleto
           )
         );
         
-        Swal.fire("¡Éxito!", "Boleto marcado como pagado", "success");
+        // Mostrar folio y opciones
+        const folio = data.folio || boletoActualizado.Folio;
+        Swal.fire({
+          title: "¡Boleto pagado con éxito!",
+          html: `
+            <p>El boleto ha sido marcado como pagado.</p>
+            <p>Folio de pago: <strong>${folio}</strong></p>
+          `,
+          icon: "success",
+          showCancelButton: true,
+          confirmButtonText: "Imprimir comprobante",
+          cancelButtonText: "Cerrar",
+        }).then((result) => {
+          if (result.isConfirmed) {
+            // Función para imprimir comprobante
+            imprimirComprobante(id, folio);
+          }
+        });
+        
+        // Limpiar la imagen seleccionada
+        setSelectedImage(null);
+        setPreviewImage(null);
+        setCurrentBoletoId(null);
       } else {
         Swal.fire("Error", data.error || "No se pudo marcar el boleto como pagado", "error");
       }
@@ -72,23 +150,124 @@ const WinnerTicket = () => {
     }
   };
 
+  // Imprimir comprobante de pago
+  const imprimirComprobante = (id, folio) => {
+    const boleto = premiados.find(b => b.Id_ganador === id);
+    if (!boleto) return;
+    
+    // Utilizar el generador de PDF externo
+    generateWinnerPDF(boleto, folio);
+  };
+
   // Confirmar antes de marcar como pagado
-  const confirmarPago = (id, numeroBoleto) => {
+   // Confirmar antes de marcar como pagado
+   const confirmarPago = (id) => {
+    const boleto = premiados.find(b => b.Id_ganador === id);
+    let capturedImage = null;
+    
+    setCurrentBoletoId(id);
+    
     Swal.fire({
-      title: "Confirmar pago",
-      text: `¿Estás seguro de marcar este boleto como pagado?`,
-      icon: "warning",
+      title: "Capturar identificación",
+      html: `
+        <p>Para marcar el boleto #${boleto.Boleto} como pagado, capture la identificación del cliente:</p>
+        <div id="capturaContainer" style="margin-top: 15px;">
+          <button id="captureButton" class="swal2-confirm swal2-styled" style="margin: 0 auto; display: block;">
+            Seleccionar foto de identificación
+          </button>
+        </div>
+        <div id="previewContainer" style="margin-top: 15px; text-align: center; display: none;">
+          <img id="previewImage" style="max-width: 100%; max-height: 200px; margin: 0 auto;" />
+          <p style="margin-top: 10px; font-size: 12px;">Identificación capturada</p>
+        </div>
+        <input type="hidden" id="imageSelected" value="false">
+      `,
       showCancelButton: true,
-      confirmButtonColor: "#3085d6",
-      cancelButtonColor: "#d33",
-      confirmButtonText: "Sí, marcar como pagado",
-      cancelButtonText: "Cancelar"
+      showConfirmButton: true,
+      confirmButtonText: "Confirmar pago",
+      cancelButtonText: "Cancelar",
+      didOpen: () => {
+        const captureButton = document.getElementById("captureButton");
+        const hiddenInput = document.getElementById("imageSelected");
+        
+        // Definir una función especial para el manejador dentro del modal
+        const handleFileSelect = async (e) => {
+          const file = e.target.files[0];
+          if (file) {
+            try {
+              const reader = new FileReader();
+              reader.onload = function(event) {
+                // Guardar la imagen capturada
+                capturedImage = event.target.result;
+                
+                // Actualizar la vista previa
+                const previewContainer = document.getElementById("previewContainer");
+                const previewImageElement = document.getElementById("previewImage");
+                
+                if (previewContainer && previewImageElement) {
+                  previewContainer.style.display = "block";
+                  previewImageElement.src = URL.createObjectURL(file);
+                  hiddenInput.value = "true";
+                }
+              };
+              reader.readAsDataURL(file);
+            } catch (error) {
+              console.error("Error al procesar imagen:", error);
+            }
+          }
+        };
+        
+        // Crear un input file temporal para este modal específico
+        const tempFileInput = document.createElement("input");
+        tempFileInput.type = "file";
+        tempFileInput.accept = "image/*";
+        tempFileInput.style.display = "none";
+        tempFileInput.addEventListener("change", handleFileSelect);
+        document.body.appendChild(tempFileInput);
+        
+        // Asignar evento al botón de captura
+        if (captureButton) {
+          captureButton.addEventListener("click", () => {
+            tempFileInput.click();
+          });
+        }
+      },
+      preConfirm: () => {
+        // Verificar que la imagen existe
+        const hiddenInput = document.getElementById("imageSelected");
+        if (hiddenInput.value !== "true" || !capturedImage) {
+          Swal.showValidationMessage("Debe capturar la identificación del cliente");
+          return false;
+        }
+        return true;
+      }
     }).then((result) => {
-      if (result.isConfirmed) {
-        marcarComoPagado(id);
+      if (result.isConfirmed && capturedImage) {
+        // Actualizar el estado de React con la imagen capturada
+        setSelectedImage(capturedImage);
+        // Luego proceder con el pago
+        marcarComoPagado(id, capturedImage);
+      } else {
+        // Limpiar selección si se cancela
+        setSelectedImage(null);
+        setPreviewImage(null);
+        setCurrentBoletoId(null);
       }
     });
   };
+  
+  // Observar cambios en la previsualización
+  useEffect(() => {
+    if (previewImage && currentBoletoId) {
+      const previewContainer = document.getElementById("previewContainer");
+      const previewImageElement = document.getElementById("previewImage");
+      
+      if (previewContainer && previewImageElement) {
+        previewContainer.style.display = "block";
+        previewImageElement.src = previewImage;
+      }
+    }
+  }, [previewImage, currentBoletoId]);
 
   // Volver al menú principal
   const goToMenu = () => {
@@ -132,6 +311,15 @@ const WinnerTicket = () => {
           onChange={(e) => setSearch(e.target.value)}
         />
       </div>
+      
+      {/* Input oculto para seleccionar archivo */}
+      <input
+        type="file"
+        accept="image/*"
+        ref={fileInputRef}
+        style={{ display: 'none' }}
+        onChange={handleImageChange}
+      />
       
       {/* Tabla de boletos premiados */}
       <div className="relative overflow-x-auto shadow-md sm:rounded-lg">
@@ -177,7 +365,16 @@ const WinnerTicket = () => {
                         <FaMoneyBillWave title="Marcar como pagado" />
                       </button>
                     ) : (
-                      <span className="text-gray-500">✓</span>
+                      <div className="flex space-x-3">
+                        <span className="text-green-500">✓</span>
+                        <button
+                          onClick={() => imprimirComprobante(boleto.Id_ganador, boleto.Folio)}
+                          className="text-blue-600 dark:text-blue-500 hover:text-blue-800"
+                          title="Imprimir comprobante"
+                        >
+                          <FaShare />
+                        </button>
+                      </div>
                     )}
                   </td>
                 </tr>
