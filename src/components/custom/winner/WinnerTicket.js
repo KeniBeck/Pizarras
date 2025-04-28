@@ -1,5 +1,5 @@
 "use client";
-import { useEffect, useState, useRef } from "react";
+import { useEffect, useState, useRef, useMemo } from "react";
 import { FaHome, FaMoneyBillWave, FaCamera, FaShare } from "react-icons/fa";
 import { useRouter } from "next/navigation";
 import Swal from "sweetalert2";
@@ -12,12 +12,14 @@ const WinnerTicket = () => {
   const [selectedImage, setSelectedImage] = useState(null);
   const [previewImage, setPreviewImage] = useState(null);
   const [currentBoletoId, setCurrentBoletoId] = useState(null);
+  const [userData, setUserData] = useState(null);
   const fileInputRef = useRef(null);
   const router = useRouter();
 
   // Cargar los boletos premiados al iniciar
   const fetchPremiados = async () => {
     try {
+
       setIsLoading(true);
       const response = await fetch("/api/winner");
       
@@ -39,6 +41,8 @@ const WinnerTicket = () => {
       setIsLoading(false);
     }
   };
+
+
 
   // Convertir imagen a base64
   const fileToBase64 = (file) => {
@@ -82,6 +86,21 @@ const WinnerTicket = () => {
   const marcarComoPagado = async (id, imageData = null) => {
     try {
 
+      
+  if (typeof window !== "undefined") {
+      
+    if (!userData) {
+      const user = JSON.parse(localStorage.getItem("userData"));
+  
+      if (user) {
+        setUserData(user);
+      } else {
+        Swal.fire("Error", "No se encontró información del usuario", "error");
+        return;
+      }
+    }
+    }
+
       const ineImage = imageData || selectedImage;
       if (!ineImage) {
         Swal.fire("Error", "Debe capturar la identificación del cliente", "error");
@@ -97,7 +116,8 @@ const WinnerTicket = () => {
         },
         body: JSON.stringify({ 
           id, 
-          ine: ineImage 
+          ine: ineImage, 
+          user: userData
         }),
       });
       
@@ -158,6 +178,7 @@ const WinnerTicket = () => {
     // Utilizar el generador de PDF externo
     generateWinnerPDF(boleto, folio);
   };
+
 
   // Confirmar antes de marcar como pagado
    // Confirmar antes de marcar como pagado
@@ -274,11 +295,26 @@ const WinnerTicket = () => {
     router.push('/menu');
   };
 
-  // Filtrar boletos según la búsqueda (por número de boleto)
-  const filteredPremiados = premiados.filter(boleto => 
-    boleto.Boleto && boleto.Boleto.toString().includes(search)
-  );
-  
+  // Filtrar boletos según la búsqueda (por número de folio) usando expresiones regulares
+  const filteredPremiados = useMemo(() => {
+    if (!search) return [];
+    
+    try {
+      // Crear una expresión regular a partir del texto de búsqueda
+      // La bandera 'i' hace que sea insensible a mayúsculas/minúsculas
+      const regex = new RegExp(search, 'i');
+      
+      return premiados.filter(boleto => 
+        boleto.Folio && regex.test(boleto.Folio.toString())
+      );
+    } catch (error) {
+      // Si hay un error en la expresión regular, usar búsqueda estándar
+      console.error("Error en expresión regular:", error);
+      return premiados.filter(boleto => 
+        boleto.Folio && boleto.Folio.toString().toLowerCase().includes(search.toLowerCase())
+      );
+    }
+  }, [premiados, search]);
   // Cargar datos al montar el componente
   useEffect(() => {
     fetchPremiados();
@@ -306,7 +342,7 @@ const WinnerTicket = () => {
         <input
           type="search"
           className="block w-full p-4 text-sm text-gray-900 border border-gray-300 rounded-lg bg-gray-50 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white"
-          placeholder="Buscar por número de boleto..."
+          placeholder="Buscar por número de folio..."
           value={search}
           onChange={(e) => setSearch(e.target.value)}
         />
@@ -321,75 +357,83 @@ const WinnerTicket = () => {
         onChange={handleImageChange}
       />
       
-      {/* Tabla de boletos premiados */}
-      <div className="relative overflow-x-auto shadow-md sm:rounded-lg">
-        <table className="w-full text-sm text-left text-gray-500 dark:text-gray-400">
-          <thead className="text-xs text-gray-700 uppercase bg-gray-50 dark:bg-gray-700 dark:text-gray-400">
-            <tr>
-              <th scope="col" className="px-6 py-3">Boleto</th>
-              <th scope="col" className="px-6 py-3">Cliente</th>
-              <th scope="col" className="px-6 py-3">Premio</th>
-              <th scope="col" className="px-6 py-3">Fecha</th>
-              <th scope="col" className="px-6 py-3">Estado</th>
-              <th scope="col" className="px-6 py-3">Acción</th>
-            </tr>
-          </thead>
-          <tbody>
-            {filteredPremiados.length > 0 ? (
-              filteredPremiados.map((boleto) => (
-                <tr key={boleto.Id_ganador} className="bg-white border-b dark:bg-gray-800 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600">
-                  <td className="px-6 py-4 font-medium text-gray-900 whitespace-nowrap dark:text-white">
-                    {boleto.Boleto}
-                  </td>
-                  <td className="px-6 py-4">
-                    {boleto.Cliente}
-                  </td>
-                  <td className="px-6 py-4">
-                    ${boleto.Premio}
-                  </td>
-                  <td className="px-6 py-4">
-                    {new Date(boleto.Fecha_sorteo).toLocaleDateString()}
-                  </td>
-                  <td className="px-6 py-4">
-                    <span className={`px-2 py-1 rounded-full text-xs ${boleto.Estatus === "Pagado" ? 'bg-green-200 text-green-800' : 'bg-red-200 text-red-800'}`}>
-                      {boleto.Estatus}
-                    </span>
-                  </td>
-                  <td className="px-6 py-4">
-                    {boleto.Estatus === "No pagado" ? (
-                      <button
-                        onClick={() => confirmarPago(boleto.Id_ganador)}
-                        className="text-blue-600 dark:text-blue-500 hover:text-blue-800 text-xl"
-                        disabled={isLoading}
-                      >
-                        <FaMoneyBillWave title="Marcar como pagado" />
-                      </button>
-                    ) : (
-                      <div className="flex space-x-3">
-                        <span className="text-green-500">✓</span>
+        {/* Tabla de boletos premiados - solo se muestra cuando hay búsqueda */}
+        {search !== "" && (
+        <div className="relative overflow-x-auto shadow-md sm:rounded-lg">
+          <table className="w-full text-sm text-left text-gray-500 dark:text-gray-400">
+            <thead className="text-xs text-gray-700 uppercase bg-gray-50 dark:bg-gray-700 dark:text-gray-400">
+              <tr>
+                <th scope="col" className="px-6 py-3">Folio</th>
+                <th scope="col" className="px-6 py-3">Cliente</th>
+                <th scope="col" className="px-6 py-3">Premio</th>
+                <th scope="col" className="px-6 py-3">Fecha</th>
+                <th scope="col" className="px-6 py-3">Estado</th>
+                <th scope="col" className="px-6 py-3">Acción</th>
+              </tr>
+            </thead>
+            <tbody>
+              {filteredPremiados.length > 0 ? (
+                filteredPremiados.map((boleto) => (
+                  <tr key={boleto.Id_ganador} className="bg-white border-b dark:bg-gray-800 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600">
+                    <td className="px-6 py-4 font-medium text-gray-900 whitespace-nowrap dark:text-white">
+                      {boleto.Folio}
+                    </td>
+                    <td className="px-6 py-4">
+                      {boleto.Cliente}
+                    </td>
+                    <td className="px-6 py-4">
+                      ${boleto.Premio}
+                    </td>
+                    <td className="px-6 py-4">
+                      {new Date(boleto.Fecha_sorteo).toLocaleDateString()}
+                    </td>
+                    <td className="px-6 py-4">
+                      <span className={`px-2 py-1 rounded-full text-xs ${boleto.Estatus === "pagado" ? 'bg-green-200 text-green-800' : 'bg-red-200 text-red-800'}`}>
+                        {boleto.Estatus}
+                      </span>
+                    </td>
+                    <td className="px-6 py-4">
+                      {boleto.Estatus === "No pagado" ? (
                         <button
-                          onClick={() => imprimirComprobante(boleto.Id_ganador, boleto.Folio)}
-                          className="text-blue-600 dark:text-blue-500 hover:text-blue-800"
-                          title="Imprimir comprobante"
+                          onClick={() => confirmarPago(boleto.Id_ganador)}
+                          className="text-blue-600 dark:text-blue-500 hover:text-blue-800 text-xl"
+                          disabled={isLoading}
                         >
-                          <FaShare />
+                          <FaMoneyBillWave title="Marcar como pagado" />
                         </button>
-                      </div>
-                    )}
+                      ) : (
+                        <div className="flex space-x-3">
+                          <span className="text-green-500">✓</span>
+                          <button
+                            onClick={() => imprimirComprobante(boleto.Id_ganador, boleto.Folio)}
+                            className="text-blue-600 dark:text-blue-500 hover:text-blue-800"
+                            title="Imprimir comprobante"
+                          >
+                            <FaShare />
+                          </button>
+                        </div>
+                      )}
+                    </td>
+                  </tr>
+                ))
+              ) : (
+                <tr>
+                  <td colSpan="6" className="px-6 py-4 text-center">
+                    {isLoading ? "Cargando..." : "No hay boletos premiados que coincidan con la búsqueda"}
                   </td>
                 </tr>
-              ))
-            ) : (
-              <tr>
-                <td colSpan="6" className="px-6 py-4 text-center">
-                  {isLoading ? "Cargando..." : "No hay boletos premiados que coincidan con la búsqueda"}
-                </td>
-              </tr>
-            )}
-          </tbody>
-        </table>
-      </div>
+              )}
+            </tbody>
+          </table>
+        </div>
+      )}
       
+      {/* Mensaje cuando no hay búsqueda */}
+      {search === "" && (
+        <div className="text-center text-white mt-8 mb-8">
+          <p className="text-lg">Ingrese un número de folio para ver los boletos premiados</p>
+        </div>
+      )}
       {/* Botón para volver al menú */}
       <button
         onClick={goToMenu}

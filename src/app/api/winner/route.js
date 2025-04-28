@@ -29,7 +29,7 @@ export async function PUT(request) {
   try {
     // Obtener el ID del boleto a actualizar desde el cuerpo de la solicitud
     const data = await request.json();
-    const { id, ine } = data;
+    const { id, ine, user } = data;
 
     const fecha_pago = new Date();
 
@@ -59,8 +59,8 @@ export async function PUT(request) {
 
     // Consulta para actualizar el estado del boleto a pagado
     const resultado = await pool.query(
-      'UPDATE Ganadores SET Estatus = ?, Ine = ?, Fecha_pago = ? WHERE Id_ganador = ?',
-      ["pagado", ine, fecha_pago, id]
+      'UPDATE Ganadores SET Estatus = ?, Ine = ?, Fecha_pago = ?, Vendedor= ? WHERE Id_ganador = ?',
+      ["pagado", ine, fecha_pago,user.Nombre, id]
     );
 
     if (resultado[0].affectedRows === 0) {
