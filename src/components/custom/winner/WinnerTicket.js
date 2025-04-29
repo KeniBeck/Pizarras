@@ -179,6 +179,20 @@ const WinnerTicket = () => {
     generateWinnerPDF(boleto, folio);
   };
 
+  //formatea fecha de sorteo de YYYY-MM-DD a DD/MM/YYYY con expreciones regulares
+  const formatDate = (dateString) => {
+    const regex = /(\d{4})-(\d{2})-(\d{2})/;
+    const match = dateString.match(regex);
+    if (match) {
+      const year = match[1];
+      const month = match[2];
+      const day = match[3];
+      return `${day}/${month}/${year}`;
+    }
+    return dateString; // Retorna la cadena original si no coincide con el formato
+  };
+
+
 
   // Confirmar antes de marcar como pagado
    // Confirmar antes de marcar como pagado
@@ -364,9 +378,10 @@ const WinnerTicket = () => {
             <thead className="text-xs text-gray-700 uppercase bg-gray-50 dark:bg-gray-700 dark:text-gray-400">
               <tr>
                 <th scope="col" className="px-6 py-3">Folio</th>
+                <th scope="col" className="px-6 py-3">Boleto</th>
                 <th scope="col" className="px-6 py-3">Cliente</th>
                 <th scope="col" className="px-6 py-3">Premio</th>
-                <th scope="col" className="px-6 py-3">Fecha</th>
+                <th scope="col" className="px-6 py-3">Fecha Sorteo</th>
                 <th scope="col" className="px-6 py-3">Estado</th>
                 <th scope="col" className="px-6 py-3">Acción</th>
               </tr>
@@ -378,6 +393,9 @@ const WinnerTicket = () => {
                     <td className="px-6 py-4 font-medium text-gray-900 whitespace-nowrap dark:text-white">
                       {boleto.Folio}
                     </td>
+                    <td className="px-6 py-4 font-medium text-gray-900 whitespace-nowrap dark:text-white">
+                      {boleto.Boleto.toString().replace( /\.\d{2}$/, "")}
+                    </td>
                     <td className="px-6 py-4">
                       {boleto.Cliente}
                     </td>
@@ -385,7 +403,7 @@ const WinnerTicket = () => {
                       ${boleto.Premio}
                     </td>
                     <td className="px-6 py-4">
-                      {new Date(boleto.Fecha_sorteo).toLocaleDateString()}
+                      {formatDate(boleto.Fecha_sorteo)}
                     </td>
                     <td className="px-6 py-4">
                       <span className={`px-2 py-1 rounded-full text-xs ${boleto.Estatus === "pagado" ? 'bg-green-200 text-green-800' : 'bg-red-200 text-red-800'}`}>

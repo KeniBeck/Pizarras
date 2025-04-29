@@ -3,6 +3,19 @@ import Swal from "sweetalert2";
 
 const generateWinnerPDF  = async (boleto, folio) => {
   // Crear un nuevo documento PDF con tamaño ajustado
+
+  const formatDate = (dateString) => {
+    const regex = /(\d{4})-(\d{2})-(\d{2})/;
+    const match = dateString.match(regex);
+    if (match) {
+      const year = match[1];
+      const month = match[2];
+      const day = match[3];
+      return `${day}/${month}/${year}`;
+    }
+    return dateString; // Retorna la cadena original si no coincide con el formato
+  };
+
   var doc = new jsPDF({
     orientation: "portrait",
     unit: "mm",
@@ -39,9 +52,9 @@ const generateWinnerPDF  = async (boleto, folio) => {
   doc.text(`Premio: ${premio}`, 5, 85);
   
   // Formatear las fechas
-  const fechaSorteo = boleto.Fecha_sorteo ? new Date(boleto.Fecha_sorteo).toLocaleDateString() : 'N/A';
+  const fechaSorteo = boleto.Fecha_sorteo ?  formatDate(boleto.Fecha_sorteo) : 'N/A';
   doc.text(`Fecha sorteo: ${fechaSorteo}`, 5, 95);
-  doc.text(`Fecha pago: ${new Date().toLocaleDateString()}`, 5, 105);
+  doc.text(`Fecha pago: ${ new Date().toLocaleDateString()}`, 5, 105);
 
   // Agregar leyenda final
   doc.setFont("helvetica", "bold");
