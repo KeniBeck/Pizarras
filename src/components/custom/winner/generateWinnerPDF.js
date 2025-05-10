@@ -53,8 +53,10 @@ const generateWinnerPDF  = async (boleto, folio) => {
   
   // Formatear las fechas
   const fechaSorteo = boleto.Fecha_sorteo ?  formatDate(boleto.Fecha_sorteo) : 'N/A';
+const Fecha_pago = boleto.Fecha_pago ? formatDate(boleto.Fecha_pago) : 'N/A';
   doc.text(`Fecha sorteo: ${fechaSorteo}`, 5, 95);
-  doc.text(`Fecha pago: ${ new Date().toLocaleDateString()}`, 5, 105);
+  doc.text(`Fecha pago: ${Fecha_pago}`, 5, 105);
+  doc.text(`Vendedor: ${boleto.Vendedor || 'N/A'}`, 5, 113);
 
   // Agregar leyenda final
   doc.setFont("helvetica", "bold");

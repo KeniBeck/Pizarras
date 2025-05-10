@@ -19,7 +19,6 @@ const WinnerTicket = () => {
   // Cargar los boletos premiados al iniciar
   const fetchPremiados = async () => {
     try {
-
       setIsLoading(true);
       const response = await fetch("/api/winner");
       
@@ -41,10 +40,51 @@ const WinnerTicket = () => {
       setIsLoading(false);
     }
   };
+  // Función para comprimir imagen antes de convertir a base64
+  const comprimirImagen = (file, maxWidth = 800, maxHeight = 800, quality = 0.8) => {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.readAsDataURL(file);
+      reader.onload = (event) => {
+        const img = new Image();
+        img.src = event.target.result;
+        img.onload = () => {
+          const canvas = document.createElement('canvas');
+          let width = img.width;
+          let height = img.height;
+          
+          // Redimensionar manteniendo proporción si excede los límites
+          if (width > height) {
+            if (width > maxWidth) {
+              height = Math.round((height * maxWidth) / width);
+              width = maxWidth;
+            }
+          } else {
+            if (height > maxHeight) {
+              width = Math.round((width * maxHeight) / height);
+              height = maxHeight;
+            }
+          }
+          
+          canvas.width = width;
+          canvas.height = height;
+          
+          const ctx = canvas.getContext('2d');
+          ctx.drawImage(img, 0, 0, width, height);
+          
+          // Obtener imagen comprimida en formato base64
+          const imagenComprimida = canvas.toDataURL('image/jpeg', quality);
+          resolve(imagenComprimida);
+        };
+        img.onerror = () => {
+          reject(new Error('Error al cargar la imagen para compresión'));
+        };
+      };
+      reader.onerror = (error) => reject(error);
+    });
+  };
 
-
-
-  // Convertir imagen a base64
+  // Convertir imagen a base64 (mantenido para compatibilidad)
   const fileToBase64 = (file) => {
     return new Promise((resolve, reject) => {
       const reader = new FileReader();
@@ -54,15 +94,25 @@ const WinnerTicket = () => {
     });
   };
 
-  // Manejar selección de imagen
-  // Manejar selección de imagen
+  // Manejar selección de imagen con compresión
   const handleImageChange = async (e) => {
     const file = e.target.files[0];
     if (file) {
       try {
         console.log("Archivo seleccionado:", file.name);
-        const base64Image = await fileToBase64(file);
-        setSelectedImage(base64Image);
+        
+        // Verificar tamaño antes de procesar
+        if (file.size > 10 * 1024 * 1024) { // 10MB límite
+          Swal.fire("Error", "La imagen es demasiado grande. Máximo 10MB", "error");
+          return;
+        }
+        
+        // Aplicar compresión a la imagen
+        const imagenComprimida = await comprimirImagen(file);
+        console.log("Imagen comprimida correctamente");
+        
+        // Guardar imagen comprimida en el estado
+        setSelectedImage(imagenComprimida);
         setPreviewImage(URL.createObjectURL(file));
         
         // Mostrar confirmación visual
@@ -73,10 +123,8 @@ const WinnerTicket = () => {
           previewContainer.style.display = "block";
           previewImageElement.src = URL.createObjectURL(file);
         }
-        
-        console.log("Imagen cargada correctamente");
       } catch (error) {
-        console.error("Error al convertir imagen:", error);
+        console.error("Error al procesar imagen:", error);
         Swal.fire("Error", "No se pudo procesar la imagen", "error");
       }
     }
@@ -85,21 +133,28 @@ const WinnerTicket = () => {
   // Marcar un boleto como pagado
   const marcarComoPagado = async (id, imageData = null) => {
     try {
-
+      // Asegurarnos de tener los datos del usuario antes de continuar
+      let currentUserData = userData;
       
-  if (typeof window !== "undefined") {
-      
-    if (!userData) {
-      const user = JSON.parse(localStorage.getItem("userData"));
-  
-      if (user) {
-        setUserData(user);
-      } else {
-        Swal.fire("Error", "No se encontró información del usuario", "error");
-        return;
+      if (typeof window !== "undefined") {
+        if (!currentUserData) {
+          try {
+            const localUserData = localStorage.getItem("userData");
+            if (localUserData) {
+              currentUserData = JSON.parse(localUserData);
+              // Actualizar el estado con los datos obtenidos
+              setUserData(currentUserData);
+            } else {
+              Swal.fire("Error", "No se encontró información del usuario", "error");
+              return;
+            }
+          } catch (error) {
+            console.error("Error al recuperar datos del usuario:", error);
+            Swal.fire("Error", "Error al recuperar datos del usuario", "error");
+            return;
+          }
+        }
       }
-    }
-    }
 
       const ineImage = imageData || selectedImage;
       if (!ineImage) {
@@ -117,7 +172,7 @@ const WinnerTicket = () => {
         body: JSON.stringify({ 
           id, 
           ine: ineImage, 
-          user: userData
+          user: currentUserData // Usar currentUserData en lugar de userData
         }),
       });
       
@@ -192,11 +247,8 @@ const WinnerTicket = () => {
     return dateString; // Retorna la cadena original si no coincide con el formato
   };
 
-
-
   // Confirmar antes de marcar como pagado
-   // Confirmar antes de marcar como pagado
-   const confirmarPago = (id) => {
+  const confirmarPago = (id) => {
     const boleto = premiados.find(b => b.Id_ganador === id);
     let capturedImage = null;
     
@@ -230,24 +282,28 @@ const WinnerTicket = () => {
           const file = e.target.files[0];
           if (file) {
             try {
-              const reader = new FileReader();
-              reader.onload = function(event) {
-                // Guardar la imagen capturada
-                capturedImage = event.target.result;
-                
-                // Actualizar la vista previa
-                const previewContainer = document.getElementById("previewContainer");
-                const previewImageElement = document.getElementById("previewImage");
-                
-                if (previewContainer && previewImageElement) {
-                  previewContainer.style.display = "block";
-                  previewImageElement.src = URL.createObjectURL(file);
-                  hiddenInput.value = "true";
-                }
-              };
-              reader.readAsDataURL(file);
+              // Verificar tamaño antes de procesar
+              if (file.size > 10 * 1024 * 1024) { // 10MB límite
+                Swal.showValidationMessage("La imagen es demasiado grande. Máximo 10MB");
+                return;
+              }
+
+              // Comprimir la imagen antes de usarla
+              const imagenComprimida = await comprimirImagen(file);
+              capturedImage = imagenComprimida;
+              
+              // Actualizar la vista previa
+              const previewContainer = document.getElementById("previewContainer");
+              const previewImageElement = document.getElementById("previewImage");
+              
+              if (previewContainer && previewImageElement) {
+                previewContainer.style.display = "block";
+                previewImageElement.src = URL.createObjectURL(file);
+                hiddenInput.value = "true";
+              }
             } catch (error) {
               console.error("Error al procesar imagen:", error);
+              Swal.showValidationMessage("Error al procesar la imagen");
             }
           }
         };
@@ -311,7 +367,7 @@ const WinnerTicket = () => {
 
   // Filtrar boletos según la búsqueda (por número de folio) usando expresiones regulares
   const filteredPremiados = useMemo(() => {
-    if (!search) return [];
+    if (!search || search.length < 5) return [];
     
     try {
       // Crear una expresión regular a partir del texto de búsqueda
@@ -344,7 +400,7 @@ const WinnerTicket = () => {
           <p className="font-semibold">Total de boletos premiados: {premiados.length}</p>
         </div>
         <div className="bg-gray-800 p-3 rounded-md mb-2 md:mb-0 md:mx-2 flex-1">
-          <p className="font-semibold">Pagados: {premiados.filter(b => b.Estatus === "Pagado").length}</p>
+          <p className="font-semibold">Pagados: {premiados.filter(b => b.Estatus === "pagado").length}</p>
         </div>
         <div className="bg-gray-800 p-3 rounded-md md:ml-2 flex-1">
           <p className="font-semibold">Pendientes: {premiados.filter(b => b.Estatus === "No pagado").length}</p>
@@ -447,9 +503,9 @@ const WinnerTicket = () => {
       )}
       
       {/* Mensaje cuando no hay búsqueda */}
-      {search === "" && (
+      {search.length > 0 && search.length < 5 && (
         <div className="text-center text-white mt-8 mb-8">
-          <p className="text-lg">Ingrese un número de folio para ver los boletos premiados</p>
+          <p className="text-lg">Ingrese al menos 5 caracteres para buscar</p>
         </div>
       )}
       {/* Botón para volver al menú */}

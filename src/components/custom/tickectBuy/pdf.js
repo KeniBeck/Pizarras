@@ -181,8 +181,6 @@ const generatePDF = async (tickets, fecha) => {
           window.open(url);
         });
       }
-    } else {
-      window.open(url);
     }
 
     setTimeout(() => URL.revokeObjectURL(url), 30000);
