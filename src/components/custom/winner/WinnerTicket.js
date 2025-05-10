@@ -175,16 +175,12 @@ const WinnerTicket = () => {
           user: currentUserData // Usar currentUserData en lugar de userData
         }),
       });
-      
+
       const data = await response.json();
-      
+      console.log("Respuesta del servidor:", data);
       if (data.success) {
         // Actualizar el estado local para reflejar el cambio
-        const boletoActualizado = {...premiados.find(b => b.Id_ganador === id)};
-        boletoActualizado.Estatus = "Pagado";
-        boletoActualizado.Fecha_pago = new Date().toISOString();
-        boletoActualizado.Folio = data.folio || boletoActualizado.Folio;
-        
+       const boletoActualizado = data.boleto;
         setPremiados(prev => 
           prev.map(boleto => 
             boleto.Id_ganador === id ? boletoActualizado : boleto
@@ -206,7 +202,7 @@ const WinnerTicket = () => {
         }).then((result) => {
           if (result.isConfirmed) {
             // Función para imprimir comprobante
-            imprimirComprobante(id, folio);
+            imprimirComprobante(id, folio, boletoActualizado);
           }
         });
         
@@ -226,9 +222,15 @@ const WinnerTicket = () => {
   };
 
   // Imprimir comprobante de pago
-  const imprimirComprobante = (id, folio) => {
-    const boleto = premiados.find(b => b.Id_ganador === id);
-    if (!boleto) return;
+  const imprimirComprobante = (id, folio, boletoActualizado = null) => {
+    const boleto = boletoActualizado || premiados.find(b => b.Id_ganador === id);
+  
+    if (!boleto) {
+      console.error("No se encontró el boleto con ID:", id);
+      Swal.fire("Error", "No se pudo generar el comprobante", "error");
+      return;
+    }
+    
     
     // Utilizar el generador de PDF externo
     generateWinnerPDF(boleto, folio);

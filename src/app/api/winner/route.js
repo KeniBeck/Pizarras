@@ -33,7 +33,6 @@ export async function PUT(request) {
 
     const fecha_pago = new Date();
 
-
     if (!id) {
       return NextResponse.json({
         error: "Se requiere un ID de boleto premiado",
@@ -60,7 +59,7 @@ export async function PUT(request) {
     // Consulta para actualizar el estado del boleto a pagado
     const resultado = await pool.query(
       'UPDATE Ganadores SET Estatus = ?, Ine = ?, Fecha_pago = ?, Vendedor= ? WHERE Id_ganador = ?',
-      ["pagado", ine, fecha_pago,user.Nombre, id]
+      ["pagado", ine, fecha_pago, user.Nombre, id]
     );
 
     if (resultado[0].affectedRows === 0) {
@@ -72,11 +71,20 @@ export async function PUT(request) {
       });
     }
 
-    // Devolver respuesta exitosa
+    // Consulta adicional para obtener los datos actualizados
+    const [boletoActualizado] = await pool.query(
+      'SELECT Id_ganador, Premio, Folio, Boleto, Costo, Cliente, Premio, Fecha_pago, Fecha_sorteo, Vendedor, Estatus FROM Ganadores WHERE Id_ganador = ?',
+      [id]
+    );
+
+    // Devolver respuesta exitosa con los datos del boleto actualizado
+  
     return NextResponse.json({
       value: resultado,
       message: "Boleto premiado actualizado correctamente",
-      success: true
+      success: true,
+      boleto: boletoActualizado[0], // Incluir los datos del boleto actualizado
+      folio: boletoActualizado[0]?.Folio // Incluir el folio específicamente
     });
   } catch (error) {
     console.error("Error al actualizar boleto premiado:", error);
