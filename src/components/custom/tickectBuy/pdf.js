@@ -106,7 +106,9 @@ const generatePDF = async (tickets, fecha) => {
       doc.setTextColor(0, 0, 0);
       doc.setFont("helvetica", "normal");
       doc.text(`Costo $ ${data.Costo || ""}`, 5, yPosition + 10);
-      
+      if(data.Boleto === 0){
+        data.Boleto = "000"
+      }
       const boletoText = data.Boleto || "";
       const boletoSize = boletoText.length > 15 ? 9 : 10;
       doc.setFontSize(boletoSize);
