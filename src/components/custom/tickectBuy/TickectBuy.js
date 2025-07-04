@@ -74,12 +74,12 @@ const TicketBuy = () => {
   };
   const fecha = new Date(
     new Date(prizes.Fecha).getTime() + new Date().getTimezoneOffset() * 60000
-).toLocaleDateString();
+  ).toLocaleDateString();
 
-const [day, month, year] = fecha.split('/').map(num => num.padStart(2, '0'));
-const formattedFecha = `${day}/${month}/${year}`;
+  const [day, month, year] = fecha.split('/').map(num => num.padStart(2, '0'));
+  const formattedFecha = `${day}/${month}/${year}`;
 
-console.log(`fechaaa *** ${formattedFecha}`)
+  console.log(`fechaaa *** ${formattedFecha}`)
 
 
 
@@ -222,6 +222,16 @@ console.log(`fechaaa *** ${formattedFecha}`)
       ValidateBox();
       return;
     }
+
+    if (parseInt(prizebox) < 100 || parseInt(prizebox) % 100 !== 0) {
+      Swal.fire({
+        icon: 'error',
+        title: 'Monto inválido',
+        text: 'Para series, el monto debe ser mínimo 100 pesos y múltiplo de 100 (100, 200, ...900)',
+      });
+      return;
+    }
+
     if (!Validate()) {
       return;
     }
@@ -320,8 +330,7 @@ console.log(`fechaaa *** ${formattedFecha}`)
     if (foundTope > 0) {
       if (nuevaCantidad > foundTope) {
         Swal.fire(
-          `La cantidad permitida es ${
-            (totalAcumulado + cantidad - foundTope) * -1
+          `La cantidad permitida es ${(totalAcumulado + cantidad - foundTope) * -1
           }. Te estás pasando en ${nuevaCantidad - foundTope} pesos.`
         );
         setPrizebox("");
