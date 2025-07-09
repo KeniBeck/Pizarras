@@ -8,12 +8,10 @@ import {
   loading,
   ErrorTope,
   ValidateBox,
-  prizesSeries,
 } from "../alerts/menu/Alerts";
 import { useRouter } from "next/navigation";
-import { FaHome } from "react-icons/fa";
+import { FaHome, FaDice } from "react-icons/fa";
 import generatePDFSerie from "./pdfSerie";
-import AlertMenu from "../alerts/menu/AlertMenu";
 import Swal from "sweetalert2";
 import { TbSquarePlus } from "react-icons/tb";
 import TicketPreviewModal from "./TicketPreviewModal";
@@ -35,6 +33,7 @@ const TicketBuy = () => {
   const [tickets, setTickets] = useState([]);
   const [numberTop, setNumberTop] = useState(0);
   const [topes, setTopes] = useState({});
+  const [isGeneratingRandom, setIsGeneratingRandom] = useState(false);
 
   useEffect(() => {
     Promise.all([
@@ -79,9 +78,64 @@ const TicketBuy = () => {
   const [day, month, year] = fecha.split('/').map(num => num.padStart(2, '0'));
   const formattedFecha = `${day}/${month}/${year}`;
 
-  console.log(`fechaaa *** ${formattedFecha}`)
-
-
+  // Función para obtener un número aleatorio disponible
+  const getRandomNumber = async () => {
+    try {
+      setIsGeneratingRandom(true);
+      
+      const response = await fetch("/api/topes", {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ fecha: formattedFecha }),
+      });
+      
+      const data = await response.json();
+      
+      if (data.success) {
+        // Formatear el número para que tenga 3 dígitos con ceros a la izquierda
+        const numeroFormateado = data.numero.toString().padStart(3, '0');
+        setTicketNumber(numeroFormateado);
+        
+        // Establecer valores predeterminados
+        setPrizebox("10");
+        setName("Trébol de la Suerte");
+        
+        // Limpiar errores de validación del precio
+        setPrizeboxError(null);
+        
+        // Simular evento de blur para cargar la información del tope
+        const event = { target: { value: numeroFormateado } };
+        handleBlur(event);
+        
+        // Mostrar mensaje de éxito
+        Swal.fire({
+          icon: 'success',
+          title: 'Número aleatorio generado',
+          text: `Número: ${numeroFormateado}\nDisponibles: ${data.disponibles} de ${data.tope}`,
+          timer: 1500,
+          timerProgressBar: true,
+          showConfirmButton: false
+        });
+      } else {
+        Swal.fire({
+          icon: 'error',
+          title: 'Error',
+          text: data.message || 'No se pudo generar un número aleatorio'
+        });
+      }
+    } catch (error) {
+      console.error("Error al obtener número aleatorio:", error);
+      Swal.fire({
+        icon: 'error',
+        title: 'Error',
+        text: 'Error al conectar con el servidor'
+      });
+    } finally {
+      setIsGeneratingRandom(false);
+    }
+  };
 
   const handleBlur = async (e) => {
     let value = e.target.value;
@@ -392,8 +446,9 @@ const TicketBuy = () => {
         )}
 
         <div className="flex mx-8 flex-col space-y-3 pt-6">
-          <div className="flex flex-row gap-12">
-            <div className="text-white flex justify-center items-center text-2xl">
+          {/* Fila de Boleto */}
+          <div className="flex flex-row gap-12 relative">
+            <div className="text-white flex justify-center items-center text-2xl w-[80px]">
               Boleto
             </div>
             <input
@@ -405,13 +460,15 @@ const TicketBuy = () => {
             />
             <button
               onClick={handlePlusTicket}
-              className="absolute right-6 bg-green-700 text-white flex justify-center items-center rounded-lg h-[40px] w-[40px] text-4xl"
+              className="absolute right-0 bg-green-700 text-white flex justify-center items-center rounded-lg h-[40px] w-[40px] text-4xl"
             >
               <TbSquarePlus />
             </button>
           </div>
-          <div className="flex flex-row gap-12">
-            <div className="text-white flex justify-center items-center text-2xl">
+          
+          {/* Fila de Precio */}
+          <div className="flex flex-row gap-12 relative">
+            <div className="text-white flex justify-center items-center text-2xl w-[80px]">
               Precio
             </div>
             <input
@@ -426,15 +483,25 @@ const TicketBuy = () => {
               }}
               maxLength={4}
             />
+            <button
+              onClick={getRandomNumber}
+              disabled={isGeneratingRandom}
+              className={`absolute right-0 bg-blue-700 text-white flex justify-center items-center rounded-lg h-[40px] w-[40px] text-xl ${isGeneratingRandom ? 'opacity-50 cursor-not-allowed' : ''}`}
+              title="Generar número aleatorio"
+            >
+              <FaDice className={`${isGeneratingRandom ? 'animate-spin' : ''}`} />
+            </button>
           </div>
-          <div className="flex flex-row gap-8">
-            <div className="text-white flex justify-center items-center text-2xl">
+          
+          {/* Fila de Nombre */}
+          <div className="flex flex-row gap-12">
+            <div className="text-white flex justify-center items-center text-2xl w-[80px]">
               Nombre
             </div>
             <input
               value={name}
               onChange={(e) => setName(e.target.value)}
-              className="bg-neutral-300 border rounded w-[150px] outline-none h-[40px] pl-10"
+              className="bg-neutral-300 border rounded w-[150px] outline-none h-[40px] pl-3"
             />
           </div>
         </div>
