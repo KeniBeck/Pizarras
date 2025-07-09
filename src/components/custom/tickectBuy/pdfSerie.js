@@ -12,17 +12,29 @@ const generatePDFSerie = async (data, fecha) => {
     // Mostrar ventana de carga
     Swal.showLoading();
 
-    // Crear un nuevo documento PDF
+    // Primero calculamos el espacio que ocupará la leyenda1 al final
+    const tempDoc = new jsPDF();
+    var leyenda1Text = tempDoc.splitTextToSize(`${data[0].leyenda1}`, 70);
+    const leyenda1Height = leyenda1Text.length * 3.5; // Aproximadamente 3.5mm por línea con font size 8
+    
+    // Calculamos altura total estimada + margen inferior
+    const lastTextPosition = 125; // Última posición actual de texto
+    const totalHeight = lastTextPosition + leyenda1Height + 10; // +10mm de margen inferior
+    
+    // Limitar la altura máxima a un valor razonable
+    const finalHeight = Math.min(totalHeight, 297);
+
+    // Crear un nuevo documento PDF con la altura calculada
     var doc = new jsPDF({
         orientation: "portrait",
         unit: "mm",
-        format: [80, 297]
+        format: [80, finalHeight]
     });
 
-    doc.setFontSize(8); // Ajustar el tamaño de la fuente
+    doc.setFontSize(8);
 
     // URL de la imagen
-    const imageURL = '/noSencillo.jpg'; // Reemplaza con la URL de tu imagen
+    const imageURL = '/noSencillo.jpg';
     let totalCosto = data.map(item => item.Costo).reduce((acc, costo) => acc + costo, 0);
 
     // Agregar la imagen al PDF
@@ -31,31 +43,28 @@ const generatePDFSerie = async (data, fecha) => {
     // Agregar contenido al PDF
     doc.setFont('helvetica', 'bold');
     doc.setTextColor(255, 0, 0);
-    doc.text(data[0].leyenda2, 5, 45); // Ajustar la posición de la leyenda2 más abajo
+    doc.text(data[0].leyenda2, 5, 45);
     doc.setTextColor(0, 0, 0);
-    doc.text(`Factura de boleto `, 5, 55); // Ajustar la posición del título
+    doc.text(`Factura de boleto `, 5, 55);
     const textoAncho = doc.getTextWidth("Factura de boleto ");
     doc.setTextColor(255, 0, 0);
-    doc.text(`N${data[0].Idsorteo}`, 5 + textoAncho, 55); // Ajustar la posición del número de sorteo
+    doc.text(`N${data[0].Idsorteo}`, 5 + textoAncho, 55);
     doc.setTextColor(0, 0, 0);
     doc.setFont('helvetica', 'normal');
-    doc.text(`Costo: $ ${totalCosto}`, 5, 65); // Ajustar la posición del costo
-    doc.text(`Serie de boletos:`, 5, 75); // Ajustar la posición de la serie de boletos
+    doc.text(`Costo: $ ${totalCosto}`, 5, 65);
+    doc.text(`Serie de boletos:`, 5, 75);
     let boletos = data.map(item => item.Boleto?.toString().padStart(3, '0')).join('-');
-    doc.text(boletos, 5, 85); // Ajustar la posición de los boletos
-    doc.text(`Sorteo: ${fechaSorteoFormateada}`, 5, 95); // Ajustar la posición de la fecha del sorteo
-    doc.text(`Comprador: ${data[0].comprador}`, 5, 105); // Ajustar la posición del comprador
-    doc.text(`Venta: ${data[0].Fecha_venta}`, 5, 115); // Ajustar la posición de la fecha de venta
+    doc.text(boletos, 5, 85);
+    doc.text(`Sorteo: ${fechaSorteoFormateada}`, 5, 95);
+    doc.text(`Comprador: ${data[0].comprador}`, 5, 105);
+    doc.text(`Venta: ${data[0].Fecha_venta}`, 5, 115);
     doc.setFont('helvetica', 'bold');
     var text = doc.splitTextToSize(`${data[0].leyenda1}`, 70);
-    doc.text(text, 5, 125); // Ajustar la posición de la leyenda1
+    doc.text(text, 5, 125);
 
-    // Abrir el diálogo de impresión cuando el usuario abra el PDF
+    // Resto del código sin cambios
     doc.autoPrint();
-
-    // Obtener una representación de datos del documento
     var blob = doc.output('blob');
-  
     const file = new File([blob], 'factura_boletos.pdf', { type: 'application/pdf' });
   
     const result = await Swal.fire({
@@ -66,7 +75,6 @@ const generatePDFSerie = async (data, fecha) => {
         confirmButtonText: 'Compartir',
     });
 
-    // Si el usuario elige imprimir, abrir la URL en una nueva pestaña
     if (result.isConfirmed) {
         if (navigator.share) {
             navigator.share({
@@ -77,13 +85,14 @@ const generatePDFSerie = async (data, fecha) => {
                 console.log('Compartido exitosamente');
             }).catch((error) => {
                 console.error('Error al compartir:', error);
+                const url = URL.createObjectURL(blob);
+                window.open(url);
+                setTimeout(() => URL.revokeObjectURL(url), 30000);
             });
         } else {
-            Swal.fire({
-                title: 'Error',
-                text: 'La funcionalidad de compartir no está disponible en este dispositivo.',
-                icon: 'error',
-            });
+            const url = URL.createObjectURL(blob);
+            window.open(url);
+            setTimeout(() => URL.revokeObjectURL(url), 30000);
         }
     }
 }

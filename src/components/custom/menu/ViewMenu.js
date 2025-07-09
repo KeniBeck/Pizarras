@@ -8,6 +8,8 @@ import { useRouter } from 'next/navigation'
 import AlertMenu from "../alerts/menu/AlertMenu";
 import { useEffect, useState } from "react";
 import { FaClover } from "react-icons/fa6";
+import { GiPodiumWinner } from "react-icons/gi";
+
 
 const ViewMenu = () => {
     let mensaje = null;
@@ -24,11 +26,9 @@ const ViewMenu = () => {
     if (cerrarSession) {
         logout();
         window.location.href = '/';
-
     }
 
     let accessBlocked = false;
-
 
     if (typeof window !== 'undefined') {
         userData = JSON.parse(localStorage.getItem('userData'));
@@ -43,13 +43,18 @@ const ViewMenu = () => {
 
     const handleboxCut = async (userData) => {
         router.push('/loginAdmin')
-
-
     }
+    
     const handleViewSell = () => {
         router.push('/viewTickects')
     }
 
+    const handleWinnigTicket = () => {
+        router.push('/winningTicket')
+    }
+
+    // Verificar si el usuario pertenece a la sucursal Loteria
+    const isLoteriaUser = userData && userData.sucursal === "Loteria";
 
     return (
         <div className="relative min-h-screen">
@@ -76,7 +81,7 @@ const ViewMenu = () => {
                     </div>
                     {mensaje && (
                         <div className="flex justify-center items-center px-8">
-                            <div className="flex justify-center items-center text-lg text-white h-[56px] bg-green-700 p-4 rounded-xl">
+                            <div className="flex justify-center items-center text-lg text-white  bg-green-700 p-4 rounded-xl">
                                 {mensaje}
                             </div>
                         </div>
@@ -105,6 +110,19 @@ const ViewMenu = () => {
                                 <FaCashRegister className="absolute left-3 top-1/2 transform -translate-y-1/2 h-10" />
                             </button>
                         </div>
+                        
+                        {/* Mostrar botón de boletos ganadores solo si el usuario es de la sucursal Loteria */}
+                        {isLoteriaUser && (
+                            <div className="relative">
+                                <button
+                                    onClick={() => handleWinnigTicket(userData)}
+                                    className="w-full rounded-lg bg-red-700 text-white text-2xl h-[66px] relative" >
+                                    Boletos ganadores
+                                    <GiPodiumWinner className="absolute left-3 top-1/2 transform -translate-y-1/2 h-10" />
+                                </button>
+                            </div>
+                        )}
+                        
                         <div className="relative">
                             <button className="w-full rounded-lg bg-red-700 text-white text-2xl h-[66px] relative" onClick={session}>
                                 Cerrar sesión
@@ -114,9 +132,7 @@ const ViewMenu = () => {
                                 {cerrarSession}
                             </div>
                         </div>
-
                     </div>
-
                 </div>
             )}
             <div className="fixed bottom-4 right-4 bg-green-700 flex items-center justify-center text-white h-[60px] w-[160px] rounded-full">
@@ -124,8 +140,8 @@ const ViewMenu = () => {
                     {userData ? `Puntos: ${userData.Puntos}` : 'Cargando...'}
                 </div>
             </div>
-
         </div>
     );
 }
+
 export default ViewMenu;
