@@ -431,15 +431,24 @@ const TicketBuy = () => {
   // Cambia el sorteo activo según el índice
   const handleSelectSorteoAvance = async () => {
     if (!sorteos.length) return;
-      const inputOptions = sorteos.reduce((opts, s, idx) => {
-      const [yyyy, mm, dd] = s.Fecha.split('-');
-      const fechaObj = new Date(Number(yyyy), Number(mm) - 1, Number(dd));
-      const dia = diasSemana[fechaObj.getDay()];
-      const meses = ['enero', 'febrero', 'marzo', 'abril', 'mayo', 'junio', 'julio', 'agosto', 'septiembre', 'octubre', 'noviembre', 'diciembre'];
-      const mesNombre = meses[Number(mm) - 1];
-      opts[idx] = `${dia} ${parseInt(dd, 10)} de ${mesNombre}`;
+    const inputOptions = sorteos.reduce((opts, s, idx) => {
+      let label = s.Fecha;
+      try {
+        // Usar toLocaleDateString para obtener día y fecha en español, robusto a zona horaria
+        const fechaObj = new Date(s.Fecha);
+        label = fechaObj.toLocaleDateString('es-MX', {
+          weekday: 'long', day: 'numeric', month: 'long', timeZone: 'UTC'
+        });
+        // Capitalizar la primera letra
+        label = label.charAt(0).toUpperCase() + label.slice(1);
+      } catch (e) {
+        // Fallback a la fecha cruda si algo falla
+        label = s.Fecha;
+      }
+      opts[idx] = label;
       return opts;
     }, {});
+
 
     // Si ya está en avance, mostrar opción de revertir
     let showRevert = avanceIndex !== 0;
