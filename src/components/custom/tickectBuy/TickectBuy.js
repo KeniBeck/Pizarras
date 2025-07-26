@@ -10,7 +10,7 @@ import {
   ValidateBox,
 } from "../alerts/menu/Alerts";
 import { useRouter } from "next/navigation";
-import { FaHome, FaDice } from "react-icons/fa";
+import { FaHome, FaDice, FaForward } from "react-icons/fa";
 import generatePDFSerie from "./pdfSerie";
 import Swal from "sweetalert2";
 import { TbSquarePlus } from "react-icons/tb";
@@ -34,6 +34,10 @@ const TicketBuy = () => {
   const [numberTop, setNumberTop] = useState(0);
   const [topes, setTopes] = useState({});
   const [isGeneratingRandom, setIsGeneratingRandom] = useState(false);
+  const [sorteos, setSorteos] = useState([]);
+  const [selectedSorteo, setSelectedSorteo] = useState(null);
+  const [avanceIndex, setAvanceIndex] = useState(0); // 0 = sorteo original
+  const [originalSorteo, setOriginalSorteo] = useState(null);
 
   useEffect(() => {
     Promise.all([
@@ -47,6 +51,18 @@ const TicketBuy = () => {
         .then((data) => setPrizes(data.result[0])),
     ]).catch((error) => console.error("Error:", error));
   }, []);
+
+  // Obtener sorteos activos para avance
+  useEffect(() => {
+    fetch("/api/nextLotteries")
+      .then((res) => res.json())
+      .then((data) => {
+        setSorteos(data.result || []);
+        setSelectedSorteo((data.result && data.result[0]) || null);
+        setOriginalSorteo((data.result && data.result[0]) || null);
+      });
+  }, []);
+
   const currentHour = new Date().getHours();
 
   if (!prizes) {
@@ -71,10 +87,11 @@ const TicketBuy = () => {
     // Asegúrate de que el valor tenga una longitud de 3 caracteres
     value = value.padStart(3, "0");
   };
-  const fecha = new Date(
-    new Date(prizes.Fecha).getTime() + new Date().getTimezoneOffset() * 60000
-  ).toLocaleDateString();
 
+  // Usar selectedSorteo para la fecha y formattedFecha
+  const fecha = selectedSorteo ? new Date(
+    new Date(selectedSorteo.Fecha).getTime() + new Date().getTimezoneOffset() * 60000
+  ).toLocaleDateString() : "";
   const [day, month, year] = fecha.split('/').map(num => num.padStart(2, '0'));
   const formattedFecha = `${day}/${month}/${year}`;
 
@@ -183,7 +200,7 @@ const TicketBuy = () => {
 
   const userData = JSON.parse(localStorage.getItem("userData"));
   const idVendedor = userData.Idvendedor;
-  const idSorteo = prizes.Idsorteo;
+  const idSorteo = selectedSorteo?.Idsorteo;
 
   const Validate = () => {
     if (foundTope == 0) {
@@ -226,23 +243,20 @@ const TicketBuy = () => {
   const confirmVenta = async () => {
     VailidationEstatus();
     setIsLoading(true);
-
     const ticketData = [];
-
     for (const ticket of tickets) {
       const data = {
         prizebox: ticket.price,
         name: ticket.name,
         ticketNumber: ticket.number,
         idVendedor,
-        tipoSorteo: prizes.Tipo_sorteo,
-        idSorteo,
+        tipoSorteo: selectedSorteo.Tipo_sorteo,
+        idSorteo: selectedSorteo.Idsorteo,
         topePermitido: foundTope - ticket.price,
-        fecha: prizes.Fecha,
-        primerPremio: prizes.Primerpremio,
-        segundoPremio: prizes.Segundopremio,
+        fecha: selectedSorteo.Fecha,
+        primerPremio: selectedSorteo.Primerpremio,
+        segundoPremio: selectedSorteo.Segundopremio,
       };
-
       const options = {
         method: "POST",
         headers: {
@@ -250,7 +264,6 @@ const TicketBuy = () => {
         },
         body: JSON.stringify(data),
       };
-
       await fetch("/api/sell", options)
         .then((res) => res.json())
         .then((data) => {
@@ -261,13 +274,11 @@ const TicketBuy = () => {
           }
         });
     }
-
     setIsLoading(false);
-    setTickets([]); // Limpiar los boletos acumulados
+    setTickets([]);
     setTicketNumber("");
     setPrizebox("");
     setName("");
-
     generatePDF(ticketData, fecha);
     setShowPreview(false);
   };
@@ -308,17 +319,16 @@ const TicketBuy = () => {
     // Envía cada boleto al servidor
     for (const ticketNumber of ticketNumbers) {
       const data = {
-        prizebox: prizebox / 10, // Cada boleto en la serie cuesta 10
+        prizebox: prizebox / 10,
         name,
         ticketNumber,
         idVendedor,
-        idSorteo,
+        idSorteo: selectedSorteo.Idsorteo,
         topePermitido: foundTope - prizebox,
-        fecha: prizes.Fecha,
-        primerPremio: prizes.Primerpremio,
-        segundoPremio: prizes.Segundopremio,
+        fecha: selectedSorteo.Fecha,
+        primerPremio: selectedSorteo.Primerpremio,
+        segundoPremio: selectedSorteo.Segundopremio,
       };
-
       const options = {
         method: "PUT",
         headers: {
@@ -416,6 +426,44 @@ const TicketBuy = () => {
     setTickets((prevTickets) => prevTickets.filter((_, i) => i !== index));
   };
 
+  // Cambia el sorteo activo según el índice
+  const handleSelectSorteoAvance = async () => {
+    if (!sorteos.length) return;
+    const inputOptions = sorteos.reduce((opts, s, idx) => {
+      opts[idx] = `${new Date(s.Fecha).toLocaleDateString()} (${s.Tipo_sorteo})`;
+      return opts;
+    }, {});
+    // Si ya está en avance, mostrar opción de revertir
+    let showRevert = avanceIndex !== 0;
+    let html = showRevert ? '<button id="revertSorteo" class="swal2-confirm swal2-styled" style="margin-bottom:10px;background:#4b5563;">Revertir a sorteo original</button><br/>' : '';
+    const { value: idx } = await Swal.fire({
+      title: "Sorteo en avance",
+      html: html + "<div id='selectSorteoAvance'></div>",
+      input: "select",
+      inputOptions,
+      inputPlaceholder: "Selecciona el sorteo",
+      showCancelButton: true,
+      cancelButtonText: "Cancelar",
+      allowOutsideClick: false,
+      allowEscapeKey: false,
+      didOpen: () => {
+        if (showRevert) {
+          document.getElementById("revertSorteo").onclick = () => {
+            setSelectedSorteo(originalSorteo);
+            setAvanceIndex(0);
+            Swal.close();
+            Swal.fire({icon:'success',title:'Sorteo original restaurado',timer:1200,showConfirmButton:false});
+          };
+        }
+      }
+    });
+    if (idx !== undefined && idx !== null && idx !== "") {
+      setSelectedSorteo(sorteos[idx]);
+      setAvanceIndex(Number(idx));
+      Swal.fire({icon:'success',title:'Sorteo cambiado',timer:1200,showConfirmButton:false});
+    }
+  };
+
   return (
     <div className="relative min-h-screen">
       <div className="max-w-sm mx-auto w-full bg-[rgb(38,38,38)]">
@@ -429,11 +477,11 @@ const TicketBuy = () => {
           </label>
           <label className="text-white text-xl flex justify-center items-center relative">
             <PiNumberSquareOneFill className="text-red-600 inline-block h-6 w-6 mr-1" />
-            Premio:{prizes.Primerpremio}
+            Premio:{selectedSorteo?.Primerpremio}
           </label>
           <label className="text-white text-xl flex justify-center items-center  realative">
             <PiNumberSquareTwoFill className="inline-block h-6 w-6 mr-1 text-red-600" />{" "}
-            Premio:{prizes.Segundopremio}
+            Premio:{selectedSorteo?.Segundopremio}
           </label>
         </div>
 
@@ -494,7 +542,7 @@ const TicketBuy = () => {
           </div>
           
           {/* Fila de Nombre */}
-          <div className="flex flex-row gap-12">
+          <div className="flex flex-row gap-12 relative">
             <div className="text-white flex justify-center items-center text-2xl w-[80px]">
               Nombre
             </div>
@@ -503,6 +551,13 @@ const TicketBuy = () => {
               onChange={(e) => setName(e.target.value)}
               className="bg-neutral-300 border rounded w-[150px] outline-none h-[40px] pl-3"
             />
+               <button
+            onClick={handleSelectSorteoAvance}
+            className="absolute right-0 bg-gray-700 text-white flex justify-center items-center rounded-lg h-[40px] w-[40px] text-xl"
+            title="Sorteo en avance"
+          >
+            <FaForward />
+          </button>
           </div>
         </div>
 
