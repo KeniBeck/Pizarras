@@ -99,7 +99,7 @@ const TicketBuy = () => {
   const getRandomNumber = async () => {
     try {
       setIsGeneratingRandom(true);
-      
+
       const response = await fetch("/api/topes", {
         method: "PUT",
         headers: {
@@ -107,25 +107,25 @@ const TicketBuy = () => {
         },
         body: JSON.stringify({ fecha: formattedFecha }),
       });
-      
+
       const data = await response.json();
-      
+
       if (data.success) {
         // Formatear el número para que tenga 3 dígitos con ceros a la izquierda
         const numeroFormateado = data.numero.toString().padStart(3, '0');
         setTicketNumber(numeroFormateado);
-        
+
         // Establecer valores predeterminados
         setPrizebox("10");
         setName("Trébol de la Suerte");
-        
+
         // Limpiar errores de validación del precio
         setPrizeboxError(null);
-        
+
         // Simular evento de blur para cargar la información del tope
         const event = { target: { value: numeroFormateado } };
         handleBlur(event);
-        
+
         // Mostrar mensaje de éxito
         Swal.fire({
           icon: 'success',
@@ -426,13 +426,21 @@ const TicketBuy = () => {
     setTickets((prevTickets) => prevTickets.filter((_, i) => i !== index));
   };
 
+  const diasSemana = ['domingo', 'lunes', 'martes', 'miércoles', 'jueves', 'viernes', 'sábado'];
+
   // Cambia el sorteo activo según el índice
   const handleSelectSorteoAvance = async () => {
     if (!sorteos.length) return;
     const inputOptions = sorteos.reduce((opts, s, idx) => {
-      opts[idx] = `${new Date(s.Fecha).toLocaleDateString()} (${s.Tipo_sorteo})`;
+      const fechaObj = new Date(s.Fecha);
+      const dia = diasSemana[fechaObj.getDay()];
+      const diaNombre = dia.charAt(0).toUpperCase() + dia.slice(1);
+      const diaNumero = fechaObj.getDate().toString().padStart(2, '0');
+      const mesNumero = (fechaObj.getMonth() + 1).toString().padStart(2, '0');
+      opts[idx] = `${diaNombre} ${diaNumero}/${mesNumero}`;
       return opts;
     }, {});
+
     // Si ya está en avance, mostrar opción de revertir
     let showRevert = avanceIndex !== 0;
     let html = showRevert ? '<button id="revertSorteo" class="swal2-confirm swal2-styled" style="margin-bottom:10px;background:#4b5563;">Revertir a sorteo original</button><br/>' : '';
@@ -452,7 +460,7 @@ const TicketBuy = () => {
             setSelectedSorteo(originalSorteo);
             setAvanceIndex(0);
             Swal.close();
-            Swal.fire({icon:'success',title:'Sorteo original restaurado',timer:1200,showConfirmButton:false});
+            Swal.fire({ icon: 'success', title: 'Sorteo original restaurado', timer: 1200, showConfirmButton: false });
           };
         }
       }
@@ -460,7 +468,7 @@ const TicketBuy = () => {
     if (idx !== undefined && idx !== null && idx !== "") {
       setSelectedSorteo(sorteos[idx]);
       setAvanceIndex(Number(idx));
-      Swal.fire({icon:'success',title:'Sorteo cambiado',timer:1200,showConfirmButton:false});
+      Swal.fire({ icon: 'success', title: 'Sorteo cambiado', timer: 1200, showConfirmButton: false });
     }
   };
 
@@ -513,7 +521,7 @@ const TicketBuy = () => {
               <TbSquarePlus />
             </button>
           </div>
-          
+
           {/* Fila de Precio */}
           <div className="flex flex-row gap-12 relative">
             <div className="text-white flex justify-center items-center text-2xl w-[80px]">
@@ -531,16 +539,8 @@ const TicketBuy = () => {
               }}
               maxLength={4}
             />
-            <button
-              onClick={getRandomNumber}
-              disabled={isGeneratingRandom}
-              className={`absolute right-0 bg-blue-700 text-white flex justify-center items-center rounded-lg h-[40px] w-[40px] text-xl ${isGeneratingRandom ? 'opacity-50 cursor-not-allowed' : ''}`}
-              title="Generar número aleatorio"
-            >
-              <FaDice className={`${isGeneratingRandom ? 'animate-spin' : ''}`} />
-            </button>
           </div>
-          
+
           {/* Fila de Nombre */}
           <div className="flex flex-row gap-12 relative">
             <div className="text-white flex justify-center items-center text-2xl w-[80px]">
@@ -551,13 +551,27 @@ const TicketBuy = () => {
               onChange={(e) => setName(e.target.value)}
               className="bg-neutral-300 border rounded w-[150px] outline-none h-[40px] pl-3"
             />
-               <button
-            onClick={handleSelectSorteoAvance}
-            className="absolute right-0 bg-gray-700 text-white flex justify-center items-center rounded-lg h-[40px] w-[40px] text-xl"
-            title="Sorteo en avance"
-          >
-            <FaForward />
-          </button>
+          </div>
+
+          {/* Fila de botones Azar y Avance */}
+          <div className="flex flex-row gap-4 justify-center items-center pt-2">
+            <button
+              onClick={getRandomNumber}
+              disabled={isGeneratingRandom}
+              className={`bg-blue-700 text-white flex flex-col justify-center items-center rounded-lg h-[56px] w-[56px] text-xl ${isGeneratingRandom ? 'opacity-50 cursor-not-allowed' : ''}`}
+              title="Generar número aleatorio"
+            >
+              <FaDice className={`${isGeneratingRandom ? 'animate-spin' : ''} text-2xl`} />
+              <span className="text-xs font-semibold mt-1">Azar</span>
+            </button>
+            <button
+              onClick={handleSelectSorteoAvance}
+              className="bg-gray-700 text-white flex flex-col justify-center items-center rounded-lg h-[56px] w-[56px] text-xl"
+              title="Sorteo en avance"
+            >
+              <FaForward className="text-2xl" />
+              <span className="text-xs font-semibold mt-1">Avance</span>
+            </button>
           </div>
         </div>
 
