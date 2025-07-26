@@ -431,13 +431,13 @@ const TicketBuy = () => {
   // Cambia el sorteo activo según el índice
   const handleSelectSorteoAvance = async () => {
     if (!sorteos.length) return;
-    const inputOptions = sorteos.reduce((opts, s, idx) => {
-      const fechaObj = new Date(s.Fecha);
+      const inputOptions = sorteos.reduce((opts, s, idx) => {
+      const [yyyy, mm, dd] = s.Fecha.split('-');
+      const fechaObj = new Date(Number(yyyy), Number(mm) - 1, Number(dd));
       const dia = diasSemana[fechaObj.getDay()];
-      const diaNombre = dia.charAt(0).toUpperCase() + dia.slice(1);
-      const diaNumero = fechaObj.getDate().toString().padStart(2, '0');
-      const mesNumero = (fechaObj.getMonth() + 1).toString().padStart(2, '0');
-      opts[idx] = `${diaNombre} ${diaNumero}/${mesNumero}`;
+      const meses = ['enero', 'febrero', 'marzo', 'abril', 'mayo', 'junio', 'julio', 'agosto', 'septiembre', 'octubre', 'noviembre', 'diciembre'];
+      const mesNombre = meses[Number(mm) - 1];
+      opts[idx] = `${dia} ${parseInt(dd, 10)} de ${mesNombre}`;
       return opts;
     }, {});
 
