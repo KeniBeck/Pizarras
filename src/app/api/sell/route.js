@@ -100,8 +100,8 @@ export async function POST(req, res) {
     // Si no es normal, domingo ni especial
     return NextResponse.json({ error: "Tipo de sorteo no soportado" }, { status: 400 });
   } catch (error) {
-    console.log(error);
-    return NextResponse.json({ error: error.message }, { status: 500 });
+    console.error("ERROR EN INSERTAR BOLETO:", error, { datos, values });
+    return NextResponse.json({ error: error.message, detalle: error, datos, values }, { status: 500 });
   }
 }
 //serie
