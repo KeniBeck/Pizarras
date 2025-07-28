@@ -15,11 +15,8 @@ export async function POST(req, res) {
     ticketNumber,
     tipoSorteo,
   } = datos;
-  const fechaModificada = new Date(fecha)
-    .toISOString()
-    .slice(0, 19)
-    .replace("T", " ")
-    .split(" ")[0];
+  // Usar la fecha tal cual, solo la parte YYYY-MM-DD
+  const fechaModificada = fecha.split(" ")[0];
 
   let sql = `
         INSERT INTO boletos
@@ -121,11 +118,8 @@ export async function PUT(req, res) {
     ticketNumber,
     topePermitido,
   } = datos;
-  const fechaModificada = new Date(fecha)
-    .toISOString()
-    .slice(0, 19)
-    .replace("T", " ")
-    .split(" ")[0];
+  // Usar la fecha tal cual, solo la parte YYYY-MM-DD
+  const fechaModificada = fecha.split(" ")[0];
   let sql = `
         INSERT INTO boletos
         ( Fecha, Primerpremio, Segundopremio, Boleto, Costo, comprador, Idvendedor,tipo_sorteo,Fecha_venta)
