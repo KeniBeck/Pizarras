@@ -15,12 +15,11 @@ export async function POST(req, res) {
     ticketNumber,
     tipoSorteo,
   } = datos;
-  // Usar la fecha tal cual, solo la parte YYYY-MM-DD
-  const fechaModificada = fecha.split(" ")[0];
-
+  // Usar solo la fecha (YYYY-MM-DD) para el campo Fecha
+  const fechaModificada = fecha.split("T")[0];
   let sql = `
         INSERT INTO boletos
-        ( Fecha, Primerpremio, Segundopremio, Boleto, Costo, comprador, Idvendedor,tipo_sorteo,Fecha_venta)
+        ( Fecha, Primerpremio, Segundopremio, Boleto, Costo, comprador, Idvendedor, tipo_sorteo, Fecha_venta)
         VALUES( ?, ?, ?, ?, ?, ?, ?, ?,CURRENT_TIMESTAMP)
     `;
   let sqlTopes = `SELECT * FROM topes WHERE Numero = ? AND Fecha_sorteo = ?`;
@@ -41,7 +40,7 @@ export async function POST(req, res) {
         ORDER BY b.Idsorteo DESC 
         LIMIT 1;`;
   let values = [
-    fechaModificada,
+    fechaModificada, // YYYY-MM-DD limpio, sin hora ni zona
     primerPremio,
     segundoPremio,
     ticketNumber,
@@ -118,11 +117,11 @@ export async function PUT(req, res) {
     ticketNumber,
     topePermitido,
   } = datos;
-  // Usar la fecha tal cual, solo la parte YYYY-MM-DD
-  const fechaModificada = fecha.split(" ")[0];
+  // Usar solo la fecha (YYYY-MM-DD) para el campo Fecha
+  const fechaModificada = fecha.split("T")[0];
   let sql = `
         INSERT INTO boletos
-        ( Fecha, Primerpremio, Segundopremio, Boleto, Costo, comprador, Idvendedor,tipo_sorteo,Fecha_venta)
+        ( Fecha, Primerpremio, Segundopremio, Boleto, Costo, comprador, Idvendedor, tipo_sorteo, Fecha_venta)
         VALUES( ?, ?, ?, ?, ?, ?, ?, ?,CURRENT_TIMESTAMP)
     `;
   // Obtener los últimos 10 elementos insertados
