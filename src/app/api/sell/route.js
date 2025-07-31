@@ -27,18 +27,25 @@ export async function POST(req, res) {
   let sqlValidation = `SELECT b.Idsorteo AS idsorteo, b.Fecha AS Fecha_sorteo , b.Boleto AS boleto, s.Tipo_sorteo AS tipo FROM boletos b
          JOIN sorteo s ON b.tipo_sorteo
          WHERE s.Tipo_sorteo = 'especial' AND b.Fecha = ? AND b.Boleto = ?`;
-  let sqlSelect = `SELECT b.*, c.leyenda1,c.leyenda2
-        FROM boletos b
-        CROSS JOIN configuracion c
-        WHERE b.Boleto = ? 
-        ORDER BY b.Idsorteo DESC 
-        LIMIT 1;`;
-  let sqlSelectEspecial = `SELECT b.*, c.leyenda1 AS leyenda1,c.leyenda3 AS leyenda2
-        FROM boletos b
-        CROSS JOIN configuracion c
-        WHERE b.Boleto = ? 
-        ORDER BY b.Idsorteo DESC 
-        LIMIT 1;`;
+  let sqlSelect = `
+  SELECT b.*, c.leyenda1, s.leyenda2
+  FROM boletos b
+  JOIN sorteo s ON b.tipo_sorteo = s.Idsorteo
+  CROSS JOIN configuracion c
+  WHERE b.Boleto = ?
+  ORDER BY b.Idsorteo DESC
+  LIMIT 1;
+`;
+
+  let sqlSelectEspecial = `
+  SELECT b.*, c.leyenda1, s.leyenda2
+  FROM boletos b
+  JOIN sorteo s ON b.tipo_sorteo = s.Idsorteo
+  CROSS JOIN configuracion c
+  WHERE b.Boleto = ?
+  ORDER BY b.Idsorteo DESC
+  LIMIT 1;
+`;
   let values = [
     fechaModificada, // YYYY-MM-DD limpio, sin hora ni zona
     primerPremio,
@@ -125,9 +132,15 @@ export async function PUT(req, res) {
         VALUES( ?, ?, ?, ?, ?, ?, ?, ?,CURRENT_TIMESTAMP)
     `;
   // Obtener los últimos 10 elementos insertados
-  let sqlSelect = `SELECT b.*, c.leyenda1 AS leyenda1, c.leyenda2 AS leyenda2 FROM boletos b 
-  CROSS JOIN configuracion c
-  WHERE comprador = ? ORDER BY Idsorteo DESC LIMIT 10`;
+   let sqlSelect = `
+    SELECT b.*, c.leyenda1, s.leyenda2
+    FROM boletos b
+    JOIN sorteo s ON b.tipo_sorteo = s.Idsorteo
+    CROSS JOIN configuracion c
+    WHERE comprador = ?
+    ORDER BY b.Idsorteo DESC
+    LIMIT 10
+  `;
   let values = [
     fechaModificada,
     primerPremio,

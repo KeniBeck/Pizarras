@@ -7,16 +7,16 @@ const generatePDF = async (tickets, fecha) => {
     let leyenda2 = tickets[0].leyenda2 || "";
     let leyenda1 = tickets[0].leyenda1 || "";
 
-    // Ajustes para leyendas extremadamente largas
+    // Aumentar el tamaño base de fuente en +2 puntos para mejor visibilidad
     const leyenda2FontSize =
-      leyenda2.length > 300 ? 5 :
-        leyenda2.length > 200 ? 6 :
-          leyenda2.length > 100 ? 7 : 8;
+      leyenda2.length > 300 ? 7 :
+        leyenda2.length > 200 ? 8 :
+          leyenda2.length > 100 ? 9 : 10;
 
     const leyenda1FontSize =
-      leyenda1.length > 300 ? 5 :
-        leyenda1.length > 200 ? 6 :
-          leyenda1.length > 100 ? 7 : 8;
+      leyenda1.length > 300 ? 7 :
+        leyenda1.length > 200 ? 8 :
+          leyenda1.length > 100 ? 9 : 10;
 
     // Calcular altura aproximada de leyendas
     const tempDoc = new jsPDF({ unit: "mm", format: "a4" });
@@ -45,7 +45,8 @@ const generatePDF = async (tickets, fecha) => {
 
     // URL de la imagen
     const imageURL = "/noSencillo.jpg";
-    doc.addImage(imageURL, "JPEG", 0, 0, 80, 30);
+    // Reducir la imagen: ancho 70mm, alto 25mm, posición centrada
+    doc.addImage(imageURL, "JPEG", 5, 0, 70, 25);
 
     // PASO 3: Manejar primera leyenda (leyenda2) con mejor control
     doc.setFont("helvetica", "bold");
@@ -66,9 +67,9 @@ const generatePDF = async (tickets, fecha) => {
 
     // Resto del encabezado
     doc.setTextColor(0, 0, 0);
-    doc.setFontSize(14);
+    doc.setFontSize(16); // Subido de 14 a 16
     doc.text(`Factura de boletos`, 5, nextY);
-    nextY += 10;
+    nextY += 12; // Subido de 10 a 12
 
     // Mostrar detalles del comprador con ajustes
     const firstTicket = tickets[0];
@@ -76,14 +77,14 @@ const generatePDF = async (tickets, fecha) => {
 
     // Ajustar tamaño para textos largos
     const compradorText = firstTicket.comprador || "";
-    const compradorSize = compradorText.length > 20 ? 9 : 10;
+    const compradorSize = compradorText.length > 20 ? 11 : 12; // Subido de 9/10 a 11/12
     doc.setFontSize(compradorSize);
     doc.text(`Comprador: ${compradorText}`, 5, nextY);
-    nextY += 10;
+    nextY += 12; // Subido de 10 a 12
 
-    doc.setFontSize(10);
+    doc.setFontSize(12); // Subido de 10 a 12
     doc.text(`Sorteo: ${fecha || ""}`, 5, nextY);
-    nextY += 10;
+    nextY += 12; // Subido de 10 a 12
 
     // Formatear fecha
     let fechaVenta = firstTicket.Fecha_venta || "";
@@ -92,7 +93,7 @@ const generatePDF = async (tickets, fecha) => {
       fechaVenta = date.toLocaleDateString();
     }
     doc.text(`Venta: ${fechaVenta}`, 5, nextY);
-    nextY += 10;
+    nextY += 12; // Subido de 10 a 12
 
     // Posición inicial para boletos
     let yPosition = nextY;
@@ -101,11 +102,13 @@ const generatePDF = async (tickets, fecha) => {
     tickets.forEach((data, index) => {
       doc.setFont("helvetica", "bold");
       doc.setTextColor(255, 0, 0);
+      doc.setFontSize(14); // Subido de 12 a 14
       doc.text(`N${data.Idsorteo || ""}`, 5, yPosition);
 
       doc.setTextColor(0, 0, 0);
       doc.setFont("helvetica", "normal");
-      doc.text(`Costo $ ${data.Costo || ""}`, 5, yPosition + 10);
+      doc.setFontSize(12); // Subido de 10 a 12
+      doc.text(`Costo $ ${data.Costo || ""}`, 5, yPosition + 12);
       if (data.Boleto === 0) {
         data.Boleto = "000"
       }
@@ -115,10 +118,10 @@ const generatePDF = async (tickets, fecha) => {
       } else {
         boletoFormatted = data.Boleto?.toString().padStart(3, "0") || "";
       }
-      const boletoSize = boletoFormatted.length > 15 ? 9 : 10;
+      const boletoSize = boletoFormatted.length > 15 ? 11 : 12; // Subido de 9/10 a 11/12
       doc.setFontSize(boletoSize);
-      doc.text(`Número de boleto: ${boletoFormatted}`, 5, yPosition + 20);
-      doc.setFontSize(10);
+      doc.text(`Número de boleto: ${boletoFormatted}`, 5, yPosition + 24);
+      doc.setFontSize(12);
 
       yPosition += 30;
     });

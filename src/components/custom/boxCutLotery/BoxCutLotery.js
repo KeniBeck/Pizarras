@@ -44,12 +44,14 @@ function getMondayAndSundayOfCurrentWeek() {
 function getLastNDays(n) {
   const days = [];
   const now = new Date();
+  const todayStr = now.toISOString().split("T")[0];
   for (let i = n - 1; i >= 0; i--) {
     const d = new Date(now);
     d.setDate(now.getDate() - i);
+    const dateStr = d.toISOString().split("T")[0];
     days.push({
-      date: d.toISOString().split("T")[0],
-      label: diasSemana[d.getDay()],
+      date: dateStr,
+      label: dateStr === todayStr ? "HOY" : diasSemana[d.getDay()],
     });
   }
   return days;
@@ -133,44 +135,6 @@ const BoxCutLotery = () => {
     router.push("/menu");
     localStorage.removeItem("loggedAdmin");
   };
-
-  const handlePrint = () => {
-    if (!result || !result.resumen) return;
-    const doc = new jsPDF({ orientation: "portrait", unit: "mm", format: [80, 600] });
-    doc.setFontSize(10);
-    doc.text("Corte de caja semanal", 10, 10);
-    doc.text(`Vendedor: ${userData?.Nombre || "-"}`, 10, 15);
-    doc.text(`Sucursal: ${userData?.sucursal || "-"}`, 10, 20);
-    doc.text(`Semana: ${monday} a ${sunday}`, 10, 25);
-    let y = 30;
-    doc.text("Días con ventas:", 10, y);
-    y += 5;
-    result.dias.forEach((dia) => {
-      doc.text(
-        `${getNombreDia(dia.dia)} (${dia.dia}): ${dia.boletosvendidos} boletos, $${dia.venta} venta`,
-        10,
-        y
-      );
-      y += 5;
-    });
-    y += 5;
-    doc.text("Total semana:", 10, y);
-    y += 5;
-    doc.text(`Boletos vendidos: ${result.resumen.boletosvendidos}`, 10, y);
-    y += 5;
-    doc.text(`Venta total: $${result.resumen.venta}`, 10, y);
-    y += 5;
-    doc.text(`Comisión: $${result.resumen.comision}`, 10, y);
-    y += 5;
-    doc.text(`Total caja: $${result.resumen.totalcaja}`, 10, y);
-    y += 5;
-    doc.text(`Total entregado: $${result.resumen.totalentregado}`, 10, y);
-    doc.autoPrint();
-    const blob = doc.output("blob");
-    const url = URL.createObjectURL(blob);
-    window.open(url);
-  };
-
   // Cards de días (últimos 8 días)
   const days = getLastNDays(8);
   // Cards de semanas (actual, pasada, antepasada)
@@ -227,22 +191,26 @@ const BoxCutLotery = () => {
   };
 
   return (
-    <div className="relative min-h-screen">
+    <div className="relative min-h-screen bg-[rgb(38,38,38)]">
       <div
         className="absolute inset-0 bg-no-repeat bg-cover bg-center"
-        style={{ backgroundImage: `url(${backgroundImage})` }}
+        style={{ backgroundImage: `url(${backgroundImage})`, opacity: 0.15 }}
       >
-        <div className="bg-black opacity-50 absolute inset-0"></div>
+        <div className="bg-[rgb(38,38,38)] opacity-80 absolute inset-0"></div>
       </div>
-      <div className="max-w-lg mx-auto w-full bg-[rgb(38,38,38)] relative z-10 rounded-lg shadow-lg p-4 mt-8">
-        <h2 className="text-white text-2xl font-bold mb-4 text-center">Corte de caja lotería</h2>
+      <div className="max-w-lg mx-auto w-full bg-[rgb(38,38,38)] relative z-10 rounded-lg shadow-lg p-4 mt-8 border border-red-700">
+        <h2 className="text-white text-2xl font-bold mb-4 text-center">Corte de caja</h2>
         <div className="mb-4">
           <div className="text-white font-bold mb-2">Días recientes</div>
           <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
             {days.map((d) => (
               <button
                 key={d.date}
-                className={`rounded p-3 flex flex-col items-center shadow text-white font-bold ${selectedDay === d.date ? 'bg-green-700' : 'bg-gray-900'} hover:bg-green-800`}
+                className={`rounded p-3 flex flex-col items-center shadow font-bold border-2 ${
+                  selectedDay === d.date
+                    ? 'bg-red-700 text-white border-white'
+                    : 'bg-red-700 text-white border-red-700'
+                }`}
                 onClick={() => handleDayClick(d.date)}
               >
                 <span className="capitalize">{d.label}</span>
@@ -257,7 +225,11 @@ const BoxCutLotery = () => {
             {weeks.map((w) => (
               <button
                 key={w.start}
-                className={`rounded p-3 flex flex-col items-center shadow text-white font-bold ${selectedWeek && selectedWeek.start === w.start ? 'bg-green-700' : 'bg-gray-900'} hover:bg-green-800`}
+                className={`rounded p-3 flex flex-col items-center shadow font-bold border-2 ${
+                  selectedWeek && selectedWeek.start === w.start
+                    ? 'bg-red-700 text-white border-white'
+                    : 'bg-red-700 text-white border-red-700'
+                }`}
                 onClick={() => handleWeekClick(w.start, w.end)}
               >
                 <span>{w.label}</span>
@@ -270,7 +242,7 @@ const BoxCutLotery = () => {
         {result && (
           <div className="space-y-4 mt-4">
             {selectedDay && (
-              <div className="bg-gray-900 rounded p-4 text-white flex flex-col items-center shadow">
+              <div className="bg-[rgb(38,38,38)] border border-red-700 rounded p-4 text-white flex flex-col items-center shadow">
                 <span className="font-bold text-lg mb-2">Corte de caja del día</span>
                 <span className="mb-2">{formatDayMonth(selectedDay)}</span>
                 {result.dias && result.dias.length > 0 ? (
@@ -281,7 +253,7 @@ const BoxCutLotery = () => {
                     <span>Total caja: <b>${result.dias[0].totalcaja}</b></span>
                     <span>Total entregado: <b>${result.dias[0].totalentregado}</b></span>
                     <button
-                      className="mt-4 bg-white text-green-900 px-4 py-2 rounded font-bold flex items-center gap-2 hover:bg-gray-200"
+                      className="mt-4 bg-red-700 text-white px-4 py-2 rounded font-bold flex items-center gap-2 hover:bg-red-800"
                       onClick={() => generatePDFBoxCutDay({
                         userData,
                         dia: formatDayMonth(selectedDay),
@@ -301,7 +273,7 @@ const BoxCutLotery = () => {
               </div>
             )}
             {selectedWeek && result.resumen && (
-              <div className="bg-green-900 rounded p-4 text-white flex flex-col items-center shadow">
+              <div className="bg-red-900 border border-white rounded p-4 text-white flex flex-col items-center shadow">
                 <span className="font-bold text-xl mb-2">{weeks.find(w => w.start === selectedWeek.start)?.label || 'Semana'}</span>
                 <span className="mb-2">{formatDayMonth(selectedWeek.start)} a {formatDayMonth(selectedWeek.end)}</span>
                 <span>Boletos vendidos: <b>{result.resumen.boletosvendidos}</b></span>
@@ -310,7 +282,7 @@ const BoxCutLotery = () => {
                 <span>Total caja: <b>${result.resumen.totalcaja}</b></span>
                 <span>Total entregado: <b>${result.resumen.totalentregado}</b></span>
                 <button
-                  className="mt-4 bg-white text-green-900 px-4 py-2 rounded font-bold flex items-center gap-2 hover:bg-gray-200"
+                  className="mt-4 bg-red-700 text-white px-4 py-2 rounded font-bold flex items-center gap-2 hover:bg-red-800"
                   onClick={() => generatePDFBoxCutWeek({
                     userData,
                     weekLabel: weeks.find(w => w.start === selectedWeek.start)?.label || 'Semana',
@@ -330,7 +302,7 @@ const BoxCutLotery = () => {
       </div>
       <button
         onClick={goToMenu}
-        className="fixed bottom-4 right-4 bg-red-700 text-white flex justify-center items-center text-4xl p-2 rounded-full h-[80px] w-[80px] z-10"
+        className="fixed bottom-4 right-4 bg-red-700 text-white flex justify-center items-center text-4xl p-2 rounded-full h-[80px] w-[80px] z-10 border-4 border-white"
       >
         <FaHome />
       </button>

@@ -1,5 +1,4 @@
 import jsPDF from "jspdf";
-import Swal from "sweetalert2";
 import "jspdf-autotable";
 
 const generatePDFBoxCutWeek = async ({ userData, weekLabel, weekRange, resumen, dias, cancelados, ganadores, bancoInfo }) => {
@@ -47,15 +46,26 @@ const generatePDFBoxCutWeek = async ({ userData, weekLabel, weekRange, resumen, 
   doc.text(`- Comision`, 12, y);
   doc.text(`$${resumen.comision || 0}`, 60, y, { align: "right" });
   y += 6;
-  doc.text(`${resumen.pagados || 0} Pagados`, 12, y);
-  doc.text(`$${resumen.totalentregado || 0}`, 60, y, { align: "right" });
-  y += 5;
-  doc.text(`- Comision`, 12, y);
-  doc.text(`$${resumen.comisionpagados || 0}`, 60, y, { align: "right" });
-  y += 5;
-  doc.text(`${resumen.cancelados || 0} Cancelados`, 12, y);
-  doc.text(`$${resumen.totalcancelados || 0}`, 60, y, { align: "right" });
-  y += 8;
+
+  // Solo mostrar pagados si existen
+  if (resumen.pagados && resumen.pagados > 0) {
+    doc.text(`${resumen.pagados} Pagados`, 12, y);
+    doc.text(`$${resumen.totalentregado || 0}`, 60, y, { align: "right" });
+    y += 5;
+    doc.text(`- Comision`, 12, y);
+    doc.text(`$${resumen.comisionpagados || 0}`, 60, y, { align: "right" });
+    y += 5;
+  }
+
+  // Solo mostrar cancelados si existen
+  if (resumen.cancelados && resumen.cancelados > 0) {
+    doc.text(`${resumen.cancelados} Cancelados`, 12, y);
+    doc.text(`$${resumen.totalcancelados || 0}`, 60, y, { align: "right" });
+    y += 8;
+  } else {
+    y += 8;
+  }
+
   doc.setFont("helvetica", "bold");
   doc.text(`A PAGAR:`, 12, y);
   doc.text(`$${resumen.apagar || 0}`, 60, y, { align: "right" });
@@ -63,7 +73,7 @@ const generatePDFBoxCutWeek = async ({ userData, weekLabel, weekRange, resumen, 
   doc.setLineDash([2, 2], 0);
   doc.line(8, y, 72, y);
   y += 5;
-  
+
   doc.setFontSize(8);
   doc.text("NOMBRE Y FIRMA DEL DEPOSITANTE", 40, y, { align: "center" });
   doc.autoPrint();
