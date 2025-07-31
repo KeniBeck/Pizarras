@@ -251,7 +251,6 @@ const BoxCutLotery = () => {
                     <span>Venta: <b>${result.dias[0].venta}</b></span>
                     <span>Comisión: <b>${result.dias[0].comision}</b></span>
                     <span>Total caja: <b>${result.dias[0].totalcaja}</b></span>
-                    <span>Total entregado: <b>${result.dias[0].totalentregado}</b></span>
                     <button
                       className="mt-4 bg-red-700 text-white px-4 py-2 rounded font-bold flex items-center gap-2 hover:bg-red-800"
                       onClick={() => generatePDFBoxCutDay({
@@ -280,7 +279,6 @@ const BoxCutLotery = () => {
                 <span>Venta total: <b>${result.resumen.venta}</b></span>
                 <span>Comisión: <b>${result.resumen.comision}</b></span>
                 <span>Total caja: <b>${result.resumen.totalcaja}</b></span>
-                <span>Total entregado: <b>${result.resumen.totalentregado}</b></span>
                 <button
                   className="mt-4 bg-red-700 text-white px-4 py-2 rounded font-bold flex items-center gap-2 hover:bg-red-800"
                   onClick={() => generatePDFBoxCutWeek({

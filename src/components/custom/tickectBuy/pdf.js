@@ -45,8 +45,8 @@ const generatePDF = async (tickets, fecha) => {
 
     // URL de la imagen
     const imageURL = "/noSencillo.jpg";
-    // Reducir la imagen: ancho 70mm, alto 25mm, posición centrada
-    doc.addImage(imageURL, "JPEG", 5, 0, 70, 25);
+    // Reducir la imagen: ancho 60mm, alto 20mm, posición centrada
+    doc.addImage(imageURL, "JPEG", 10, 0, 60, 20);
 
     // PASO 3: Manejar primera leyenda (leyenda2) con mejor control
     doc.setFont("helvetica", "bold");
@@ -102,28 +102,22 @@ const generatePDF = async (tickets, fecha) => {
     tickets.forEach((data, index) => {
       doc.setFont("helvetica", "bold");
       doc.setTextColor(255, 0, 0);
-      doc.setFontSize(14); // Subido de 12 a 14
+      doc.setFontSize(14);
       doc.text(`N${data.Idsorteo || ""}`, 5, yPosition);
 
       doc.setTextColor(0, 0, 0);
       doc.setFont("helvetica", "normal");
-      doc.setFontSize(12); // Subido de 10 a 12
+      doc.setFontSize(12);
       doc.text(`Costo $ ${data.Costo || ""}`, 5, yPosition + 12);
-      if (data.Boleto === 0) {
-        data.Boleto = "000"
-      }
-      let boletoFormatted;
-      if (data.Boleto === 0) {
-        boletoFormatted = "000";
-      } else {
-        boletoFormatted = data.Boleto?.toString().padStart(3, "0") || "";
-      }
-      const boletoSize = boletoFormatted.length > 15 ? 11 : 12; // Subido de 9/10 a 11/12
+
+      // Salto de línea extra antes del número de boleto
+      let boletoFormatted = data.Boleto === 0 ? "000" : data.Boleto?.toString().padStart(3, "0") || "";
+      const boletoSize = boletoFormatted.length > 15 ? 11 : 12;
       doc.setFontSize(boletoSize);
       doc.text(`Número de boleto: ${boletoFormatted}`, 5, yPosition + 24);
-      doc.setFontSize(12);
 
-      yPosition += 30;
+      // Salto de línea extra para separar de la leyenda
+      yPosition += 36; // Antes 30, ahora 36 para más espacio
     });
 
     // PASO 4: Manejar leyenda final (leyenda1) con mejor control

@@ -38,10 +38,25 @@ const generatePDFSerie = async (data, fecha) => {
     // Agregar la imagen al PDF
     doc.addImage(imageURL, 'JPEG', 10, 10, 60, 30);
 
-    // Leyenda2
+    // Leyenda2 (con salto de línea robusto)
     doc.setFont('helvetica', 'bold');
     doc.setTextColor(255, 0, 0);
-    doc.text(data[0].leyenda2, 5, 45);
+    doc.setFontSize(11);
+
+    // Limpia espacios dobles y caracteres invisibles
+    let leyenda2Clean = String(data[0].leyenda2 || "")
+        .replace(/\s+/g, ' ')
+        .replace(/\u00A0/g, ' ')
+        .trim();
+
+    // Si la línea es muy larga, inserta un espacio cada 30 caracteres para forzar corte
+    leyenda2Clean = leyenda2Clean.replace(/(.{30})/g, '$1 ');
+
+    const leyenda2Lines = doc.splitTextToSize(leyenda2Clean, 60); // Usa 60mm de ancho real
+    let leyenda2StartY = 44; // <-- Más separado de la imagen (antes 42)
+    doc.text(leyenda2Lines, 5, leyenda2StartY);
+
+    let leyenda2Y = leyenda2StartY + (leyenda2Lines.length * 5);
 
     // Título y folio en líneas separadas
     doc.setTextColor(0, 0, 0);
