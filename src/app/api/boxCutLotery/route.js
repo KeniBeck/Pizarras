@@ -7,7 +7,6 @@ export async function POST(req) {
   try {
     const data = await req.json();
     const { Idvendedor, sucursal, fechaInicio, fechaFin, modo } = data;
-    console.log("[boxCutLotery] Datos recibidos:", data);
     // Consulta para boletos especiales
     let sqlEspeciales = `
       SELECT b.*, s.Fecha AS FechaSorteo, v.Nombre AS nombreVendedor, v.Comision AS comisiones, v.sucursal AS sucursalVendedor, d.cantidad AS deuda

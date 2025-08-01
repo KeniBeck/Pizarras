@@ -57,27 +57,22 @@ function getLastNDays(n) {
   return days;
 }
 
+// Devuelve las últimas 3 semanas, cada una de 8 días, terminando en hoy
 function getLastNWeeks(n) {
-  // Devuelve array de {start, end, label}
   const weeks = [];
   const now = new Date();
-  // Encuentra el lunes de la semana actual
-  const day = now.getDay();
-  const diffToMonday = day === 0 ? -6 : 1 - day;
-  let monday = new Date(now);
-  monday.setDate(now.getDate() + diffToMonday);
   for (let i = 0; i < n; i++) {
-    const start = new Date(monday);
-    start.setDate(monday.getDate() - 7 * i);
-    const end = new Date(start);
-    end.setDate(start.getDate() + 6);
+    const end = new Date(now);
+    end.setDate(now.getDate() - (i * 8));
+    const start = new Date(end);
+    start.setDate(end.getDate() - 7);
     weeks.push({
       start: start.toISOString().split("T")[0],
       end: end.toISOString().split("T")[0],
       label: `Semana ${i === 0 ? 'actual' : i === 1 ? 'pasada' : 'antepasada'}`
     });
   }
-  return weeks.reverse();
+  return weeks;
 }
 
 function formatDayMonth(fechaStr) {
@@ -258,8 +253,8 @@ const BoxCutLotery = () => {
                         dia: formatDayMonth(selectedDay),
                         data: {
                           ...result.dias[0],
-                          cancelados: result.cancelados?.filter(c => c.Fecha_venta?.split('T')[0] === selectedDay),
-                          ganadores: result.ganadores?.filter(g => g.Fecha_venta?.split('T')[0] === selectedDay)
+                          cancelados: result.cancelados,
+                          ganadores: result.ganadores
                         }
                       })}
                     >
