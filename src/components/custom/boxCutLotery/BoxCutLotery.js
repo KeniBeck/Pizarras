@@ -43,17 +43,31 @@ function getMondayAndSundayOfCurrentWeek() {
 // Utilidades para fechas
 function getLastNDays(n) {
   const days = [];
-  const now = new Date();
-  const todayStr = now.toISOString().split("T")[0];
+  // Use Mexico timezone for consistent date handling
+  const nowMX = new Date(new Date().toLocaleString("en-US", { timeZone: "America/Mexico_City" }));
+  
+  // Format the date manually for consistency
+  const year = nowMX.getFullYear();
+  const month = String(nowMX.getMonth() + 1).padStart(2, '0');
+  const day = String(nowMX.getDate()).padStart(2, '0');
+  const todayStr = `${year}-${month}-${day}`;
+  
   for (let i = n - 1; i >= 0; i--) {
-    const d = new Date(now);
-    d.setDate(now.getDate() - i);
-    const dateStr = d.toISOString().split("T")[0];
+    const d = new Date(nowMX);
+    d.setDate(nowMX.getDate() - i);
+    
+    // Format as YYYY-MM-DD manually to ensure consistency
+    const dateYear = d.getFullYear();
+    const dateMonth = String(d.getMonth() + 1).padStart(2, '0');
+    const dateDay = String(d.getDate()).padStart(2, '0');
+    const dateStr = `${dateYear}-${dateMonth}-${dateDay}`;
+    
     days.push({
       date: dateStr,
       label: dateStr === todayStr ? "HOY" : diasSemana[d.getDay()],
     });
   }
+  
   return days;
 }
 
@@ -128,8 +142,20 @@ function formatDayMonth(fechaStr) {
 
 // Devuelve la fecha en formato YYYY-MM-DD en horario de México
 function getFechaMX(date = new Date()) {
+  // Handle string dates by converting to Date object first
+  if (typeof date === 'string') {
+    date = new Date(date);
+  }
+  
+  // Get the date components in Mexico timezone
   const mx = new Date(date.toLocaleString("en-US", { timeZone: "America/Mexico_City" }));
-  return mx.toISOString().split("T")[0];
+  
+  // Format as YYYY-MM-DD manually to ensure consistency
+  const year = mx.getFullYear();
+  const month = String(mx.getMonth() + 1).padStart(2, '0');
+  const day = String(mx.getDate()).padStart(2, '0');
+  
+  return `${year}-${month}-${day}`;
 }
 
 // Función para obtener la fecha correcta para mostrar el fin de semana
@@ -189,10 +215,8 @@ const BoxCutLotery = () => {
     localStorage.removeItem("loggedAdmin");
   };
   // Cards de días (últimos 8 días)
-  const days = getLastNDays(8).map(d => ({
-    ...d,
-    date: getFechaMX(new Date(d.date))
-  }));
+  // No need to transform dates here since getLastNDays already returns dates in Mexico timezone
+  const days = getLastNDays(8);
   // Cards de semanas (actual, pasada, antepasada)
   const weeks = getLastNWeeks(3);
 
@@ -201,15 +225,19 @@ const BoxCutLotery = () => {
     setLoading(true);
     setSelectedDay(date);
     setSelectedWeek(null);
+    
     try {
+      // Ensure we're using the exact date that was passed without any timezone conversion issues
+      console.log("Selected date for API request:", date);
+      
       const res = await fetch("/api/boxCutLotery", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           Idvendedor: userData.Idvendedor,
           sucursal: userData.sucursal,
-          fechaInicio: getFechaMX(new Date(date)),
-          fechaFin: getFechaMX(new Date(date)),
+          fechaInicio: date, // Use the exact date string that was passed in
+          fechaFin: date,    // Use the exact date string that was passed in
           modo: "dia",
         }),
       });
@@ -371,7 +399,8 @@ const BoxCutLotery = () => {
                     resumen: result.resumen,
                     dias: result.dias,
                     cancelados: result.cancelados,
-                    ganadores: result.ganadores
+                    ganadores: result.ganadores,
+                    bancos: result.bancos
                   })}
                 >
                   <FaPrint /> Imprimir corte de caja

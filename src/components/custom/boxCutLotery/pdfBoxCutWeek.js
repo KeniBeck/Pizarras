@@ -1,7 +1,7 @@
 import jsPDF from "jspdf";
 import "jspdf-autotable";
 
-const generatePDFBoxCutWeek = async ({ userData, weekLabel, weekRange, resumen, dias, cancelados, ganadores }) => {
+const generatePDFBoxCutWeek = async ({ userData, weekLabel, weekRange, resumen, dias, cancelados, ganadores, bancos }) => {
   const doc = new jsPDF({ orientation: "portrait", unit: "mm", format: [80, 400] });
   let y = 10;
 
@@ -107,10 +107,33 @@ const generatePDFBoxCutWeek = async ({ userData, weekLabel, weekRange, resumen, 
   doc.text(`$${totalPagar.toFixed(2)}`, valueX, y, { align: "right" });
   y += 8;
 
-  // Línea final punteada
+  // Línea punteada
   doc.setLineDash([2, 2], 0);
   doc.line(8, y, 72, y);
   doc.setLineDash([]);
+  y += 10;
+
+  // Agregar la tabla de información bancaria
+  doc.setFontSize(10);
+  doc.setFont("helvetica", "bold");
+  doc.text("Cuentas para pago", 40, y, { align: "center" });
+  y += 6;
+
+  // Preparar los datos de bancos para la tabla
+  const bancosData = bancos && bancos.length > 0 
+    ? bancos.map(banco => [banco.Banco, banco.Cuenta, ` ${userData?.Idvendedor || "-"}`])
+    : [["Sin información bancaria", "-", "-"]];
+
+  // Crear tabla de banco
+  doc.autoTable({
+    startY: y,
+    head: [["Banco", "Cuenta", "Concepto"]],
+    body: bancosData,
+    theme: "striped",
+    headStyles: { fillColor: [169, 169, 169], textColor: [0, 0, 0] },
+    margin: { left: 8, right: 8 },
+    styles: { fontSize: 8 },
+  });
 
   doc.autoPrint();
   const blob = doc.output("blob");

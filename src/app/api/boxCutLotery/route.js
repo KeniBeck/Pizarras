@@ -125,11 +125,16 @@ export async function POST(req) {
       [ganadores] = await pool.query(sqlGanadores, params);
     }
 
+    // Consultar información bancaria
+    let sqlBancos = `SELECT IdBanco, Banco, Cuenta FROM Bancos`;
+    let [bancos] = await pool.query(sqlBancos);
+
     return NextResponse.json({
       dias,
       resumen,
       cancelados,
-      ganadores
+      ganadores,
+      bancos
     });
   } catch (error) {
     console.error("[boxCutLotery] ERROR:", error);
