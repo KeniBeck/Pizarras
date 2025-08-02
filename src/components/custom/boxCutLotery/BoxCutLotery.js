@@ -61,14 +61,22 @@ function getLastNDays(n) {
 function getLastNWeeks(n) {
   const weeks = [];
   const now = new Date();
+  // Encuentra el lunes de la semana actual
+  const day = now.getDay();
+  const diffToMonday = day === 0 ? -6 : 1 - day;
+  let currentMonday = new Date(now);
+  currentMonday.setHours(0,0,0,0);
+  currentMonday.setDate(now.getDate() + diffToMonday);
+
   for (let i = 0; i < n; i++) {
-    const end = new Date(now);
-    end.setDate(now.getDate() - (i * 8));
-    const start = new Date(end);
-    start.setDate(end.getDate() - 7);
+    const monday = new Date(currentMonday);
+    monday.setDate(currentMonday.getDate() - i * 7);
+    const sunday = new Date(monday);
+    sunday.setDate(monday.getDate() + 6);
+
     weeks.push({
-      start: start.toISOString().split("T")[0],
-      end: end.toISOString().split("T")[0],
+      start: monday.toISOString().split("T")[0],
+      end: sunday.toISOString().split("T")[0],
       label: `Semana ${i === 0 ? 'actual' : i === 1 ? 'pasada' : 'antepasada'}`
     });
   }
@@ -78,6 +86,12 @@ function getLastNWeeks(n) {
 function formatDayMonth(fechaStr) {
   const fecha = new Date(fechaStr);
   return fecha.toLocaleDateString('es-MX', { day: '2-digit', month: 'short' });
+}
+
+// Devuelve la fecha en formato YYYY-MM-DD en horario de México
+function getFechaMX(date = new Date()) {
+  const mx = new Date(date.toLocaleString("en-US", { timeZone: "America/Mexico_City" }));
+  return mx.toISOString().split("T")[0];
 }
 
 const BoxCutLotery = () => {
@@ -131,9 +145,16 @@ const BoxCutLotery = () => {
     localStorage.removeItem("loggedAdmin");
   };
   // Cards de días (últimos 8 días)
-  const days = getLastNDays(8);
+  const days = getLastNDays(8).map(d => ({
+    ...d,
+    date: getFechaMX(new Date(d.date))
+  }));
   // Cards de semanas (actual, pasada, antepasada)
-  const weeks = getLastNWeeks(3);
+  const weeks = getLastNWeeks(3).map(w => ({
+    ...w,
+    start: getFechaMX(new Date(w.start)),
+    end: getFechaMX(new Date(w.end))
+  }));
 
   // Consulta por día
   const handleDayClick = async (date) => {
@@ -147,8 +168,8 @@ const BoxCutLotery = () => {
         body: JSON.stringify({
           Idvendedor: userData.Idvendedor,
           sucursal: userData.sucursal,
-          fechaInicio: date,
-          fechaFin: date,
+          fechaInicio: getFechaMX(new Date(date)),
+          fechaFin: getFechaMX(new Date(date)),
           modo: "dia",
         }),
       });
@@ -172,8 +193,8 @@ const BoxCutLotery = () => {
         body: JSON.stringify({
           Idvendedor: userData.Idvendedor,
           sucursal: userData.sucursal,
-          fechaInicio: start,
-          fechaFin: end,
+          fechaInicio: getFechaMX(new Date(start)),
+          fechaFin: getFechaMX(new Date(end)),
           modo: "semana",
         }),
       });
