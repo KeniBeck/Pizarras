@@ -489,8 +489,133 @@ const BoxCutLotery = () => {
                   <>
                     <span>Boletos vendidos: <b>{result.dias[0].boletosvendidos}</b></span>
                     <span>Venta: <b>${result.dias[0].venta}</b></span>
+                    
+                    {/* Mostrar cancelados del día si existen */}
+                    {(() => {
+                      // Filtrar cancelados solo para este día
+                      const canceladosHoy = result.cancelados ? result.cancelados.filter(c => {
+                        let diaCancelado = c.Fecha_cancelacion;
+                        if (diaCancelado instanceof Date) {
+                          diaCancelado = diaCancelado.toISOString().split("T")[0];
+                        } else if (typeof diaCancelado === "string" && diaCancelado.includes("T")) {
+                          diaCancelado = diaCancelado.split("T")[0];
+                        } else if (typeof diaCancelado === "string" && diaCancelado.length > 10) {
+                          diaCancelado = diaCancelado.substring(0, 10);
+                        }
+                        return diaCancelado === selectedDay;
+                      }) : [];
+                      
+                      if (canceladosHoy.length > 0) {
+                        const totalCancelados = canceladosHoy.reduce((acc, c) => acc + (Number(c.Costo) || 0), 0);
+                        return <span>Cancelados ({canceladosHoy.length}): <b>-${totalCancelados.toFixed(2)}</b></span>;
+                      }
+                      return null;
+                    })()}
+                    
+                    {/* Calcular venta neta (venta - cancelados) */}
+                    {(() => {
+                      // Filtrar cancelados solo para este día
+                      const canceladosHoy = result.cancelados ? result.cancelados.filter(c => {
+                        let diaCancelado = c.Fecha_cancelacion;
+                        if (diaCancelado instanceof Date) {
+                          diaCancelado = diaCancelado.toISOString().split("T")[0];
+                        } else if (typeof diaCancelado === "string" && diaCancelado.includes("T")) {
+                          diaCancelado = diaCancelado.split("T")[0];
+                        } else if (typeof diaCancelado === "string" && diaCancelado.length > 10) {
+                          diaCancelado = diaCancelado.substring(0, 10);
+                        }
+                        return diaCancelado === selectedDay;
+                      }) : [];
+                      
+                      const canceladosTotal = canceladosHoy.length > 0 
+                        ? canceladosHoy.reduce((acc, c) => acc + (Number(c.Costo) || 0), 0) 
+                        : 0;
+                      
+                      const ventaNeta = result.dias[0].venta - canceladosTotal;
+                      return <span>Venta neta: <b>${ventaNeta.toFixed(2)}</b></span>;
+                    })()}
+                    
                     <span>Comisión: <b>${result.dias[0].comision}</b></span>
                     <span>Total caja: <b>${result.dias[0].totalcaja}</b></span>
+                    
+                    {/* Mostrar premiados del día si existen */}
+                    {(() => {
+                      // Filtrar ganadores solo para este día
+                      const ganadoresHoy = result.ganadores ? result.ganadores.filter(g => {
+                        let diaPago = g.Fecha_pago;
+                        if (diaPago instanceof Date) {
+                          diaPago = diaPago.toISOString().split("T")[0];
+                        } else if (typeof diaPago === "string" && diaPago.includes("T")) {
+                          diaPago = diaPago.split("T")[0];
+                        } else if (typeof diaPago === "string" && diaPago.length > 10) {
+                          diaPago = diaPago.substring(0, 10);
+                        }
+                        return diaPago === selectedDay;
+                      }) : [];
+                      
+                      if (ganadoresHoy.length > 0) {
+                        const premiosTotal = ganadoresHoy.reduce((acc, g) => acc + (Number(g.Premio) || 0), 0);
+                        const comisionPremiados = premiosTotal * 0.01;
+                        const totalPremiados = premiosTotal + comisionPremiados;
+                        
+                        return (
+                          <>
+                            <span>Premiados ({ganadoresHoy.length}): <b>-${premiosTotal.toFixed(2)}</b></span>
+                            <span>Comisión premiados: <b>-${comisionPremiados.toFixed(2)}</b></span>
+                            <span>Total premiados: <b>-${totalPremiados.toFixed(2)}</b></span>
+                          </>
+                        );
+                      }
+                      return null;
+                    })()}
+                    
+                    {/* Calcular total a pagar */}
+                    {(() => {
+                      // Filtrar cancelados solo para este día
+                      const canceladosHoy = result.cancelados ? result.cancelados.filter(c => {
+                        let diaCancelado = c.Fecha_cancelacion;
+                        if (diaCancelado instanceof Date) {
+                          diaCancelado = diaCancelado.toISOString().split("T")[0];
+                        } else if (typeof diaCancelado === "string" && diaCancelado.includes("T")) {
+                          diaCancelado = diaCancelado.split("T")[0];
+                        } else if (typeof diaCancelado === "string" && diaCancelado.length > 10) {
+                          diaCancelado = diaCancelado.substring(0, 10);
+                        }
+                        return diaCancelado === selectedDay;
+                      }) : [];
+                      
+                      const canceladosTotal = canceladosHoy.length > 0 
+                        ? canceladosHoy.reduce((acc, c) => acc + (Number(c.Costo) || 0), 0) 
+                        : 0;
+                      
+                      const ventaNeta = result.dias[0].venta - canceladosTotal;
+                      const comision = result.dias[0].comision;
+                      const corteCaja = ventaNeta - comision;
+                      
+                      // Filtrar ganadores solo para este día
+                      const ganadoresHoy = result.ganadores ? result.ganadores.filter(g => {
+                        let diaPago = g.Fecha_pago;
+                        if (diaPago instanceof Date) {
+                          diaPago = diaPago.toISOString().split("T")[0];
+                        } else if (typeof diaPago === "string" && diaPago.includes("T")) {
+                          diaPago = diaPago.split("T")[0];
+                        } else if (typeof diaPago === "string" && diaPago.length > 10) {
+                          diaPago = diaPago.substring(0, 10);
+                        }
+                        return diaPago === selectedDay;
+                      }) : [];
+                      
+                      let pagadosTotal = 0;
+                      if (ganadoresHoy.length > 0) {
+                        const premiosTotal = ganadoresHoy.reduce((acc, g) => acc + (Number(g.Premio) || 0), 0);
+                        const comisionPremiados = premiosTotal * 0.01;
+                        pagadosTotal = premiosTotal + comisionPremiados;
+                      }
+                      
+                      const totalPagar = corteCaja - pagadosTotal;
+                      return <span className="mt-4 text-lg font-bold">TOTAL A PAGAR: <b>${totalPagar.toFixed(2)}</b></span>;
+                    })()}
+                    
                     <button
                       className="mt-4 bg-red-700 text-white px-4 py-2 rounded font-bold flex items-center gap-2 hover:bg-red-800"
                       onClick={() => generatePDFBoxCutDay({
@@ -517,8 +642,58 @@ const BoxCutLotery = () => {
                 <span className="mb-2">{selectedWeek.start} a {selectedWeek.end}</span>
                 <span>Boletos vendidos: <b>{result.resumen.boletosvendidos}</b></span>
                 <span>Venta total: <b>${result.resumen.venta}</b></span>
+                
+                {/* Mostrar cancelados si existen */}
+                {result.cancelados && result.cancelados.length > 0 && (
+                  <span>Cancelados: <b>-${result.cancelados.reduce((acc, c) => acc + (Number(c.Costo) || 0), 0).toFixed(2)}</b></span>
+                )}
+                
+                {/* Calcular venta neta (venta - cancelados) */}
+                {(() => {
+                  const canceladosTotal = result.cancelados && result.cancelados.length > 0 
+                    ? result.cancelados.reduce((acc, c) => acc + (Number(c.Costo) || 0), 0) 
+                    : 0;
+                  const ventaNeta = result.resumen.venta - canceladosTotal;
+                  return <span>Venta neta: <b>${ventaNeta.toFixed(2)}</b></span>;
+                })()}
+                
                 <span>Comisión: <b>${result.resumen.comision}</b></span>
                 <span>Total caja: <b>${result.resumen.totalcaja}</b></span>
+                
+                {/* Mostrar premiados si existen */}
+                {result.ganadores && result.ganadores.length > 0 && (() => {
+                  const premiosTotal = result.ganadores.reduce((acc, g) => acc + (Number(g.Premio) || 0), 0);
+                  const comisionPremiados = premiosTotal * 0.01;
+                  const totalPremiados = premiosTotal + comisionPremiados;
+                  
+                  return (
+                    <>
+                      <span>Premiados ({result.ganadores.length}): <b>-${premiosTotal.toFixed(2)}</b></span>
+                      <span>Comisión premiados: <b>-${comisionPremiados.toFixed(2)}</b></span>
+                      <span>Total premiados: <b>-${totalPremiados.toFixed(2)}</b></span>
+                    </>
+                  );
+                })()}
+                
+                {/* Calcular total a pagar */}
+                {(() => {
+                  const canceladosTotal = result.cancelados && result.cancelados.length > 0 
+                    ? result.cancelados.reduce((acc, c) => acc + (Number(c.Costo) || 0), 0) 
+                    : 0;
+                  const ventaNeta = result.resumen.venta - canceladosTotal;
+                  const corteCaja = ventaNeta - result.resumen.comision;
+                  
+                  let pagadosTotal = 0;
+                  if (result.ganadores && result.ganadores.length > 0) {
+                    const premiosTotal = result.ganadores.reduce((acc, g) => acc + (Number(g.Premio) || 0), 0);
+                    const comisionPremiados = premiosTotal * 0.01;
+                    pagadosTotal = premiosTotal + comisionPremiados;
+                  }
+                  
+                  const totalPagar = corteCaja - pagadosTotal;
+                  return <span className="mt-4 text-xl font-bold">TOTAL A PAGAR: <b>${totalPagar.toFixed(2)}</b></span>;
+                })()}
+                
                 <button
                   className="mt-4 bg-red-700 text-white px-4 py-2 rounded font-bold flex items-center gap-2 hover:bg-red-800"
                   onClick={() => generatePDFBoxCutWeek({

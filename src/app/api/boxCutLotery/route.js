@@ -97,33 +97,95 @@ export async function POST(req) {
       SELECT c.*
       FROM Cancelados c
       JOIN vendedores v ON c.Idvendedor = v.Idvendedor
-      WHERE c.Boleto IN (${boletosNumeros.length > 0 ? boletosNumeros.map(() => '?').join(',') : 'NULL'})
+      WHERE c.Idvendedor = ?
         AND v.sucursal = ?
+        AND DATE(c.Hora_cancelacion) BETWEEN ? AND ?
     `;
     let cancelados = [];
-    if (boletosNumeros.length > 0) {
-      [cancelados] = await pool.query(sqlCancelados, [...boletosNumeros, sucursal]);
+    // Usamos los parámetros de fecha en lugar de los boletos
+    [cancelados] = await pool.query(sqlCancelados, [Idvendedor, sucursal, fechaInicio, fechaFin]);
+
+    // Calcular total de cancelados para el resumen semanal
+    const totalCancelados = cancelados.reduce((acc, c) => acc + (Number(c.Costo) || 0), 0);
+
+    // Si es modo semana, agregar info de cancelados al resumen
+    if (modo === 'semana' && resumen) {
+      resumen.canceladosTotal = totalCancelados;
+      resumen.canceladosCount = cancelados.length;
     }
+
+    // Agrupar cancelados por día para reportes diarios
+    let canceladosPorDia = {};
+    cancelados.forEach(c => {
+      let dia = c.Fecha_cancelacion;
+      if (dia instanceof Date) {
+        dia = dia.toISOString().split("T")[0];
+      } else if (typeof dia === "string" && dia.includes("T")) {
+        dia = dia.split("T")[0];
+      } else if (typeof dia === "string" && dia.length > 10) {
+        dia = dia.substring(0, 10);
+      }
+      
+      if (!canceladosPorDia[dia]) {
+        canceladosPorDia[dia] = {
+          dia,
+          cantidad: 0,
+          monto: 0
+        };
+      }
+      
+      canceladosPorDia[dia].cantidad++;
+      canceladosPorDia[dia].monto += Number(c.Costo) || 0;
+    });
+
+    // Convertir a array para facilitar el acceso en el frontend
+    const canceladosDias = Object.values(canceladosPorDia);
 
     // Consultar ganadores para esos boletos y sucursal (solo por Boleto y Fecha_sorteo)
     let sqlGanadores = `
       SELECT g.*
       FROM Ganadores g
-      WHERE (g.Boleto, DATE(g.Fecha_sorteo)) IN (${boletosTodos.length > 0 ? boletosTodos.map(() => '(?,?)').join(',') : 'NULL'})
+      WHERE DATE(g.Fecha_pago) BETWEEN ? AND ?
+      AND g.Vendedor = (SELECT Nombre FROM vendedores WHERE Idvendedor = ?)
     `;
     let ganadores = [];
-    if (boletosTodos.length > 0) {
-      // Armar los pares (boleto, fecha_sorteo) para el WHERE IN
-      const params = [];
-      boletosTodos.forEach(b => {
-        let fecha = b.FechaSorteo;
-        if (fecha instanceof Date) fecha = fecha.toISOString().split('T')[0];
-        else if (typeof fecha === 'string' && fecha.includes('T')) fecha = fecha.split('T')[0];
-        else if (typeof fecha === 'string' && fecha.length > 10) fecha = fecha.substring(0, 10);
-        params.push(b.Boleto, fecha);
-      });
-      [ganadores] = await pool.query(sqlGanadores, params);
+    [ganadores] = await pool.query(sqlGanadores, [fechaInicio, fechaFin, Idvendedor]);
+
+    // Calcular total de premios pagados para el resumen semanal
+    const totalPremios = ganadores.reduce((acc, g) => acc + (Number(g.Premio) || 0), 0);
+
+    // Si es modo semana, agregar info de ganadores al resumen
+    if (modo === 'semana' && resumen) {
+      resumen.ganadoresTotal = totalPremios;
+      resumen.ganadoresCount = ganadores.length;
     }
+
+    // Agrupar ganadores por día para reportes diarios
+    let ganadoresPorDia = {};
+    ganadores.forEach(g => {
+      let dia = g.Fecha_pago;
+      if (dia instanceof Date) {
+        dia = dia.toISOString().split("T")[0];
+      } else if (typeof dia === "string" && dia.includes("T")) {
+        dia = dia.split("T")[0];
+      } else if (typeof dia === "string" && dia.length > 10) {
+        dia = dia.substring(0, 10);
+      }
+      
+      if (!ganadoresPorDia[dia]) {
+        ganadoresPorDia[dia] = {
+          dia,
+          cantidad: 0,
+          monto: 0
+        };
+      }
+      
+      ganadoresPorDia[dia].cantidad++;
+      ganadoresPorDia[dia].monto += Number(g.Premio) || 0;
+    });
+
+    // Convertir a array para facilitar el acceso en el frontend
+    const ganadoresDias = Object.values(ganadoresPorDia);
 
     // Consultar información bancaria
     let sqlBancos = `SELECT IdBanco, Banco, Cuenta FROM Bancos`;
@@ -133,7 +195,11 @@ export async function POST(req) {
       dias,
       resumen,
       cancelados,
+      canceladosDias,
+      canceladosTotal: totalCancelados,
       ganadores,
+      ganadoresDias,
+      ganadoresTotal: totalPremios,
       bancos
     });
   } catch (error) {
