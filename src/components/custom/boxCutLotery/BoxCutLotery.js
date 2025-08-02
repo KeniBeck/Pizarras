@@ -8,6 +8,13 @@ import "jspdf-autotable";
 import generatePDFBoxCutWeek from "./pdfBoxCutWeek";
 import generatePDFBoxCutDay from "./pdfBoxCutDay";
 
+// Función para obtener la fecha actual en zona horaria de México
+function getFreshMexicoDate() {
+  // Usar toLocaleString para obtener la fecha en la zona horaria de México
+  // y luego crear un nuevo objeto Date a partir de esa cadena
+  return new Date(new Date().toLocaleString("en-US", { timeZone: "America/Mexico_City" }));
+}
+
 const diasSemana = [
   "domingo",
   "lunes",
@@ -24,27 +31,50 @@ function getNombreDia(fechaStr) {
 }
 
 function getMondayAndSundayOfCurrentWeek() {
-  const now = new Date();
-  const day = now.getDay();
+  // Get current date in Mexico City timezone
+  const nowMX = getFreshMexicoDate();
+  console.log('Current date for week range (Mexico timezone):', nowMX.toString());
+  
+  const day = nowMX.getDay();
   // Lunes = 1, Domingo = 0
   const diffToMonday = day === 0 ? -6 : 1 - day;
-  const monday = new Date(now);
-  monday.setDate(now.getDate() + diffToMonday);
+  
+  const monday = new Date(nowMX);
+  monday.setDate(nowMX.getDate() + diffToMonday);
+  monday.setHours(0, 0, 0, 0);
+  
   const sunday = new Date(monday);
   sunday.setDate(monday.getDate() + 6);
+  sunday.setHours(23, 59, 59, 999);
+  
   // Formato YYYY-MM-DD
-  const toISO = (d) => d.toISOString().split("T")[0];
+  const formatDate = (d) => {
+    const year = d.getFullYear();
+    const month = String(d.getMonth() + 1).padStart(2, '0');
+    const day = String(d.getDate()).padStart(2, '0');
+    return `${year}-${month}-${day}`;
+  };
+  
+  const mondayStr = formatDate(monday);
+  const sundayStr = formatDate(sunday);
+  
+  console.log('Week range:', mondayStr, 'to', sundayStr);
+  
   return {
-    monday: toISO(monday),
-    sunday: toISO(sunday),
+    monday: mondayStr,
+    sunday: sundayStr,
   };
 }
 
 // Utilidades para fechas
 function getLastNDays(n) {
   const days = [];
-  // Use Mexico timezone for consistent date handling
-  const nowMX = new Date(new Date().toLocaleString("en-US", { timeZone: "America/Mexico_City" }));
+  
+  // Create a fresh Date object in Mexico timezone
+  const nowMX = getFreshMexicoDate();
+  
+  // Log current date and time for debugging
+  console.log('Current date in Mexico timezone:', nowMX.toString());
   
   // Format the date manually for consistency
   const year = nowMX.getFullYear();
@@ -52,8 +82,11 @@ function getLastNDays(n) {
   const day = String(nowMX.getDate()).padStart(2, '0');
   const todayStr = `${year}-${month}-${day}`;
   
+  console.log('Today formatted (YYYY-MM-DD):', todayStr);
+  
   for (let i = n - 1; i >= 0; i--) {
-    const d = new Date(nowMX);
+    // Create a new date for each day calculation to avoid reference issues
+    const d = new Date(nowMX.getTime());
     d.setDate(nowMX.getDate() - i);
     
     // Format as YYYY-MM-DD manually to ensure consistency
@@ -75,20 +108,25 @@ function getLastNDays(n) {
 function getLastNWeeks(n) {
   const weeks = [];
   
-  // Obtener la fecha actual en la zona horaria de México
-  const nowMX = new Date(new Date().toLocaleString("en-US", { timeZone: "America/Mexico_City" }));
+  // Crear una fecha nueva en zona horaria de México
+  const nowMX = getFreshMexicoDate();
+  console.log('Current date for weeks (Mexico timezone):', nowMX.toString());
+  
   const dayOfWeek = nowMX.getDay(); // 0-6 (0 es domingo)
+  console.log('Day of week:', dayOfWeek, '(', diasSemana[dayOfWeek], ')');
   
   // Calcular días para llegar al lunes más reciente (día inicial de la semana)
   // Si hoy es lunes (1), diff = 0
   // Si hoy es domingo (0), diff = -6 (retroceder 6 días)
   // Para cualquier otro día (2-6), diff = 1 - dayOfWeek (retroceder los días necesarios)
   const diffToMonday = dayOfWeek === 1 ? 0 : dayOfWeek === 0 ? -6 : 1 - dayOfWeek;
+  console.log('Difference to Monday:', diffToMonday);
   
   // Obtener el lunes de la semana actual
   const currentWeekStart = new Date(nowMX);
   currentWeekStart.setDate(nowMX.getDate() + diffToMonday);
   currentWeekStart.setHours(0, 0, 0, 0);
+  console.log('Current week start (Monday):', currentWeekStart.toString());
   
   // Meses en español abreviados
   const meses = ['ene', 'feb', 'mar', 'abr', 'may', 'jun', 'jul', 'ago', 'sep', 'oct', 'nov', 'dic'];
@@ -111,13 +149,25 @@ function getLastNWeeks(n) {
     const endMonth = meses[weekEnd.getMonth()];
     const endFormatted = `${endDay}-${endMonth}`;
     
+    // Calcular también las fechas en formato YYYY-MM-DD para la API
+    const startYear = weekStart.getFullYear();
+    const startMonthNum = String(weekStart.getMonth() + 1).padStart(2, '0');
+    const startDateISO = `${startYear}-${startMonthNum}-${startDay}`;
+    
+    const endYear = weekEnd.getFullYear();
+    const endMonthNum = String(weekEnd.getMonth() + 1).padStart(2, '0');
+    const endDateISO = `${endYear}-${endMonthNum}-${endDay}`;
+    
     weeks.push({
       start: startFormatted,
       end: endFormatted,
+      startDate: startDateISO, // Fecha en formato YYYY-MM-DD para la API
+      endDate: endDateISO,     // Fecha en formato YYYY-MM-DD para la API
       label: `Semana ${i === 0 ? 'actual' : i === 1 ? 'pasada' : 'antepasada'}`
     });
   }
   
+  console.log('Generated weeks:', weeks);
   return weeks;
 }
 
@@ -127,17 +177,38 @@ function formatDayMonth(fechaStr) {
     return fechaStr;
   }
   
-  // Si es una cadena pero no está en el formato correcto, la convertimos a Date
-  const fecha = typeof fechaStr === 'string' ? new Date(fechaStr) : fechaStr;
+  let fechaMX;
+  
+  // Convert to Mexico timezone
+  if (typeof fechaStr === 'string') {
+    if (fechaStr.match(/^\d{4}-\d{2}-\d{2}$/)) {
+      // Si es formato YYYY-MM-DD, creamos una fecha y la ajustamos a la zona horaria de México
+      const [year, month, day] = fechaStr.split('-');
+      // Create a date string that JS will interpret in local timezone
+      const dateStr = `${year}-${month}-${day}T12:00:00`; // Noon to avoid DST issues
+      const tmpDate = new Date(dateStr);
+      fechaMX = new Date(tmpDate.toLocaleString("en-US", { timeZone: "America/Mexico_City" }));
+    } else {
+      // Para otros formatos de string
+      const tmpDate = new Date(fechaStr);
+      fechaMX = new Date(tmpDate.toLocaleString("en-US", { timeZone: "America/Mexico_City" }));
+    }
+  } else {
+    // Si ya es un objeto Date
+    fechaMX = new Date(fechaStr.toLocaleString("en-US", { timeZone: "America/Mexico_City" }));
+  }
   
   // Formatear día y mes según el requisito (formato "26-jul")
-  const day = fecha.getDate().toString().padStart(2, '0');
+  const day = fechaMX.getDate().toString().padStart(2, '0');
   
   // Obtener abreviatura del mes en español
   const meses = ['ene', 'feb', 'mar', 'abr', 'may', 'jun', 'jul', 'ago', 'sep', 'oct', 'nov', 'dic'];
-  const mes = meses[fecha.getMonth()];
+  const mes = meses[fechaMX.getMonth()];
   
-  return `${day}-${mes}`;
+  const result = `${day}-${mes}`;
+  console.log(`formatDayMonth: ${fechaStr} → ${result}`);
+  
+  return result;
 }
 
 // Devuelve la fecha en formato YYYY-MM-DD en horario de México
@@ -183,7 +254,17 @@ const BoxCutLotery = () => {
 
   useEffect(() => {
     if (userData) {
-      handleConsultar();
+      // Calcular fechas frescas cada vez que el componente se monta
+      const calculatedDays = getLastNDays(8);
+      const calculatedWeeks = getLastNWeeks(3);
+      
+      setDays(calculatedDays);
+      setWeeks(calculatedWeeks);
+      
+      // Consultar datos después de actualizar días y semanas
+      setTimeout(() => {
+        handleConsultar();
+      }, 0);
     }
     // eslint-disable-next-line
   }, [userData]);
@@ -191,20 +272,64 @@ const BoxCutLotery = () => {
   const handleConsultar = async () => {
     setLoading(true);
     try {
-      const res = await fetch("/api/boxCutLotery", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          Idvendedor: userData.Idvendedor,
-          sucursal: userData.sucursal,
-          fechaInicio: monday,
-          fechaFin: sunday,
-          modo: "semana",
-        }),
-      });
-      const data = await res.json();
-      setResult(data);
+      // Esperar a que se calculen las semanas
+      if (weeks.length === 0) {
+        console.log("Waiting for weeks to be calculated...");
+        // Si las semanas no están calculadas aún, usamos getMondayAndSundayOfCurrentWeek
+        const { monday: inicio, sunday: fin } = getMondayAndSundayOfCurrentWeek();
+        
+        console.log("Initial API request using:", {
+          fechaInicio: inicio,
+          fechaFin: fin
+        });
+        
+        const res = await fetch("/api/boxCutLotery", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            Idvendedor: userData.Idvendedor,
+            sucursal: userData.sucursal,
+            fechaInicio: inicio,
+            fechaFin: fin,
+            modo: "semana",
+          }),
+        });
+        const data = await res.json();
+        setResult(data);
+        
+        // Seleccionar automáticamente la semana actual
+        if (weeks.length > 0) {
+          setSelectedWeek({ start: weeks[0].start, end: weeks[0].end });
+        }
+      } else {
+        // Usar la primera semana (actual) de nuestras semanas calculadas
+        const currentWeek = weeks[0];
+        
+        console.log("API request using calculated week:", {
+          fechaInicio: currentWeek.startDate,
+          fechaFin: currentWeek.endDate,
+          display: `${currentWeek.start} a ${currentWeek.end}`
+        });
+        
+        const res = await fetch("/api/boxCutLotery", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            Idvendedor: userData.Idvendedor,
+            sucursal: userData.sucursal,
+            fechaInicio: currentWeek.startDate,
+            fechaFin: currentWeek.endDate,
+            modo: "semana",
+          }),
+        });
+        const data = await res.json();
+        setResult(data);
+        
+        // Seleccionar automáticamente la semana actual para la UI
+        setSelectedWeek({ start: currentWeek.start, end: currentWeek.end });
+      }
     } catch (e) {
+      console.error("Error en handleConsultar:", e);
       Swal.fire({ icon: "error", title: "Error consultando" });
     }
     setLoading(false);
@@ -214,11 +339,23 @@ const BoxCutLotery = () => {
     router.push("/menu");
     localStorage.removeItem("loggedAdmin");
   };
-  // Cards de días (últimos 8 días)
-  // No need to transform dates here since getLastNDays already returns dates in Mexico timezone
-  const days = getLastNDays(8);
-  // Cards de semanas (actual, pasada, antepasada)
-  const weeks = getLastNWeeks(3);
+  
+  // Recalculate days and weeks on component mount to ensure freshness
+  const [days, setDays] = useState([]);
+  const [weeks, setWeeks] = useState([]);
+  
+  useEffect(() => {
+    // Calculate days and weeks when component mounts
+    const calculatedDays = getLastNDays(8);
+    const calculatedWeeks = getLastNWeeks(3);
+    
+    setDays(calculatedDays);
+    setWeeks(calculatedWeeks);
+    
+    // Log for debugging
+    console.log("Component mounted, calculated days:", calculatedDays);
+    console.log("Component mounted, calculated weeks:", calculatedWeeks);
+  }, []);
 
   // Consulta por día
   const handleDayClick = async (date) => {
@@ -256,31 +393,23 @@ const BoxCutLotery = () => {
     setSelectedWeek({ start, end });
     
     try {
-      // Calcular el índice de la semana seleccionada (0 = actual, 1 = pasada, 2 = antepasada)
-      const selectedWeekIndex = weeks.findIndex(w => w.start === start && w.end === end);
+      // Encontrar la semana seleccionada en nuestro arreglo de semanas
+      const selectedWeekObj = weeks.find(w => w.start === start && w.end === end);
       
-      // Calcular fechas reales para la consulta API basadas en el índice de semana
-      const nowMX = new Date(new Date().toLocaleString("en-US", { timeZone: "America/Mexico_City" }));
-      const dayOfWeek = nowMX.getDay();
-      const diffToMonday = dayOfWeek === 1 ? 0 : dayOfWeek === 0 ? -6 : 1 - dayOfWeek;
+      if (!selectedWeekObj) {
+        console.error("No se encontró la semana seleccionada", { start, end, weeks });
+        throw new Error("No se encontró la semana seleccionada");
+      }
       
-      // Obtener el lunes de la semana actual
-      const currentWeekStart = new Date(nowMX);
-      currentWeekStart.setDate(nowMX.getDate() + diffToMonday);
-      currentWeekStart.setHours(0, 0, 0, 0);
+      // Usar las fechas en formato YYYY-MM-DD que ya calculamos en getLastNWeeks
+      const fechaInicio = selectedWeekObj.startDate;
+      const fechaFin = selectedWeekObj.endDate;
       
-      // Ajustar a la semana correcta basado en el índice
-      const weekStart = new Date(currentWeekStart);
-      weekStart.setDate(currentWeekStart.getDate() - (7 * selectedWeekIndex));
-      
-      // Calcular el fin de semana (domingo)
-      const weekEnd = new Date(weekStart);
-      weekEnd.setDate(weekStart.getDate() + 6);
-      weekEnd.setHours(23, 59, 59, 999);
-      
-      // Convertir a formato YYYY-MM-DD
-      const fechaInicio = weekStart.toISOString().split('T')[0];
-      const fechaFin = weekEnd.toISOString().split('T')[0];
+      console.log("API request for week:", {
+        display: `${start} a ${end}`,
+        apiDates: `${fechaInicio} a ${fechaFin}`,
+        weekObj: selectedWeekObj
+      });
       
       const res = await fetch("/api/boxCutLotery", {
         method: "POST",
