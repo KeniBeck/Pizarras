@@ -13,7 +13,6 @@ export async function GET(req) {
       ORDER BY Fecha ASC
       LIMIT 3
     `);
-    console.log("[nextLotteries] Resultados:", rows);
     const res = NextResponse.json({ result: rows });
     res.headers.set('Cache-Control', 'no-store');
     return res;

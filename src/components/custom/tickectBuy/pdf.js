@@ -7,45 +7,37 @@ const generatePDF = async (tickets, fecha) => {
     let leyenda2 = tickets[0].leyenda2 || "";
     let leyenda1 = tickets[0].leyenda1 || "";
 
-    // Aumentar el tamaño base de fuente en +2 puntos para mejor visibilidad
-    const leyenda2FontSize =
-      leyenda2.length > 300 ? 7 :
-        leyenda2.length > 200 ? 8 :
-          leyenda2.length > 100 ? 9 : 10;
-
-    const leyenda1FontSize =
-      leyenda1.length > 300 ? 7 :
-        leyenda1.length > 200 ? 8 :
-          leyenda1.length > 100 ? 9 : 10;
+    const leyenda2FontSize = leyenda2.length > 300 ? 7 : leyenda2.length > 200 ? 8 : leyenda2.length > 100 ? 9 : 10;
+    const leyenda1FontSize = leyenda1.length > 300 ? 7 : leyenda1.length > 200 ? 8 : leyenda1.length > 100 ? 9 : 10;
 
     // Calcular altura aproximada de leyendas
     const tempDoc = new jsPDF({ unit: "mm", format: "a4" });
-
     tempDoc.setFontSize(leyenda2FontSize);
     const leyenda2Lines = tempDoc.splitTextToSize(leyenda2, 70).length;
     const leyenda2Height = leyenda2Lines * (leyenda2FontSize * 0.4);
-
     tempDoc.setFontSize(leyenda1FontSize);
     const leyenda1Lines = tempDoc.splitTextToSize(leyenda1, 70).length;
     const leyenda1Height = leyenda1Lines * (leyenda1FontSize * 0.4);
 
     // Calcular altura real necesaria
     const baseHeight = 85;
-    const ticketHeight = 30;
-    const extraHeight = Math.max(0, leyenda2Height - 15) + Math.max(0, leyenda1Height - 15);
-    const totalHeight = baseHeight + (tickets.length * ticketHeight) + extraHeight + 30;
-    const docHeight = Math.min(totalHeight, 400);
+    const ticketHeight = 36;
+    const ticketsHeight = tickets.length * ticketHeight;
+    const leyenda1Extra = leyenda1Height + 10; // +10 margen extra
+    const leyenda2Extra = Math.max(0, leyenda2Height - 15);
+    // Elimina el tope máximo, solo deja un mínimo
+    const totalHeight = baseHeight + ticketsHeight + leyenda1Extra + leyenda2Extra + 30;
+    const finalDocHeight = Math.max(totalHeight, 120);
 
     // PASO 2: Crear documento con altura calculada
     var doc = new jsPDF({
       orientation: "portrait",
       unit: "mm",
-      format: [80, docHeight],
+      format: [80, finalDocHeight],
     });
 
     // URL de la imagen
     const imageURL = "/noSencillo.jpg";
-    // Reducir la imagen: ancho 60mm, alto 20mm, posición centrada
     doc.addImage(imageURL, "JPEG", 10, 0, 60, 20);
 
     // PASO 3: Manejar primera leyenda (leyenda2) con mejor control
