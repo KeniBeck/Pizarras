@@ -53,8 +53,8 @@ const ViewMenu = () => {
 
     }
 
-    const handleViewSell = () => {
-        router.push('/viewTickects')
+    const handleWinnerSraffle = () => {
+        router.push('/winnerSraffle');
     }
 
     const handleWinnigTicket = () => {
@@ -104,9 +104,9 @@ const ViewMenu = () => {
                         </div>
                         <div className="relative">
                             <button
-                                onClick={() => handleViewSell()}
+                                onClick={() => handleWinnerSraffle()}
                                 className="w-full rounded-lg bg-red-700 text-white text-2xl  h-[66px] relative">
-                                Ventas del dia
+                                Boletos premiados
                                 <ImStatsDots className="absolute left-3 top-1/2 transform -translate-y-1/2 h-10" />
                             </button>
                         </div>
