@@ -531,7 +531,7 @@ const BoxCutLotery = () => {
                         ? canceladosHoy.reduce((acc, c) => acc + (Number(c.Costo) || 0), 0) 
                         : 0;
                       
-                      const ventaNeta = result.dias[0].venta - canceladosTotal;
+                      const ventaNeta = result.dias[0].venta;
                       return <span>Venta neta: <b>${ventaNeta.toFixed(2)}</b></span>;
                     })()}
                     
@@ -588,7 +588,7 @@ const BoxCutLotery = () => {
                         ? canceladosHoy.reduce((acc, c) => acc + (Number(c.Costo) || 0), 0) 
                         : 0;
                       
-                      const ventaNeta = result.dias[0].venta - canceladosTotal;
+                      const ventaNeta = result.dias[0].venta;
                       const comision = result.dias[0].comision;
                       const corteCaja = ventaNeta - comision;
                       
@@ -653,7 +653,7 @@ const BoxCutLotery = () => {
                   const canceladosTotal = result.cancelados && result.cancelados.length > 0 
                     ? result.cancelados.reduce((acc, c) => acc + (Number(c.Costo) || 0), 0) 
                     : 0;
-                  const ventaNeta = result.resumen.venta - canceladosTotal;
+                  const ventaNeta = result.resumen.venta;
                   return <span>Venta neta: <b>${ventaNeta.toFixed(2)}</b></span>;
                 })()}
                 
@@ -680,7 +680,7 @@ const BoxCutLotery = () => {
                   const canceladosTotal = result.cancelados && result.cancelados.length > 0 
                     ? result.cancelados.reduce((acc, c) => acc + (Number(c.Costo) || 0), 0) 
                     : 0;
-                  const ventaNeta = result.resumen.venta - canceladosTotal;
+                  const ventaNeta = result.resumen.venta;
                   const corteCaja = ventaNeta - result.resumen.comision;
                   
                   let pagadosTotal = 0;

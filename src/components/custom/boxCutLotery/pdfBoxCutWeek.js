@@ -69,7 +69,7 @@ const generatePDFBoxCutWeek = async ({ userData, weekLabel, weekRange, resumen, 
 
   // --- Grupo: Venta neta y comisión ---
   let venta = resumen.venta || 0;
-  let ventaNeta = venta - canceladosTotal;
+  let ventaNeta = venta;
   doc.text(`Venta neta`, labelX, y);
   doc.text(`$${ventaNeta}`, valueX, y, { align: "right" });
   y += 5;

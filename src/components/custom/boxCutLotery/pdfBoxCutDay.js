@@ -71,7 +71,7 @@ const generatePDFBoxCutDay = async ({ userData, dia, data }) => {
   }
 
   // --- Grupo: Venta neta y comisión ---
-  let ventaNeta = venta - canceladosTotal;
+  let ventaNeta = venta;
   doc.text(`Venta neta`, labelX, y);
   doc.text(`$${ventaNeta}`, valueX, y, { align: 'right' });
   y += 5;
