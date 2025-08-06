@@ -125,7 +125,7 @@ export async function POST(req) {
       } else if (typeof dia === "string" && dia.length > 10) {
         dia = dia.substring(0, 10);
       }
-      
+
       if (!canceladosPorDia[dia]) {
         canceladosPorDia[dia] = {
           dia,
@@ -133,7 +133,7 @@ export async function POST(req) {
           monto: 0
         };
       }
-      
+
       canceladosPorDia[dia].cantidad++;
       canceladosPorDia[dia].monto += Number(c.Costo) || 0;
     });
@@ -143,10 +143,11 @@ export async function POST(req) {
 
     // Consultar ganadores para esos boletos y sucursal (solo por Boleto y Fecha_sorteo)
     let sqlGanadores = `
-      SELECT g.*
+      SELECT g.*, 
+        CONVERT_TZ(g.Fecha_pago, '+00:00', '-06:00') AS Fecha_pago
       FROM Ganadores g
-      WHERE DATE(g.Fecha_pago) BETWEEN ? AND ?
-      AND g.Vendedor = (SELECT Nombre FROM vendedores WHERE Idvendedor = ?)
+      WHERE DATE(CONVERT_TZ(g.Fecha_pago, '+00:00', '-06:00')) BETWEEN ? AND ?
+        AND g.Vendedor = (SELECT Nombre FROM vendedores WHERE Idvendedor = ?)
     `;
     let ganadores = [];
     [ganadores] = await pool.query(sqlGanadores, [fechaInicio, fechaFin, Idvendedor]);
@@ -163,7 +164,7 @@ export async function POST(req) {
     // Agrupar ganadores por día para reportes diarios
     let ganadoresPorDia = {};
     ganadores.forEach(g => {
-      let dia = g.Fecha_pago;
+      let dia = g.Fecha_pago_mx || g.Fecha_pago;
       if (dia instanceof Date) {
         dia = dia.toISOString().split("T")[0];
       } else if (typeof dia === "string" && dia.includes("T")) {
@@ -171,7 +172,7 @@ export async function POST(req) {
       } else if (typeof dia === "string" && dia.length > 10) {
         dia = dia.substring(0, 10);
       }
-      
+
       if (!ganadoresPorDia[dia]) {
         ganadoresPorDia[dia] = {
           dia,
@@ -179,7 +180,7 @@ export async function POST(req) {
           monto: 0
         };
       }
-      
+
       ganadoresPorDia[dia].cantidad++;
       ganadoresPorDia[dia].monto += Number(g.Premio) || 0;
     });

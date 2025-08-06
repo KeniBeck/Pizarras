@@ -514,23 +514,7 @@ const BoxCutLotery = () => {
                     
                     {/* Calcular venta neta (venta - cancelados) */}
                     {(() => {
-                      // Filtrar cancelados solo para este día
-                      const canceladosHoy = result.cancelados ? result.cancelados.filter(c => {
-                        let diaCancelado = c.Fecha_cancelacion;
-                        if (diaCancelado instanceof Date) {
-                          diaCancelado = diaCancelado.toISOString().split("T")[0];
-                        } else if (typeof diaCancelado === "string" && diaCancelado.includes("T")) {
-                          diaCancelado = diaCancelado.split("T")[0];
-                        } else if (typeof diaCancelado === "string" && diaCancelado.length > 10) {
-                          diaCancelado = diaCancelado.substring(0, 10);
-                        }
-                        return diaCancelado === selectedDay;
-                      }) : [];
-                      
-                      const canceladosTotal = canceladosHoy.length > 0 
-                        ? canceladosHoy.reduce((acc, c) => acc + (Number(c.Costo) || 0), 0) 
-                        : 0;
-                      
+                   
                       const ventaNeta = result.dias[0].venta;
                       return <span>Venta neta: <b>${ventaNeta.toFixed(2)}</b></span>;
                     })()}
@@ -541,6 +525,7 @@ const BoxCutLotery = () => {
                     {/* Mostrar premiados del día si existen */}
                     {(() => {
                       // Filtrar ganadores solo para este día
+                      console.log("All ganadores:", result.ganadores, "result", result);  
                       const ganadoresHoy = result.ganadores ? result.ganadores.filter(g => {
                         let diaPago = g.Fecha_pago;
                         if (diaPago instanceof Date) {
@@ -552,7 +537,8 @@ const BoxCutLotery = () => {
                         }
                         return diaPago === selectedDay;
                       }) : [];
-                      
+
+                      console.log("Ganadores hoy:", ganadoresHoy);
                       if (ganadoresHoy.length > 0) {
                         const premiosTotal = ganadoresHoy.reduce((acc, g) => acc + (Number(g.Premio) || 0), 0);
                         const comisionPremiados = premiosTotal * 0.01;
@@ -572,22 +558,6 @@ const BoxCutLotery = () => {
                     {/* Calcular total a pagar */}
                     {(() => {
                       // Filtrar cancelados solo para este día
-                      const canceladosHoy = result.cancelados ? result.cancelados.filter(c => {
-                        let diaCancelado = c.Fecha_cancelacion;
-                        if (diaCancelado instanceof Date) {
-                          diaCancelado = diaCancelado.toISOString().split("T")[0];
-                        } else if (typeof diaCancelado === "string" && diaCancelado.includes("T")) {
-                          diaCancelado = diaCancelado.split("T")[0];
-                        } else if (typeof diaCancelado === "string" && diaCancelado.length > 10) {
-                          diaCancelado = diaCancelado.substring(0, 10);
-                        }
-                        return diaCancelado === selectedDay;
-                      }) : [];
-                      
-                      const canceladosTotal = canceladosHoy.length > 0 
-                        ? canceladosHoy.reduce((acc, c) => acc + (Number(c.Costo) || 0), 0) 
-                        : 0;
-                      
                       const ventaNeta = result.dias[0].venta;
                       const comision = result.dias[0].comision;
                       const corteCaja = ventaNeta - comision;

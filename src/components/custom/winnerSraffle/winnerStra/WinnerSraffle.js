@@ -182,7 +182,7 @@ const WinnerSraffle = () => {
         <div className="bg-[rgb(38,38,38)] opacity-80 absolute inset-0"></div>
       </div>
 
-      <div className="max-w-lg mx-auto w-full bg-[rgb(38,38,38)] relative z-10 rounded-lg shadow-lg p-4 mt-8 border border-red-700">
+      <div className="max-w-lg mx-auto w-full bg-[rgb(38,38,38)] relative z-10 rounded-lg shadow-lg p-4 border border-red-700">
         <h2 className="text-white text-2xl font-bold mb-6 text-center">Resultados de Sorteos</h2>
         
         {/* Sección de búsqueda */}
