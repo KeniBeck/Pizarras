@@ -7,45 +7,38 @@ const generatePDF = async (tickets, fecha) => {
     let leyenda2 = tickets[0].leyenda2 || "";
     let leyenda1 = tickets[0].leyenda1 || "";
 
-    // Ajustes para leyendas extremadamente largas
-    const leyenda2FontSize =
-      leyenda2.length > 300 ? 5 :
-        leyenda2.length > 200 ? 6 :
-          leyenda2.length > 100 ? 7 : 8;
-
-    const leyenda1FontSize =
-      leyenda1.length > 300 ? 5 :
-        leyenda1.length > 200 ? 6 :
-          leyenda1.length > 100 ? 7 : 8;
+    const leyenda2FontSize = leyenda2.length > 300 ? 7 : leyenda2.length > 200 ? 8 : leyenda2.length > 100 ? 9 : 10;
+    const leyenda1FontSize = leyenda1.length > 300 ? 7 : leyenda1.length > 200 ? 8 : leyenda1.length > 100 ? 9 : 10;
 
     // Calcular altura aproximada de leyendas
     const tempDoc = new jsPDF({ unit: "mm", format: "a4" });
-
     tempDoc.setFontSize(leyenda2FontSize);
     const leyenda2Lines = tempDoc.splitTextToSize(leyenda2, 70).length;
     const leyenda2Height = leyenda2Lines * (leyenda2FontSize * 0.4);
-
     tempDoc.setFontSize(leyenda1FontSize);
     const leyenda1Lines = tempDoc.splitTextToSize(leyenda1, 70).length;
     const leyenda1Height = leyenda1Lines * (leyenda1FontSize * 0.4);
 
     // Calcular altura real necesaria
     const baseHeight = 85;
-    const ticketHeight = 30;
-    const extraHeight = Math.max(0, leyenda2Height - 15) + Math.max(0, leyenda1Height - 15);
-    const totalHeight = baseHeight + (tickets.length * ticketHeight) + extraHeight + 30;
-    const docHeight = Math.min(totalHeight, 400);
+    const ticketHeight = 36;
+    const ticketsHeight = tickets.length * ticketHeight;
+    const leyenda1Extra = leyenda1Height + 10; // +10 margen extra
+    const leyenda2Extra = Math.max(0, leyenda2Height - 15);
+    // Elimina el tope máximo, solo deja un mínimo
+    const totalHeight = baseHeight + ticketsHeight + leyenda1Extra + leyenda2Extra + 30;
+    const finalDocHeight = Math.max(totalHeight, 120);
 
     // PASO 2: Crear documento con altura calculada
     var doc = new jsPDF({
       orientation: "portrait",
       unit: "mm",
-      format: [80, docHeight],
+      format: [80, finalDocHeight],
     });
 
     // URL de la imagen
     const imageURL = "/noSencillo.jpg";
-    doc.addImage(imageURL, "JPEG", 0, 0, 80, 30);
+    doc.addImage(imageURL, "JPEG", 10, 0, 60, 20);
 
     // PASO 3: Manejar primera leyenda (leyenda2) con mejor control
     doc.setFont("helvetica", "bold");
@@ -66,9 +59,9 @@ const generatePDF = async (tickets, fecha) => {
 
     // Resto del encabezado
     doc.setTextColor(0, 0, 0);
-    doc.setFontSize(14);
+    doc.setFontSize(16); // Subido de 14 a 16
     doc.text(`Factura de boletos`, 5, nextY);
-    nextY += 10;
+    nextY += 12; // Subido de 10 a 12
 
     // Mostrar detalles del comprador con ajustes
     const firstTicket = tickets[0];
@@ -76,14 +69,14 @@ const generatePDF = async (tickets, fecha) => {
 
     // Ajustar tamaño para textos largos
     const compradorText = firstTicket.comprador || "";
-    const compradorSize = compradorText.length > 20 ? 9 : 10;
+    const compradorSize = compradorText.length > 20 ? 11 : 12; // Subido de 9/10 a 11/12
     doc.setFontSize(compradorSize);
     doc.text(`Comprador: ${compradorText}`, 5, nextY);
-    nextY += 10;
+    nextY += 12; // Subido de 10 a 12
 
-    doc.setFontSize(10);
+    doc.setFontSize(12); // Subido de 10 a 12
     doc.text(`Sorteo: ${fecha || ""}`, 5, nextY);
-    nextY += 10;
+    nextY += 12; // Subido de 10 a 12
 
     // Formatear fecha
     let fechaVenta = firstTicket.Fecha_venta || "";
@@ -92,7 +85,7 @@ const generatePDF = async (tickets, fecha) => {
       fechaVenta = date.toLocaleDateString();
     }
     doc.text(`Venta: ${fechaVenta}`, 5, nextY);
-    nextY += 10;
+    nextY += 12; // Subido de 10 a 12
 
     // Posición inicial para boletos
     let yPosition = nextY;
@@ -101,26 +94,22 @@ const generatePDF = async (tickets, fecha) => {
     tickets.forEach((data, index) => {
       doc.setFont("helvetica", "bold");
       doc.setTextColor(255, 0, 0);
+      doc.setFontSize(14);
       doc.text(`N${data.Idsorteo || ""}`, 5, yPosition);
 
       doc.setTextColor(0, 0, 0);
       doc.setFont("helvetica", "normal");
-      doc.text(`Costo $ ${data.Costo || ""}`, 5, yPosition + 10);
-      if (data.Boleto === 0) {
-        data.Boleto = "000"
-      }
-      let boletoFormatted;
-      if (data.Boleto === 0) {
-        boletoFormatted = "000";
-      } else {
-        boletoFormatted = data.Boleto?.toString().padStart(3, "0") || "";
-      }
-      const boletoSize = boletoFormatted.length > 15 ? 9 : 10;
-      doc.setFontSize(boletoSize);
-      doc.text(`Número de boleto: ${boletoFormatted}`, 5, yPosition + 20);
-      doc.setFontSize(10);
+      doc.setFontSize(12);
+      doc.text(`Costo $ ${data.Costo || ""}`, 5, yPosition + 12);
 
-      yPosition += 30;
+      // Salto de línea extra antes del número de boleto
+      let boletoFormatted = data.Boleto === 0 ? "000" : data.Boleto?.toString().padStart(3, "0") || "";
+      const boletoSize = boletoFormatted.length > 15 ? 11 : 12;
+      doc.setFontSize(boletoSize);
+      doc.text(`Número de boleto: ${boletoFormatted}`, 5, yPosition + 24);
+
+      // Salto de línea extra para separar de la leyenda
+      yPosition += 36; // Antes 30, ahora 36 para más espacio
     });
 
     // PASO 4: Manejar leyenda final (leyenda1) con mejor control

@@ -42,11 +42,19 @@ const ViewMenu = () => {
     }
 
     const handleboxCut = async (userData) => {
-        router.push('/loginAdmin')
+        console.log("userData:", userData.sucursal);
+        if (userData && userData.sucursal === "Loteria") {
+            console.log("Accediendo a BoxCutLotery");
+            router.push('boxCutLotery');
+        } else {
+            console.log("Acceso denegado a BoxCutLotery");
+            router.push('/loginAdmin')
+        }
+
     }
-    
-    const handleViewSell = () => {
-        router.push('/viewTickects')
+
+    const handleWinnerSraffle = () => {
+        router.push('/winnerSraffle');
     }
 
     const handleWinnigTicket = () => {
@@ -65,9 +73,9 @@ const ViewMenu = () => {
             ) : (
                 <div className="w-full bg-[rgb(38,38,38)]">
                     <div className=" w-full flex justify-center items-center text-2xl  pt-6 pb-2">
-                         <FaClover className="h-10 mr-2 text-green-700" />
-                         <label className="text-[#FFF113]">El Trebol De La Suerte</label>
-                        </div>
+                        <FaClover className="h-10 mr-2 text-green-700" />
+                        <label className="text-[#FFF113]">El Trebol De La Suerte</label>
+                    </div>
                     <div className="w-full flex justify-center items-center  flex-col space-y-1 pb-4">
                         {userData ? (
                             <>
@@ -94,14 +102,16 @@ const ViewMenu = () => {
                                 <IoTicketSharp className="absolute left-3 top-1/2 transform -translate-y-1/2 h-10" />
                             </button>
                         </div>
-                        <div className="relative">
-                            <button
-                                onClick={() => handleViewSell()}
-                                className="w-full rounded-lg bg-red-700 text-white text-2xl  h-[66px] relative">
-                                Ventas del dia
-                                <ImStatsDots className="absolute left-3 top-1/2 transform -translate-y-1/2 h-10" />
-                            </button>
-                        </div>
+                        {isLoteriaUser && (
+                            <div className="relative">
+                                <button
+                                    onClick={() => handleWinnerSraffle()}
+                                    className="w-full rounded-lg bg-red-700 text-white text-2xl  h-[66px] relative">
+                                    Resultados
+                                    <ImStatsDots className="absolute left-3 top-1/2 transform -translate-y-1/2 h-10" />
+                                </button>
+                            </div>
+                        )}
                         <div className="relative">
                             <button
                                 onClick={() => handleboxCut(userData)}
@@ -110,7 +120,7 @@ const ViewMenu = () => {
                                 <FaCashRegister className="absolute left-3 top-1/2 transform -translate-y-1/2 h-10" />
                             </button>
                         </div>
-                        
+
                         {/* Mostrar botón de boletos ganadores solo si el usuario es de la sucursal Loteria */}
                         {isLoteriaUser && (
                             <div className="relative">
@@ -122,7 +132,7 @@ const ViewMenu = () => {
                                 </button>
                             </div>
                         )}
-                        
+
                         <div className="relative">
                             <button className="w-full rounded-lg bg-red-700 text-white text-2xl h-[66px] relative" onClick={session}>
                                 Cerrar sesión

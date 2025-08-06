@@ -8,7 +8,7 @@ export async function POST(req, res) {
   try {
     // Consulta para obtener los boletos especiales
     let sqlEspeciales = `
-        SELECT b.*, c.leyenda1, c.leyenda2, s.Fecha AS FechaSorteo, v.Nombre AS nombreVendedor, v.Comision AS comisiones, d.cantidad AS deuda
+        SELECT b.*, c.leyenda1, s.leyenda2, s.Fecha AS FechaSorteo, v.Nombre AS nombreVendedor, v.Comision AS comisiones, d.cantidad AS deuda
         FROM boletos b
         CROSS JOIN configuracion c
         JOIN sorteo s ON b.tipo_sorteo = s.Idsorteo
@@ -19,7 +19,7 @@ export async function POST(req, res) {
 
     // Consulta para obtener los boletos normales
     let sqlNormales = `
-        SELECT b.*, c.leyenda1 ,c.leyenda2, s.Fecha AS FechaSorteo, v.Nombre AS nombreVendedor, v.Comision AS comisiones, d.cantidad AS deuda
+        SELECT b.*, c.leyenda1, s.leyenda2, s.Fecha AS FechaSorteo, v.Nombre AS nombreVendedor, v.Comision AS comisiones, d.cantidad AS deuda
         FROM boletos b
         CROSS JOIN configuracion c
         JOIN sorteo s ON b.tipo_sorteo = s.Idsorteo
@@ -35,7 +35,6 @@ export async function POST(req, res) {
 
     // Combinar los resultados en un solo array
     let boletos = [...boletosEspeciales, ...boletosNormales];
-
 
     // Devolver los resultados
     return NextResponse.json(boletos);
