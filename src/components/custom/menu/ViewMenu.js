@@ -107,7 +107,7 @@ const ViewMenu = () => {
                                 <button
                                     onClick={() => handleWinnerSraffle()}
                                     className="w-full rounded-lg bg-red-700 text-white text-2xl  h-[66px] relative">
-                                    Boletos premiados
+                                    Resultados
                                     <ImStatsDots className="absolute left-3 top-1/2 transform -translate-y-1/2 h-10" />
                                 </button>
                             </div>

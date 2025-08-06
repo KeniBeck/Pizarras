@@ -38,20 +38,60 @@ const generatePDFSraffle = (winner) => {
   // Formatear fecha con nombre del día
   let fechaSorteo = "N/A";
   if (winner.fechasorteo) {
-    const fecha = new Date(winner.fechasorteo);
+    // Extraer componentes de fecha directamente del string para evitar ajustes de zona horaria
+    const fechaStr = winner.fechasorteo;
     
-    // Incluir el nombre del día en español con primera letra mayúscula
-    const diasSemana = ['Domingo', 'Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado'];
-    const nombreDia = diasSemana[fecha.getDay()];
-    
-    // Formatear con día numérico y mes abreviado para que quepa mejor
-    const dia = fecha.getDate();
-    const meses = ['ene', 'feb', 'mar', 'abr', 'may', 'jun', 'jul', 'ago', 'sep', 'oct', 'nov', 'dic'];
-    const mes = meses[fecha.getMonth()];
-    const anio = fecha.getFullYear();
-    
-    // Formato más compacto para asegurar que se centra bien
-    fechaSorteo = `${nombreDia} ${dia}-${mes}-${anio}`;
+    // Si la fecha viene en formato ISO (YYYY-MM-DDTHH:mm:ss...)
+    if (typeof fechaStr === 'string') {
+      let year, month, day;
+      
+      if (fechaStr.includes('T')) {
+        const [datePart] = fechaStr.split('T');
+        [year, month, day] = datePart.split('-').map(num => parseInt(num, 10));
+      } 
+      // Si la fecha viene en formato YYYY-MM-DD
+      else if (fechaStr.match(/^\d{4}-\d{2}-\d{2}$/)) {
+        [year, month, day] = fechaStr.split('-').map(num => parseInt(num, 10));
+      }
+      
+      if (year && month && day) {
+        // Crear fecha especificando que debe interpretarse como UTC
+        const fecha = new Date(Date.UTC(year, month - 1, day, 12, 0, 0));
+        
+        // Incluir el nombre del día en español con primera letra mayúscula
+        const diasSemana = ['Domingo', 'Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado'];
+        const nombreDia = diasSemana[fecha.getUTCDay()];
+        
+        // Formatear con día numérico y mes abreviado para que quepa mejor
+        const meses = ['ene', 'feb', 'mar', 'abr', 'may', 'jun', 'jul', 'ago', 'sep', 'oct', 'nov', 'dic'];
+        const mes = meses[month - 1];
+        
+        // Formato más compacto para asegurar que se centra bien
+        fechaSorteo = `${nombreDia} ${day}-${mes}-${year}`;
+      }
+    } else {
+      // Si no es un string, intentar con el método anterior
+      try {
+        const fecha = new Date(winner.fechasorteo);
+        if (!isNaN(fecha.getTime())) {
+          // Añadir 12 horas para evitar problemas con zonas horarias
+          fecha.setHours(12, 0, 0, 0);
+          
+          const diasSemana = ['Domingo', 'Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado'];
+          const nombreDia = diasSemana[fecha.getDay()];
+          
+          const dia = fecha.getDate();
+          const meses = ['ene', 'feb', 'mar', 'abr', 'may', 'jun', 'jul', 'ago', 'sep', 'oct', 'nov', 'dic'];
+          const mes = meses[fecha.getMonth()];
+          const anio = fecha.getFullYear();
+          
+          fechaSorteo = `${nombreDia} ${dia}-${mes}-${anio}`;
+        }
+      } catch (e) {
+        console.error("Error al formatear fecha:", e);
+        fechaSorteo = "Fecha no disponible";
+      }
+    }
   }
   
   // Aumentar tamaño de letra para la fecha y asegurar centrado

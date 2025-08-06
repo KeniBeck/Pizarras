@@ -116,12 +116,61 @@ const WinnerSraffle = () => {
   // Formatear fecha para mostrar
   const formatDate = (dateString) => {
     if (!dateString) return "";
-    const date = new Date(dateString);
-    return date.toLocaleDateString('es-MX', {
-      year: 'numeric',
-      month: 'long',
-      day: 'numeric'
-    });
+    
+    // Extraer componentes de fecha directamente del string para evitar ajustes de zona horaria
+    if (typeof dateString === 'string') {
+      // Si la fecha viene en formato ISO (YYYY-MM-DDTHH:mm:ss...)
+      if (dateString.includes('T')) {
+        const [datePart] = dateString.split('T');
+        const [year, month, day] = datePart.split('-').map(num => parseInt(num, 10));
+        
+        // Crear fecha especificando que debe interpretarse como UTC
+        const date = new Date(Date.UTC(year, month - 1, day, 12, 0, 0));
+        
+        // Obtener nombre del día en español
+        const diasSemana = ['domingo', 'lunes', 'martes', 'miércoles', 'jueves', 'viernes', 'sábado'];
+        const nombreDia = diasSemana[date.getUTCDay()];
+        
+        // Formatear con día de la semana, día numérico y mes
+        const meses = ['enero', 'febrero', 'marzo', 'abril', 'mayo', 'junio', 'julio', 'agosto', 'septiembre', 'octubre', 'noviembre', 'diciembre'];
+        return `${nombreDia}, ${day} de ${meses[month - 1]} de ${year}`;
+      }
+      
+      // Si la fecha viene en formato YYYY-MM-DD
+      if (dateString.match(/^\d{4}-\d{2}-\d{2}$/)) {
+        const [year, month, day] = dateString.split('-').map(num => parseInt(num, 10));
+        
+        // Crear fecha especificando que debe interpretarse como UTC
+        const date = new Date(Date.UTC(year, month - 1, day, 12, 0, 0));
+        
+        // Obtener nombre del día en español
+        const diasSemana = ['domingo', 'lunes', 'martes', 'miércoles', 'jueves', 'viernes', 'sábado'];
+        const nombreDia = diasSemana[date.getUTCDay()];
+        
+        // Formatear con día de la semana, día numérico y mes
+        const meses = ['enero', 'febrero', 'marzo', 'abril', 'mayo', 'junio', 'julio', 'agosto', 'septiembre', 'octubre', 'noviembre', 'diciembre'];
+        return `${nombreDia}, ${day} de ${meses[month - 1]} de ${year}`;
+      }
+    }
+    
+    // Si llegamos aquí, usar el método estándar con precaución
+    try {
+      const date = new Date(dateString);
+      // Añadir verificación para asegurarnos de que la fecha es válida
+      if (isNaN(date.getTime())) {
+        return "Fecha no válida";
+      }
+      return date.toLocaleDateString('es-MX', {
+        weekday: 'long',
+        year: 'numeric',
+        month: 'long',
+        day: 'numeric',
+        timeZone: 'UTC' // Importante: usar UTC como zona horaria base
+      });
+    } catch (e) {
+      console.error("Error al formatear fecha:", e);
+      return "Error en fecha";
+    }
   };
 
   return (
