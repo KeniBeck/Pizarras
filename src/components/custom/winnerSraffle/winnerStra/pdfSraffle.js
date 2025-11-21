@@ -1,5 +1,5 @@
 import jsPDF from "jspdf";
-import "jspdf-autotable";
+import autoTable from "jspdf-autotable";
 
 const generatePDFSraffle = (winner) => {
   // Crear un nuevo documento PDF
@@ -100,7 +100,7 @@ const generatePDFSraffle = (winner) => {
   y += 7;
 
   // Tabla de resultados
-  doc.autoTable({
+  autoTable(doc, {
     startY: y,
     head: [["POSICIÓN", "NÚMERO"]],
     body: [

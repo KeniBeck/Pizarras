@@ -74,7 +74,7 @@ const ViewTickets = () => {
       console.error("Invalid date:", fechaSinHora);
     } else {
       console.log("fechaSinHora", fechaSinHora);
-      generatePDF(tickets, fechaSinHora);
+      generatePDF(tickets, fechaSinHora,true);
     }
   };
 

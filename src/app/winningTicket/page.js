@@ -1,7 +1,6 @@
 import WinnerTicket from "@/components/custom/winner/WinnerTicket"
 import RouteProtectedWinner from "@/middleware/RouteProtectedWinner"
 
-
 const WinningTicket = () => {
 return(
     <RouteProtectedWinner>

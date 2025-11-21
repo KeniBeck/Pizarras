@@ -10,9 +10,9 @@ const TicketPreviewModal = ({ tickets, onClose, onConfirm, onDelete }) => {
                     {tickets.map((ticket, index) => (
                         <li key={index} className="mb-2 flex justify-between items-center">
                             <div>
-                                <div>Boleto: {ticket.number}</div>
-                                <div>Precio: {ticket.price}</div>
-                                <div>Nombre: {ticket.name}</div>
+                                <div>Boleto: {ticket.numero}</div>
+                                <div>Precio: {ticket.precio}</div>
+                                <div>Nombre: {ticket.comprador}</div>
                             </div>
                             <button
                                 onClick={() => onDelete(index)}
