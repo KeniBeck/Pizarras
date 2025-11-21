@@ -2,9 +2,6 @@
 import ViewMenu from "@/components/custom/menu/ViewMenu";
 import RouteProtected from "@/middleware/RouteProtected";
 
-
-
-
 const Menu = () => {
 
 

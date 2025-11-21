@@ -594,11 +594,26 @@ const BoxCutLotery = () => {
                         data: {
                           ...result.dias[0],
                           cancelados: result.cancelados,
-                          ganadores: result.ganadores
+                          ganadores: result.ganadores,
                         }
-                      })}
+                      }, "share")}
                     >
-                      <FaPrint /> Imprimir corte de caja
+                      <FaPrint /> Compartir corte de caja
+                    </button>
+
+                    <button
+                      className="mt-4 bg-red-700 text-white px-4 py-2 rounded font-bold flex items-center gap-2 hover:bg-red-800"
+                      onClick={() => generatePDFBoxCutDay({
+                        userData,
+                        dia: formatDayMonth(selectedDay),
+                        data: {
+                          ...result.dias[0],
+                          cancelados: result.cancelados,
+                          ganadores: result.ganadores,
+                        }
+                      }, "download")}
+                    >
+                      <FaPrint /> Descargar corte de caja
                     </button>
                   </>
                 ) : (
@@ -666,18 +681,33 @@ const BoxCutLotery = () => {
                 
                 <button
                   className="mt-4 bg-red-700 text-white px-4 py-2 rounded font-bold flex items-center gap-2 hover:bg-red-800"
-                  onClick={() => generatePDFBoxCutWeek({
-                    userData,
-                    weekLabel: weeks.find(w => w.start === selectedWeek.start)?.label || 'Semana',
-                    weekRange: `${selectedWeek.start} a ${selectedWeek.end}`,
-                    resumen: result.resumen,
-                    dias: result.dias,
-                    cancelados: result.cancelados,
-                    ganadores: result.ganadores,
-                    bancos: result.bancos
-                  })}
+                  onClick={() =>generatePDFBoxCutWeek({
+                      userData,
+                      weekLabel: weeks.find(w => w.start === selectedWeek.start)?.label || "Semana",
+                      weekRange: `${selectedWeek.start} a ${selectedWeek.end}`,
+                      resumen: result.resumen,
+                      dias: result.dias,
+                      cancelados: result.cancelados,
+                      ganadores: result.ganadores,
+                      bancos: result.bancos,
+                    },"share")}
                 >
-                  <FaPrint /> Imprimir corte de caja
+                  <FaPrint /> Compartir corte de caja
+                </button>
+                <button
+                  className="mt-4 bg-red-700 text-white px-4 py-2 rounded font-bold flex items-center gap-2 hover:bg-red-800"
+                  onClick={() =>generatePDFBoxCutWeek({
+                      userData,
+                      weekLabel: weeks.find(w => w.start === selectedWeek.start)?.label || "Semana",
+                      weekRange: `${selectedWeek.start} a ${selectedWeek.end}`,
+                      resumen: result.resumen,
+                      dias: result.dias,
+                      cancelados: result.cancelados,
+                      ganadores: result.ganadores,
+                      bancos: result.bancos,
+                    },"download")}
+                >
+                  <FaPrint /> Descargar corte de caja
                 </button>
               </div>
             )}

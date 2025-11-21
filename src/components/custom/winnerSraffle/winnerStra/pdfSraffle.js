@@ -1,5 +1,5 @@
 import jsPDF from "jspdf";
-import "jspdf-autotable";
+import autoTable from "jspdf-autotable";
 
 const generatePDFSraffle = (winner) => {
   // Crear un nuevo documento PDF
@@ -100,7 +100,7 @@ const generatePDFSraffle = (winner) => {
   y += 7;
 
   // Tabla de resultados
-  doc.autoTable({
+  const table = autoTable(doc, {
     startY: y,
     head: [["POSICIÓN", "NÚMERO"]],
     body: [
@@ -118,10 +118,17 @@ const generatePDFSraffle = (winner) => {
       fontSize: 10,
       cellPadding: 2,
     },
-    margin: { top: y, left: margin, right: margin },
+    margin: { left: margin, right: margin } // NO usar margin.top junto con startY
   });
-  
-  y = doc.lastAutoTable.finalY + 5;
+
+  // recopilar candidatos y tomar el mayor para evitar solapamientos
+  const candidates = [y];
+  if (table && typeof table.finalY === "number") candidates.push(table.finalY);
+  if (doc?.autoTable?.previous && typeof doc.autoTable.previous.finalY === "number") candidates.push(doc.autoTable.previous.finalY);
+  if (doc?.lastAutoTable && typeof doc.lastAutoTable.finalY === "number") candidates.push(doc.lastAutoTable.finalY);
+  const safeFinalY = Math.max(...candidates);
+  // aumentar un poco el espacio para que no quede encima (ajusta +8 si quieres más separación)
+  y = safeFinalY + 8;
 
   // Tipo de sorteo
   let tipoSorteo = "Normal";

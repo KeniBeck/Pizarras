@@ -17,6 +17,7 @@ import { TbSquarePlus } from "react-icons/tb";
 import TicketPreviewModal from "./TicketPreviewModal";
 import VailidationEstatus from "@/hook/validationEstatus";
 import updateInfo from "../validation/updateInfo";
+import { useTotalVenta } from "@/context/TotalVentasContext";
 
 const TicketBuy = () => {
   const [prizes, setPrizes] = useState(null);
@@ -38,6 +39,7 @@ const TicketBuy = () => {
   const [selectedSorteo, setSelectedSorteo] = useState(null);
   const [avanceIndex, setAvanceIndex] = useState(0); // 0 = sorteo original
   const [originalSorteo, setOriginalSorteo] = useState(null);
+  const {addVenta}= useTotalVenta();
 
   useEffect(() => {
     Promise.all([
@@ -222,6 +224,7 @@ const TicketBuy = () => {
 
   const enviarDatosNormal = async () => {
     VailidationEstatus();
+    console.log("Nuevo ticket:", tickets);
     if (tickets.length === 0 && (!prizebox || !name)) {
       ValidateBox();
       return;
@@ -244,44 +247,70 @@ const TicketBuy = () => {
     VailidationEstatus();
     setIsLoading(true);
     const ticketData = [];
-    for (const ticket of tickets) {
-      const data = {
-        prizebox: ticket.price,
-        name: ticket.name,
-        ticketNumber: ticket.number,
-        idVendedor,
-        tipoSorteo: selectedSorteo.Tipo_sorteo,
-        idSorteo: selectedSorteo.Idsorteo,
-        topePermitido: foundTope - ticket.price,
-        fecha: selectedSorteo.Fecha,
-        primerPremio: selectedSorteo.Primerpremio,
-        segundoPremio: selectedSorteo.Segundopremio,
-      };
-      const options = {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(data),
-      };
-      await fetch("/api/sell", options)
-        .then((res) => res.json())
-        .then((data) => {
-          if (data.error) {
-            Swal.fire(data.error);
-          } else if (data[0][0]) {
-            ticketData.push(data[0][0]);
-          }
-        });
+    
+    try {
+      for (const ticket of tickets) {
+        const data = {
+          prizebox: ticket.precio,
+          name: ticket.comprador,
+          ticketNumber: ticket.numero,
+          idVendedor,
+          tipoSorteo: selectedSorteo.Tipo_sorteo,
+          idSorteo: selectedSorteo.Idsorteo,
+          topePermitido: foundTope - ticket.precio,
+          fecha: selectedSorteo.Fecha,
+          primerPremio: selectedSorteo.Primerpremio,
+          segundoPremio: selectedSorteo.Segundopremio,
+        };
+        
+        const options = {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(data),
+        };
+
+        const res = await fetch("/api/sell", options);
+        const result = await res.json();
+
+        if (result[0] && result[0][0]) {
+          const ticketSold = result[0][0];
+          ticketData.push(ticketSold);
+
+          addVenta({
+            tipo: "boleto",
+            numero: ticketSold.Boleto || ticket.numero,
+            cantidad: 1,
+            precio: Number(ticketSold.Costo || ticket.precio) || 0,
+            subtotal: (Number(ticketSold.Costo || ticket.precio) || 0) * 1,
+            comprador: ticketSold.comprador || ticket.comprador,
+          });
+        }
+      }
+
+      // Limpiar estados inmediatamente
+      setTickets([]);
+      setTicketNumber("");
+      setPrizebox("");
+      setName("");
+      setShowPreview(false);
+      
+      // Detener el loading
+      setIsLoading(false);
+
+      // Formatear fecha sin hora (formato YYYY-MM-DD)
+      const fechaSorteo = new Date(selectedSorteo.Fecha).toISOString().split('T')[0];
+
+      // Generar pdf
+      await generatePDF(ticketData, fechaSorteo);
+
+    } catch (error) {
+      console.error("Error general en confirmVenta:", error);
+      setIsLoading(false);
     }
-    setIsLoading(false);
-    setTickets([]);
-    setTicketNumber("");
-    setPrizebox("");
-    setName("");
-    generatePDF(ticketData, fecha);
-    setShowPreview(false);
   };
+
   const enviarDatosSerie = async () => {
     if (!prizebox || !name) {
       ValidateBox();
@@ -302,10 +331,7 @@ const TicketBuy = () => {
     }
     setIsLoading(true);
 
-    // Calcula la cantidad de boletos en la serie
     const numTickets = 10;
-
-    // Genera los números de boleto en serie
     const ticketNumbers = Array.from({ length: numTickets }, (_, i) => {
       let ticket = Number(ticketNumber) + 100 * i;
       if (ticket >= 1000) {
@@ -317,11 +343,11 @@ const TicketBuy = () => {
     const allTicketData = [];
 
     // Envía cada boleto al servidor
-    for (const ticketNumber of ticketNumbers) {
+    for (const ticketNum of ticketNumbers) {
       const data = {
         prizebox: prizebox / 10,
         name,
-        ticketNumber,
+        ticketNumber: ticketNum,
         idVendedor,
         idSorteo: selectedSorteo.Idsorteo,
         topePermitido: foundTope - prizebox,
@@ -329,6 +355,7 @@ const TicketBuy = () => {
         primerPremio: selectedSorteo.Primerpremio,
         segundoPremio: selectedSorteo.Segundopremio,
       };
+      
       const options = {
         method: "PUT",
         headers: {
@@ -336,21 +363,50 @@ const TicketBuy = () => {
         },
         body: JSON.stringify(data),
       };
-      await fetch("/api/sell", options)
-        .then((res) => res.json())
-        .then((data) => {
-          if (data[0]) {
-            allTicketData.push(data[0][0]);
-          }
-        });
+      
+      try {
+        const res = await fetch("/api/sell", options);
+        const result = await res.json();
+        
+        // Verificar respuesta de la serie
+        //console.log("Respuesta serie:", result);
+        
+        if (result && result.length > 0 && result[0]) {
+          allTicketData.push(result[0]);
+        }
+      } catch (error) {
+        console.error("Error en boleto serie:", error);
+      }
     }
+
+    // Verificar que hay datos antes de generar el pdf
+    if (allTicketData.length === 0) {
+      Swal.fire({
+        icon: 'error',
+        title: 'Error',
+        text: 'No se pudieron generar los boletos de la serie'
+      });
+      setIsLoading(false);
+      return;
+    }
+
+    addVenta({
+      tipo: "serie",
+      descripcion: `Serie ${ticketNumbers[0]} - ${ticketNumbers[ticketNumbers.length - 1]}`,
+      cantidad: allTicketData.length,
+      precio: prizebox / 10,
+      subtotal: prizebox,
+      comprador: name,
+    });
 
     setIsLoading(false);
     setTicketNumber("");
     setPrizebox("");
     setName("");
 
-    generatePDFSerie(allTicketData, fecha);
+    // Formatear fecha sin hora
+    const fechaSorteo = new Date(selectedSorteo.Fecha).toISOString().split('T')[0];
+    generatePDFSerie(allTicketData, fechaSorteo);
   };
 
   const handlePrizeboxChange = (e) => {
@@ -382,12 +438,12 @@ const TicketBuy = () => {
 
     // Filtrar boletos con el mismo número de tope
     const boletosConMismoTope = tickets.filter((ticket) => {
-      return parseInt(ticket.number) === numberTop;
+      return parseInt(ticket.numero) === numberTop;
     });
 
     // Calcular la cantidad acumulada de boletos en la lista
     const totalAcumulado = boletosConMismoTope.reduce((acc, ticket) => {
-      return acc + parseInt(ticket.price);
+      return acc + parseInt(ticket.precio);
     }, 0);
     const nuevaCantidad = totalAcumulado + cantidad + parseInt(prizebox);
 
@@ -408,10 +464,21 @@ const TicketBuy = () => {
 
     // Agregar el boleto actual a la lista de boletos acumulados
     if (ticketNumber && prizebox && name) {
+      const precio = parseInt(prizebox);
+      const nuevoTicket = {
+        numero: ticketNumber,
+        precio: precio,
+        cantidad: 1,
+        subtotal: precio,
+        comprador: name,
+      };
+
+      //Actualizo la lista local
       setTickets((prevTickets) => [
-        ...prevTickets,
-        { number: ticketNumber, price: prizebox, name },
+        ...prevTickets,nuevoTicket
       ]);
+
+      //Limpiar los inputs
       setTicketNumber("");
       setPrizebox("");
       return true;
@@ -419,7 +486,7 @@ const TicketBuy = () => {
   };
   const handlePlusTicket = () => {
     if (addTicketToList()) {
-      console.log(tickets);
+      //console.log(tickets);
     }
   };
   const handleDeleteTicket = (index) => {
@@ -448,7 +515,6 @@ const TicketBuy = () => {
       opts[idx] = label;
       return opts;
     }, {});
-
 
     // Si ya está en avance, mostrar opción de revertir
     let showRevert = avanceIndex !== 0;
@@ -528,7 +594,7 @@ const TicketBuy = () => {
               className="absolute right-0 bg-green-700 text-white flex justify-center items-center rounded-lg h-[40px] w-[40px] text-4xl"
             >
               <TbSquarePlus />
-            </button>
+            </button> 
           </div>
 
           {/* Fila de Precio */}

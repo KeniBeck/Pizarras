@@ -2,7 +2,7 @@ import jsPDF from "jspdf";
 import "jspdf-autotable";
 import { FaPrint } from "react-icons/fa";
 
-const generatePDFBoxCutDay = async ({ userData, dia, data }) => {
+const generatePDFBoxCutDay = async ({ userData, dia, data }, mode = "share") => {
   const doc = new jsPDF({ orientation: "portrait", unit: "mm", format: [80, 300] });
   doc.setFontSize(14);
   doc.setFont("helvetica", "bold");
@@ -115,26 +115,38 @@ const generatePDFBoxCutDay = async ({ userData, dia, data }) => {
   doc.line(5, y, 75, y);
   doc.setLineDash([]);
   doc.autoPrint();
+
   const blob = doc.output("blob");
-  if (blob) {
+  const file = new File([blob], "corte_caja_dia.pdf", { type: "application/pdf" });
+
+  if (mode === "share") {
+    if (navigator.share) {
+      try {
+        await navigator.share({
+          title: "Corte de caja",
+          text: "Aquí tienes tu corte de caja",
+          files: [file],
+        });
+      } catch (err) {
+        console.error("Error compartiendo:", err);
+      }
+    } else {
+      //Si no soporta share, forzamos descarga
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = "corte_caja_dia.pdf";
+      a.click();
+      URL.revokeObjectURL(url);
+    }
+  } else if (mode === "download") {
     const url = URL.createObjectURL(blob);
-    window.open(url);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = "corte_caja_dia.pdf";
+    a.click();
+    URL.revokeObjectURL(url);
   }
 };
 
 export default generatePDFBoxCutDay;
-
-<button
-  className="mt-4 bg-red-700 text-white px-4 py-2 rounded font-bold flex items-center gap-2"
-  onClick={() => generatePDFBoxCutDay({
-    userData,
-    dia: formatDayMonth(selectedDay),
-    data: {
-      ...result.dias[0],
-      cancelados: result.cancelados,
-      ganadores: result.ganadores,
-    }
-  })}
->
-  <FaPrint /> Imprimir corte de caja
-</button>

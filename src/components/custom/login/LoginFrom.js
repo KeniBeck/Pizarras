@@ -61,13 +61,36 @@ const LoginForm = () => {
       })
       setLoading(false)
       return
+    }else if (data[0].Estatus === 'suspendido') {
+      Swal.fire({
+        position: 'top-center',
+        title: 'Cuenta suspendida',
+        html: `
+          <div style="font-size:18px; font-weight:bold; color:#b91c1c;">
+            🚫 Usuario suspendido
+          </div>
+          <div style="margin-top:10px; font-size:14px; color:#444;">
+            Tu cuenta ha sido suspendida.<br/>
+            Contacta con el administrador para más información.
+          </div>
+        `,
+        background: '#fff3f3',   
+        iconHtml: '⛔',             
+        customClass: {
+          icon: 'no-border'        
+        },
+        showConfirmButton: true,
+        confirmButtonText: 'Entendido',
+        confirmButtonColor: '#b91c1c',
+      });
+      setLoading(false);
+      return;
     }
+
     let time = data[0].requestTime.indexOf('T') > 0 ? data[0].requestTime.split('T')[1].split('.')[0] : data[0].requestTime;
     let hour = parseInt(time.split(':')[0]);
 
-
     //hour < 18 && hour >= 0
-
 
 const verificarHora = false;
 
@@ -94,9 +117,7 @@ if (!verificarHora || (hour < 18 && hour >= 0)) {
     );
   }
 
-
   return (
-
 
     <form onSubmit={handleSubmit(enviarDatos)} className="max-w-sm mx-auto w-full ">
       <div className="flex justify-center -mt-10 text-2xl text-white ">
