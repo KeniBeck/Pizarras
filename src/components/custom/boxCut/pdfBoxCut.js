@@ -1,6 +1,6 @@
 import jsPDF from "jspdf";
 import Swal from "sweetalert2";
-import "jspdf-autotable";
+import autoTable from "jspdf-autotable";
 
 const generatePDFBoxCut = async (data) => {
   // Crear un nuevo documento PDF
@@ -51,7 +51,7 @@ const generatePDFBoxCut = async (data) => {
       boleto.Costo,
       boleto.Fecha_venta,
     ]);
-    doc.autoTable({
+    const table1 = autoTable(doc, {
       startY: y,
       head: [["Boleto", "Comprador", "Costo", "Fecha"]],
       body: boletosEspeciales,
@@ -60,7 +60,7 @@ const generatePDFBoxCut = async (data) => {
       margin: { left: 5 },
     });
 
-    y = doc.autoTable.previous.finalY + 5; // Actualizar la posición y para la siguiente tabla
+    y = doc.autoTable?.previous?.finalY || (table1.finalY || y) + 5; // Actualizar la posición y para la siguiente tabla
   }
 
   // Verificar si necesitamos agregar una nueva página
@@ -82,7 +82,7 @@ const generatePDFBoxCut = async (data) => {
       boleto.Costo,
       boleto.Fecha_venta,
     ]);
-    doc.autoTable({
+    autoTable(doc, {
       startY: y,
       head: [["Boleto", "Comprador", "Costo", "Fecha"]],
       body: boletosNormales,

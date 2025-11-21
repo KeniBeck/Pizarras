@@ -1,5 +1,5 @@
 import jsPDF from "jspdf";
-import "jspdf-autotable";
+import autoTable from "jspdf-autotable";
 
 const generatePDFBoxCutWeek = async ({ userData, weekLabel, weekRange, resumen, dias, cancelados, ganadores, bancos }) => {
   const doc = new jsPDF({ orientation: "portrait", unit: "mm", format: [80, 400] });
@@ -125,7 +125,7 @@ const generatePDFBoxCutWeek = async ({ userData, weekLabel, weekRange, resumen, 
     : [["Sin información bancaria", "-", "-"]];
 
   // Crear tabla de banco
-  doc.autoTable({
+  const bancosTable = autoTable(doc, {
     startY: y,
     head: [["Banco", "Cuenta", "Concepto"]],
     body: bancosData,
@@ -134,6 +134,9 @@ const generatePDFBoxCutWeek = async ({ userData, weekLabel, weekRange, resumen, 
     margin: { left: 8, right: 8 },
     styles: { fontSize: 8 },
   });
+
+  // si necesitas finalY:
+  // y = doc.autoTable?.previous?.finalY || (bancosTable.finalY || y) + 5;
 
   doc.autoPrint();
   const blob = doc.output("blob");

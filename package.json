@@ -9,21 +9,25 @@
     "lint": "next lint"
   },
   "dependencies": {
+    "@babel/runtime": "^7.26.10",
+    "canvg": "^3.0.11",
+    "dompurify": "^3.3.0",
     "dotenv": "^16.4.5",
     "file-saver": "^2.0.5",
     "flowbite-datepicker": "^1.2.6",
-    "jspdf": "^2.5.1",
-    "jspdf-autotable": "^3.8.2",
+    "jspdf": "^3.0.4",
+    "jspdf-autotable": "^5.0.2",
     "moment": "^2.30.1",
-    "mysql2": "^3.9.7",
-    "next": "14.1.4",
+    "mysql2": "^3.9.8",
+    "nanoid": "^3.3.8",
+    "next": "^14.2.33",
     "pizarras": "file:",
     "react": "^18",
     "react-date-picker": "^11.0.0",
     "react-dom": "^18",
     "react-hook-form": "^7.51.4",
     "react-icons": "^5.0.1",
-    "sweetalert2": "^11.10.8"
+    "sweetalert2": "^11.22.4"
   },
   "devDependencies": {
     "autoprefixer": "^10.0.1",

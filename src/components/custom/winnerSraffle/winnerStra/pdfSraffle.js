@@ -1,5 +1,5 @@
 import jsPDF from "jspdf";
-import "jspdf-autotable";
+import autoTable from "jspdf-autotable";
 
 const generatePDFSraffle = (winner) => {
   // Crear un nuevo documento PDF
@@ -100,7 +100,7 @@ const generatePDFSraffle = (winner) => {
   y += 7;
 
   // Tabla de resultados
-  doc.autoTable({
+  const table = autoTable(doc, {
     startY: y,
     head: [["POSICIÓN", "NÚMERO"]],
     body: [
@@ -121,7 +121,7 @@ const generatePDFSraffle = (winner) => {
     margin: { top: y, left: margin, right: margin },
   });
   
-  y = doc.lastAutoTable.finalY + 5;
+  y = (doc.autoTable?.previous?.finalY) || (table.finalY || y) + 5;
 
   // Tipo de sorteo
   let tipoSorteo = "Normal";
