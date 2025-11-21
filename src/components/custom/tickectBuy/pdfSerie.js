@@ -7,7 +7,23 @@ const formatDate = (dateString) => {
 };
 
 const generatePDFSerie = async (data, fecha) => {
+    // Verificar que hay datos validos
+    if (!data || data.length === 0 || !data[0]) {
+        console.error("❌ Datos inválidos para PDF serie:", data);
+        await Swal.fire({
+            title: "Error",
+            text: "No hay datos válidos para generar el PDF de la serie",
+            icon: "error",
+        });
+        return;
+    }
+
     const fechaSorteoFormateada = formatDate(fecha);
+
+    // VERIFICAR LEYENDAS
+    const firstTicket = data[0];
+    const leyenda1 = firstTicket.leyenda1 || "";
+    const leyenda2 = firstTicket.leyenda2 || "";
 
     // Mostrar ventana de carga
     Swal.showLoading();
@@ -15,11 +31,12 @@ const generatePDFSerie = async (data, fecha) => {
     // Primero calculamos el espacio que ocupará la leyenda1 al final
     const tempDoc = new jsPDF();
     var leyenda1Text = tempDoc.splitTextToSize(`${data[0].leyenda1}`, 70);
-    const leyenda1Height = leyenda1Text.length * 4; // Subido a 4mm por línea para fuente más grande
+    const leyenda1Height = leyenda1Text.length * 4;
 
-    // Calculamos altura total estimada + margen inferior
-    const lastTextPosition = 130; // Ajustado para más espacio
-    const totalHeight = lastTextPosition + leyenda1Height + 10;
+    // Calcular altura dinámica según cantidad de boletos
+    const boletosHeight = data.length * 6; // Aumentado a 6mm por boleto (más espacio)
+    const datosExtraHeight = 40;
+    const totalHeight = 80 + boletosHeight + leyenda1Height + datosExtraHeight;
     const finalHeight = Math.min(totalHeight, 297);
 
     // Crear un nuevo documento PDF con la altura calculada
@@ -29,7 +46,7 @@ const generatePDFSerie = async (data, fecha) => {
         format: [80, finalHeight]
     });
 
-    doc.setFontSize(10); // Subido de 8 a 10
+    doc.setFontSize(10);
 
     // URL de la imagen
     const imageURL = '/noSencillo.jpg';
@@ -38,67 +55,88 @@ const generatePDFSerie = async (data, fecha) => {
     // Agregar la imagen al PDF
     doc.addImage(imageURL, 'JPEG', 10, 10, 60, 30);
 
-    // Leyenda2 (con salto de línea robusto)
+    // Leyenda2
     doc.setFont('helvetica', 'bold');
     doc.setTextColor(255, 0, 0);
     doc.setFontSize(11);
 
-    // Limpia espacios dobles y caracteres invisibles
     let leyenda2Clean = String(data[0].leyenda2 || "")
         .replace(/\s+/g, ' ')
         .replace(/\u00A0/g, ' ')
         .trim();
 
-    // Si la línea es muy larga, inserta un espacio cada 30 caracteres para forzar corte
     leyenda2Clean = leyenda2Clean.replace(/(.{30})/g, '$1 ');
-
-    const leyenda2Lines = doc.splitTextToSize(leyenda2Clean, 60); // Usa 60mm de ancho real
-    let leyenda2StartY = 44; // <-- Más separado de la imagen (antes 42)
+    const leyenda2Lines = doc.splitTextToSize(leyenda2Clean, 60);
+    let leyenda2StartY = 44;
     doc.text(leyenda2Lines, 5, leyenda2StartY);
 
     let leyenda2Y = leyenda2StartY + (leyenda2Lines.length * 5);
 
+    let posY = 55;
     // Título y folio en líneas separadas
     doc.setTextColor(0, 0, 0);
-    doc.setFontSize(13); // Antes 12
-    doc.text(`Factura de boleto`, 5, 55);
+    doc.setFontSize(13);
+    doc.text(`Factura de boleto`, 5, posY);
 
-    doc.setTextColor(255, 0, 0);
-    doc.setFontSize(13); // Antes 12
-    doc.text(`N${data[0].Idsorteo}`, 5, 65); // Folio en línea aparte
-
-    // Datos principales
-    doc.setTextColor(0, 0, 0);
+    // Costo
+    posY += 10;
     doc.setFont('helvetica', 'normal');
-    doc.setFontSize(11); // Antes 10
-    doc.text(`Costo: $ ${totalCosto}`, 5, 75);
-    doc.text(`Serie de boletos:`, 5, 85);
+    doc.setFontSize(11);
+    doc.text(`Costo: $ ${totalCosto}`, 5, posY);
 
-    // Serie de boletos: salto de línea cada 6 boletos
-    let boletosArr = data.map(item => item.Boleto?.toString().padStart(3, '0'));
-    let boletosLines = [];
-    for (let i = 0; i < boletosArr.length; i += 6) {
-        boletosLines.push(boletosArr.slice(i, i + 6).join('-'));
-    }
-    let serieY = 95;
-    boletosLines.forEach((linea, idx) => {
-        doc.text(linea, 5, serieY + (idx * 7)); // Antes 6, subido para más espacio con fuente más grande
+    // Encabezado
+    posY += 10;
+    doc.setFont('helvetica', 'bold');
+    doc.setFontSize(10);
+    doc.text(`Serie de boletos:`, 5, posY);
+
+    // Ahora ya podemos identificar el numero del boleto y el numero de serie de manera mas entendible
+    data.forEach((boleto, index) => {
+        const numero = boleto.Boleto?.toString().padStart(3, "0");
+        const ns = `N${boleto.Idsorteo}`;
+        posY += 6; 
+        
+        // Escribir "Numero: " en negro
+        doc.setFont('helvetica', 'normal');
+        doc.setFontSize(8);
+        doc.setTextColor(0, 0, 0); // Negro
+        doc.text(`Número: ${numero} - `, 5, posY);
+        
+        // Calcular posición para "N/S:" 
+        const numeroTextWidth = doc.getTextWidth(`Número: ${numero} - `);
+        
+        // Escribir "N/S:" en rojo
+        doc.setFont('helvetica', 'bold');
+        doc.setTextColor(255, 0, 0); // Rojo
+        doc.text('N/S:', 5 + numeroTextWidth, posY);
+        
+        // Calcular posición para el número de serie
+        const nsTextWidth = doc.getTextWidth('N/S:');
+        
+        // Escribir el número de serie en negro
+        doc.setFont('helvetica', 'normal');
+        doc.setTextColor(0, 0, 0); // Negro
+        doc.text(` ${ns}`, 5 + numeroTextWidth + nsTextWidth, posY);
     });
 
-    let nextY = serieY + (boletosLines.length * 7); // Antes 6
+    // Datos principales
+    posY += 10;
+    doc.setFontSize(10);
+    doc.setTextColor(0, 0, 0); // Asegurar negro
+    doc.text(`Sorteo: ${fechaSorteoFormateada}`, 5, posY);
 
-    // Agregar más espacio entre la serie y el sorteo
-    nextY += 5; // Aumenta el espacio, puedes ajustar el valor si quieres más o menos
+    posY += 6;
+    doc.text(`Comprador: ${data[0].comprador}`, 5, posY);
 
-    doc.text(`Sorteo: ${fechaSorteoFormateada}`, 5, nextY);
-    doc.text(`Comprador: ${data[0].comprador}`, 5, nextY + 11);
-    doc.text(`Venta: ${data[0].Fecha_venta}`, 5, nextY + 22); // Antes 20
+    posY += 6;
+    doc.text(`Venta: ${data[0].Fecha_venta}`, 5, posY);
 
     // Leyenda1 al final
+    posY += 10;
     doc.setFont('helvetica', 'bold');
-    doc.setFontSize(11); // Antes 10
+    doc.setFontSize(9);
     var text = doc.splitTextToSize(`${data[0].leyenda1}`, 70);
-    doc.text(text, 5, nextY + 30); // Antes 30
+    doc.text(text, 5, posY);
 
     // Resto del código sin cambios
     doc.autoPrint();

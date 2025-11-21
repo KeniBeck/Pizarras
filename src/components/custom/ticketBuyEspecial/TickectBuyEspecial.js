@@ -11,23 +11,25 @@ import {
   Especial,
 } from "../alerts/menu/Alerts";
 import { useRouter } from "next/navigation";
-import { FaHome } from "react-icons/fa";
+import { FaHome, FaDice } from "react-icons/fa";
 import EspecialPreviewModal from "./EspecialPreviewModal";
 import VailidationEstatus from "@/hook/validationEstatus";
 import updateInfo from "../validation/updateInfo";
 import Swal from "sweetalert2";
+import { useTotalVenta } from "@/context/TotalVentasContext";
 
 const TickectBuyEspecial = ({ selectedDate }) => {
   const [prizes, setPrizes] = useState(selectedDate);
   const [ticketNumber, setTicketNumber] = useState("");
   const [foundTope, setFoundTope] = useState(null);
-  const [prizebox, setPrizebox] = useState("");
   const [name, setName] = useState("");
-  const [prizeboxError, setPrizeboxError] = useState(null);
   const [isLoading, setIsLoading] = useState(false);
   const [boletos, setBoletos] = useState([]);
   const router = useRouter();
   const [previewModal, setPreviewModal] = useState(false);
+  const [precioFijo, setPrecioFijo] = useState("");
+  const {addVenta}= useTotalVenta();
+  
 
   useEffect(() => {
     const ticket = localStorage.getItem("TickectEspecial");
@@ -43,6 +45,16 @@ const TickectBuyEspecial = ({ selectedDate }) => {
       .then((data) => {
         setBoletos(data.result);
       });
+
+      //Cargar precio fijo desde la nueva API
+    fetch("/api/leyenda3")
+      .then((res) => res.json())
+      .then((data) => {
+        setPrecioFijo(data.precioBoleto);
+      })
+      .catch(error => {
+        console.error("Error cargando precio fijo:", error);
+      });
   }, []);
 
   if (!prizes) {
@@ -57,6 +69,76 @@ const TickectBuyEspecial = ({ selectedDate }) => {
       </div>
     );
   }
+
+  // Función para obtener un número aleatorio disponible para boletos especiales
+const getRandomNumberEspecial = async () => {
+  try {
+    setIsLoading(true);
+
+    // Obtener los boletos ya vendidos
+    const options = {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+    };
+
+    const response = await fetch("/api/ticketBuy", options);
+    const data = await response.json();
+
+    if (data.result) {
+      // Filtrar boletos vendidos para el sorteo actual
+      const boletosVendidos = data.result
+        .filter(ticket => ticket.fecha_sorteo === prizes.Fecha)
+        .map(ticket => ticket.Boleto);
+
+      // Generar números hasta encontrar uno disponible
+      let numeroAleatorio;
+      let intentos = 0;
+      const maxIntentos = 1000; // Para evitar loop infinito
+
+      do {
+        numeroAleatorio = Math.floor(Math.random() * 1000).toString().padStart(3, '0');
+        intentos++;
+      } while (boletosVendidos.includes(parseInt(numeroAleatorio)) && intentos < maxIntentos);
+
+      if (intentos >= maxIntentos) {
+        Swal.fire({
+          icon: 'error',
+          title: 'Error',
+          text: 'No se encontraron números disponibles'
+        });
+        return;
+      }
+
+      // Establecer el número encontrado
+      setTicketNumber(numeroAleatorio);
+      
+      // Establecer nombre por defecto
+      setName("Trébol de la Suerte");
+
+      // Limpiar validación de tope (simular que el número está disponible)
+      setFoundTope(null);
+
+      // Mostrar mensaje de éxito
+      Swal.fire({
+        icon: 'success',
+        title: 'Número aleatorio generado',
+        text: `Número: ${numeroAleatorio}`,
+        timer: 1500,
+        timerProgressBar: true,
+        showConfirmButton: false
+      });
+    }
+  } catch (error) {
+    console.error("Error al obtener número aleatorio:", error);
+    Swal.fire({
+      icon: 'error',
+      title: 'Error',
+      text: 'Error al conectar con el servidor'
+    });
+  } finally {
+    setIsLoading(false);
+  }
+};
 
   const handleTicketNumberChange = (e) => {
     let value = e.target.value;
@@ -90,27 +172,20 @@ const TickectBuyEspecial = ({ selectedDate }) => {
   const enviarDatosNormal = async () => {
     VailidationEstatus();
 
-    if (!prizebox || !name) {
-      ValidateBox();
-      return;
+    if (!precioFijo || !name) {
+    ValidateBox();
+    return;
     }
+    
     if (foundTope !== null) {
       Especial();
       return;
     }
 
-    if (prizeboxError) {
-      ErrorPrizes();
-      setPrizebox("");
-      return;
-    }
-
     setIsLoading(true);
-    setTicketNumber("");
-    setPrizebox("");
-    setName("");
+    
     const data = {
-      prizebox,
+      prizebox: precioFijo, 
       name,
       tipoSorteo,
       ticketNumber,
@@ -124,38 +199,62 @@ const TickectBuyEspecial = ({ selectedDate }) => {
 
     const options = {
       method: "POST",
-      header: {
+      headers: {
         "Content-Type": "application/json",
       },
       body: JSON.stringify(data),
     };
-    await fetch("/api/sell", options)
-      .then((res) => res.json())
-      .then((data) => {
-        if (data.error) {
-          Swal.fire(data.error);
-        } else if (data[0][0]) {
-          generatePDF([data[0][0]], fecha);
-        }
-      })
-      .finally(() => {
-        setIsLoading(false);
-      });
+    
+    try {
+      const res = await fetch("/api/sell", options);
+      const result = await res.json();
+      
+      if (result.error) {
+        Swal.fire(result.error);
+      } else if (result[0][0]) {
+        const ticketSold = result[0][0];
+        
+        // AGREGAR ESTAS LÍNEAS PARA REGISTRAR EN EL MODAL
+        addVenta({
+          tipo: "especial", 
+          numero: ticketSold.Boleto || ticketNumber,
+          cantidad: 1,
+          precio: Number(ticketSold.Costo || precioFijo) || 0,
+          subtotal: (Number(ticketSold.Costo || precioFijo) || 0) * 1,
+          comprador: ticketSold.comprador || name,
+        });
+        
+        generatePDF([ticketSold], fecha);
+        
+        //ACTUALIZAR LISTA DE BOLETOS DESPUÉS DE COMPRAR
+        await refreshBoletos();
+      }
+    } catch (error) {
+      console.error("Error en la compra:", error);
+      Swal.fire("Error al procesar la compra");
+    } finally {
+      setIsLoading(false);
+      setTicketNumber("");
+      setName("");
+    }
   };
 
-  const handlePrizeboxChange = (e) => {
-    let value = e.target.value;
-    if (!/^[0-9]*$/.test(value)) {
-      value = value.slice(0, -1);
-    }
-    setPrizebox(value);
-    // Verifica si el valor es un múltiplo de 10
-    if (value % 10 !== 0) {
-      setPrizeboxError("El precio debe ser un múltiplo de 10");
-    } else {
-      setPrizeboxError(null);
+  // Función para refrescar los boletos
+  const refreshBoletos = async () => {
+    const options = {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+    };
+
+    try {
+      const res = await fetch("/api/ticketBuy", options);
+      const data = await res.json();
+      setBoletos(data.result);
+    } catch (error) {
+      console.error("Error al refrescar boletos:", error);
     }
   };
+
   if (isLoading) {
     loading();
   }
@@ -218,10 +317,10 @@ const TickectBuyEspecial = ({ selectedDate }) => {
               Precio
             </div>
             <input
-              className="bg-neutral-300 border rounded w-[140px] outline-none h-9 pl-10  "
-              value={prizebox}
-              onChange={handlePrizeboxChange}
-              maxLength={4}
+              className="bg-neutral-300 border rounded w-[140px] outline-none h-9 pl-10"
+              value={precioFijo ? `$${precioFijo}` : "Cargando..."}
+              readOnly
+              disabled
             />
           </div>
           <div className="flex flex-row gap-8">
@@ -233,6 +332,19 @@ const TickectBuyEspecial = ({ selectedDate }) => {
               onChange={(e) => setName(e.target.value)}
               className="bg-neutral-300 border rounded w-[140px] outline-none h-9 pl-5  "
             />
+          </div>
+
+          {/* Fila de botones Azar*/}
+          <div className="flex flex-row gap-4 justify-center items-center pt-2">
+            <button
+              onClick={getRandomNumberEspecial}
+              disabled={isLoading}
+              className={`bg-blue-700 text-white flex flex-col justify-center items-center rounded-lg h-[56px] w-[56px] text-xl ${isLoading ? 'opacity-50 cursor-not-allowed' : ''}`}
+              title="Generar número aleatorio"
+            >
+              <FaDice className={`${isLoading ? 'animate-spin' : ''} text-2xl`} />
+              <span className="text-xs font-semibold mt-1">Azar</span>
+            </button>
           </div>
         </div>
 

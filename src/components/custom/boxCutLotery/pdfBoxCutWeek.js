@@ -1,7 +1,7 @@
 import jsPDF from "jspdf";
 import autoTable from "jspdf-autotable";
 
-const generatePDFBoxCutWeek = async ({ userData, weekLabel, weekRange, resumen, dias, cancelados, ganadores, bancos }) => {
+const generatePDFBoxCutWeek = async ({ userData, weekLabel, weekRange, resumen, dias, cancelados, ganadores, bancos }, mode = "download") => {
   const doc = new jsPDF({ orientation: "portrait", unit: "mm", format: [80, 400] });
   let y = 10;
 
@@ -140,9 +140,30 @@ const generatePDFBoxCutWeek = async ({ userData, weekLabel, weekRange, resumen, 
 
   doc.autoPrint();
   const blob = doc.output("blob");
-  if (blob) {
+  const file = new File([blob], "corte_caja_semana.pdf", { type: "application/pdf" });
+
+  if (mode === "share" && navigator.share) {
+    try {
+      await navigator.share({
+        title: "Corte de caja semanal",
+        text: "Aquí está el corte de caja de la semana.",
+        files: [file],
+      });
+      console.log("Compartido exitosamente");
+    } catch (err) {
+      console.error("Error al compartir:", err);
+      const url = URL.createObjectURL(blob);
+      window.open(url);
+      setTimeout(() => URL.revokeObjectURL(url), 30000);
+    }
+  } else {
+    //descarga directa
     const url = URL.createObjectURL(blob);
-    window.open(url);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = "corte_caja_semana.pdf";
+    a.click();
+    setTimeout(() => URL.revokeObjectURL(url), 30000);
   }
 };
 
