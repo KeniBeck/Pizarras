@@ -47,7 +47,7 @@ const TickectBuyEspecial = ({ selectedDate }) => {
       });
 
       //Cargar precio fijo desde la nueva API
-    fetch("/api/leyenda3")
+    fetch(`/api/leyenda3?t=${Date.now()}`)
       .then((res) => res.json())
       .then((data) => {
         setPrecioFijo(data.precioBoleto);
